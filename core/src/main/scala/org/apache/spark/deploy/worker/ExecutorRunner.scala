@@ -21,9 +21,8 @@ import java.io._
 import java.nio.charset.StandardCharsets
 
 import scala.collection.JavaConverters._
-
 import com.google.common.io.Files
-
+import edu.hku.cs.PhosphorRunner
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.deploy.{ApplicationDescription, ExecutorState}
 import org.apache.spark.deploy.DeployMessages.ExecutorStateChanged
@@ -145,6 +144,13 @@ private[deploy] class ExecutorRunner(
       val builder = CommandUtils.buildProcessBuilder(appDesc.command, new SecurityManager(conf),
         memory, sparkHome.getAbsolutePath, substituteVariables)
       val command = builder.command()
+      val phosphorRunner = new PhosphorRunner("/home/jianyu/spark-dft-cache",
+        "/home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar",
+        "/home/jianyu/phosphor/Phosphor/target/jre-inst-int")
+      phosphorRunner.setTracking(false)
+      command.set(0, phosphorRunner.java())
+      command.add(3, phosphorRunner.agent())
+      command.add(4, phosphorRunner.bootclasspath())
       val formattedCommand = command.asScala.mkString("\"", "\" \"", "\"")
       logInfo(s"Launch command: $formattedCommand")
 

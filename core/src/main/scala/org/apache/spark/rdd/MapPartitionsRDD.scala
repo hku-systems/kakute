@@ -17,8 +17,9 @@
 
 package org.apache.spark.rdd
 
-import scala.reflect.ClassTag
+import edu.hku.cs.{RuleCollector, RuleManager, TypeTainter}
 
+import scala.reflect.ClassTag
 import org.apache.spark.{Partition, TaskContext}
 
 /**
@@ -34,8 +35,12 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
 
   override def getPartitions: Array[Partition] = firstParent[T].partitions
 
-  override def compute(split: Partition, context: TaskContext): Iterator[U] =
-    f(context, split.index, firstParent[T].iterator(split, context))
+  override def compute(split: Partition, context: TaskContext): Iterator[U] = {
+    val ruleCollector = RuleManager.managerInstance(0).collectorInstance(this.id)
+    val typeTainter = new TypeTainter(ruleCollector)
+    var parentResult = firstParent[T].iterator(split, context).map(typeTainter.setTaint)
+    f(context, split.index, parentResult).map(typeTainter.getTaint)
+  }
 
   override def clearDependencies() {
     super.clearDependencies()

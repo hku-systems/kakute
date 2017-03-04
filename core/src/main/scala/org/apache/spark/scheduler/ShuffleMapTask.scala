@@ -21,8 +21,9 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import scala.language.existentials
+import edu.hku.cs.RuleManager
 
+import scala.language.existentials
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.internal.Logging
@@ -94,7 +95,9 @@ private[spark] class ShuffleMapTask(
       val manager = SparkEnv.get.shuffleManager
       writer = manager.getWriter[Any, Any](dep.shuffleHandle, partitionId, context)
       writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
-      writer.stop(success = true).get
+      val status = writer.stop(success = true).get
+      RuleManager.managerInstance(0).collect()
+      status
     } catch {
       case e: Exception =>
         try {

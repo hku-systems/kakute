@@ -78,7 +78,7 @@ private[spark] class TorrentBroadcast[T: ClassTag](obj: T, id: Long)
     }
     // Note: use getSizeAsKb (not bytes) to maintain compatibility if no units are provided
     blockSize = conf.getSizeAsKb("spark.broadcast.blockSize", "4m").toInt * 1024
-    checksumEnabled = conf.getBoolean("spark.broadcast.checksum", true)
+//    checksumEnabled = conf.getBoolean("spark.broadcast.checksum", true)
   }
   setConf(SparkEnv.get.conf)
 
