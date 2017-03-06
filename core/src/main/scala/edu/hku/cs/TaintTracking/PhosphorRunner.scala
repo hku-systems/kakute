@@ -1,11 +1,10 @@
-package edu.hku.cs
+package edu.hku.cs.TaintTracking
 
 /**
   * Created by jianyu on 3/3/17.
   */
-/*
-  Run the process in phospher
-
+/**
+  A [[PhosphorRunner]] build the environment to run the program in
  */
 
 class PhosphorRunner(cacheDir: String, phospherJar: String, javaHome: String) {

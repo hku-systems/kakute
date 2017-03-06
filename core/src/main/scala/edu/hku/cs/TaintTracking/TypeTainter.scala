@@ -1,10 +1,8 @@
-package edu.hku.cs
 
-/**
-  * Created by jianyu on 3/4/17.
-  */
+package edu.hku.cs.TaintTracking
 
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
+import edu.hku.cs.Optimization.{RuleCollector, RuleManager}
 
 /**
   * Created by jianyu on 3/3/17.
@@ -22,7 +20,7 @@ class TypeTainter(ruleCollector: RuleCollector) {
 
   private var _currentPrint = 1
 
-  private var deps : List[Tuple2[Int, List[Int]]] = _
+  private var deps : RuleCollector.Rule = _
 
   /* Taint value from 2^32 */
 
