@@ -16,17 +16,19 @@ object DataOperation extends Enumeration {
 class DataModel(id: Long, op: DataOperation,
                         frameworkHandle: PlatformHandle, variableId: String) {
 
+  val ID: Long = id
+
   var isOrigin = false
 
   private var _fathers: List[DataModel] = List()
 
-  private var _sons: List[DataModel] = _
+  private var _sons: List[DataModel] = List()
 
   private var _deps: Map[DataModel, RuleSet] = _
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case dataModel: DataModel => dataModel.id == this.id
+      case dataModel: DataModel => dataModel.ID == this.id
       case _ => false
     }
   }

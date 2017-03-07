@@ -37,10 +37,12 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
   override def getPartitions: Array[Partition] = firstParent[T].partitions
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
-    val ruleCollector = RuleManager.managerInstance(0).collectorInstance(this.id)
-    val typeTainter = new TypeTainter(ruleCollector)
-    var parentResult = firstParent[T].iterator(split, context).map(typeTainter.setTaint)
-    f(context, split.index, parentResult).map(typeTainter.getTaint)
+    // val ruleCollector = RuleManager.managerInstance(0).collectorInstance(this.id)
+    // val typeTainter = new TypeTainter(ruleCollector)
+    var parentResult = firstParent[T].iterator(split, context)
+      // .map(typeTainter.setTaint)
+    f(context, split.index, parentResult)
+      // .map(typeTainter.getTaint)
   }
 
   override def clearDependencies() {

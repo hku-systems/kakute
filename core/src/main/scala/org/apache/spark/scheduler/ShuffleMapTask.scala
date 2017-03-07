@@ -96,7 +96,7 @@ private[spark] class ShuffleMapTask(
       writer = manager.getWriter[Any, Any](dep.shuffleHandle, partitionId, context)
       writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
       val status = writer.stop(success = true).get
-      RuleManager.managerInstance(0).collect()
+//      RuleManager.managerInstance(0).collect()
       status
     } catch {
       case e: Exception =>

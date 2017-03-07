@@ -1,5 +1,7 @@
 package edu.hku.cs.Optimization
 
+import edu.hku.cs.Optimization.RuleCollector.{Rule, RuleSet}
+
 /**
   * Created by jianyu on 3/4/17.
   */
@@ -37,5 +39,4 @@ object RuleCollector {
     })
     returnVal
   }
-
 }

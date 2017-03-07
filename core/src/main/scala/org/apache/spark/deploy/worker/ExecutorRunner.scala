@@ -147,10 +147,10 @@ private[deploy] class ExecutorRunner(
       val phosphorRunner = new PhosphorRunner("/home/jianyu/spark-dft-cache",
         "/home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar",
         "/home/jianyu/phosphor/Phosphor/target/jre-inst-int")
-      phosphorRunner.setTracking(false)
-      command.set(0, phosphorRunner.java())
-      command.add(3, phosphorRunner.agent())
-      command.add(4, phosphorRunner.bootclasspath())
+//      phosphorRunner.setTracking(true)
+//      command.set(0, phosphorRunner.java())
+//      command.add(3, phosphorRunner.agent())
+//      command.add(4, phosphorRunner.bootclasspath())
       val formattedCommand = command.asScala.mkString("\"", "\" \"", "\"")
       logInfo(s"Launch command: $formattedCommand")
 

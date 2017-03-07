@@ -4,7 +4,9 @@ package edu.hku.cs.Optimization
   * Created by jianyu on 3/4/17.
   */
 
-// each manager is for one stage
+/**
+  * A [[RuleManager]] manages a stage
+ */
 class RuleManager(id: Int) {
   private var collector = 0
   private var ruleCollectors: Map[Int, RuleCollector] = Map()

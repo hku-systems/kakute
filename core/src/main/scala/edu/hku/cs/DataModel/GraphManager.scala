@@ -27,6 +27,11 @@ class GraphManager {
     val returnId = _currentId
     _currentId += 1
     returnId
+    frameworkIdMapData.find(_._2 == a)
+  }
+
+  def spark_entry(rDD: RDD[_]) {
+    entry(new SparkPlatformHandle(rDD))
   }
 
   /* trigger this function when one task is added */
@@ -74,5 +79,10 @@ class GraphManager {
   }
 
   case class DataNotFoundException(i: Int) extends Exception
+
+}
+
+object GraphManager{
+  val graphManager = new GraphManager
 
 }
