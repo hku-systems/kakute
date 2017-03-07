@@ -27,7 +27,6 @@ class GraphManager {
     val returnId = _currentId
     _currentId += 1
     returnId
-    frameworkIdMapData.find(_._2 == a)
   }
 
   def spark_entry(rDD: RDD[_]) {

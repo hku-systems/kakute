@@ -51,6 +51,8 @@ class SelectiveTainter extends BaseTainter{
         case obj: Object => obj.asInstanceOf[T]
         case _ => obj
       }
+    } else {
+      obj
     }
   }
 
@@ -97,7 +99,7 @@ class SelectiveTainter extends BaseTainter{
     null
   }
 
-  override def getTaintAndReturn[T](obj: T): (T, Rule) = {
+  override def getTaintAndReturn[T](obj: T): T = {
     throw new TaintException("Not implemented")
   }
 }

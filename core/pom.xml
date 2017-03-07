@@ -34,6 +34,13 @@
   <url>http://spark.apache.org/</url>
   <dependencies>
     <dependency>
+      <groupId>edu.columbia.cs</groupId>
+      <artifactId>phosphor</artifactId>
+      <version>0.0.3</version>
+      <scope>system</scope>
+      <systemPath>/Users/max/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro-mapred</artifactId>
       <classifier>${avro.mapred.classifier}</classifier>
@@ -41,6 +48,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.twitter</groupId>

@@ -18,7 +18,7 @@ abstract class BaseTainter {
 
   def setTaint[T](obj: T): T
   def getTaintList(obj: Any): RuleCollector.Rule
-  def getTaintAndReturn[T](obj: T): (T, RuleCollector.Rule)
+  def getTaintAndReturn[T](obj: T): T
 
   def decomposeTaint(tag: Int): List[Int] = {
     var seq = List[Int]()

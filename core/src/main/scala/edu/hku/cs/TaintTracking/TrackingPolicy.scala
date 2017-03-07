@@ -49,7 +49,7 @@ object TrackingPolicy {
   var _trackingPolicy: TrackingPolicy = new TrackingPolicy
 
   private def setPolicy(trackingPolicy: TrackingPolicy) {
-      if (trackingPolicy == null) throw Exception
+      if (trackingPolicy == null) throw new TaintException("Null Policy")
       _trackingPolicy = new TrackingPolicy
   }
 

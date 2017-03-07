@@ -17,8 +17,6 @@
 
 package org.apache.spark.rdd
 
-import edu.hku.cs.Optimization.RuleManager
-import edu.hku.cs.TaintTracking.TypeTainter
 
 import scala.reflect.ClassTag
 import org.apache.spark.{Partition, TaskContext}
