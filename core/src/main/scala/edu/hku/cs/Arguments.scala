@@ -3,6 +3,10 @@ package edu.hku.cs
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TrackingMode.TrackingMode
 import org.apache.spark.SparkConf
+import play.api.libs.json.Format
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+
 
 /**
   * Created by max on 8/3/2017.
@@ -26,8 +30,22 @@ class SparkArgumentHandle(sparkConf: SparkConf) extends ArgumentHandle {
   override def init(): Boolean = true
 
   override def parseArgs(key: String): String = {
-    sparkConf.get(key)
+    sparkConf.get("spark.dft." + key)
   }
+}
+
+case class JsonConf(server: String, port: Int, tracking: String, sample: String)
+
+class JsonArgumentHandle(file: String) extends ArgumentHandle {
+  implicit val residentReads = Json.reads[JsonConf]
+  override def init(): Unit = {
+
+  }
+
+  override def parseArgs(key: String):String = {
+
+  }
+
 }
 
 /**
