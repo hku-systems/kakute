@@ -48,8 +48,8 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
 object NettyServer {
   def main(args: Array[String]): Unit = {
-    val dFTEnv = new DFTEnv("127.0.0.1", 1111, TrackingMode.FullTracking, SampleMode.FullTracking)
-    val nettyServer = new NettyServer(new EndpointDispatcher, dFTEnv)
+    DFTEnv.init()
+    val nettyServer = new NettyServer(new EndpointDispatcher, DFTEnv.dFTEnv)
     new Thread(new Runnable {
       override def run(): Unit = {
         nettyServer.run()

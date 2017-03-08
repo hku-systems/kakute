@@ -21,6 +21,8 @@ class GraphManager {
 
   var rootData: List[DataModel] = List()
 
+
+
   private var _currentId: Long = 0
 
   def currentId(): Long = {
