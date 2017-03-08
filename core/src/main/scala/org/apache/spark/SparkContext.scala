@@ -29,10 +29,10 @@ import scala.collection.Map
 import scala.collection.generic.Growable
 import scala.collection.mutable.HashMap
 import scala.language.implicitConversions
-import scala.reflect.{classTag, ClassTag}
+import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
-
 import com.google.common.collect.MapMaker
+import edu.hku.cs.DFTEnv
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -40,7 +40,6 @@ import org.apache.hadoop.io.{ArrayWritable, BooleanWritable, BytesWritable, Doub
 import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf, SequenceFileInputFormat, TextInputFormat}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
-
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.deploy.{LocalSparkCluster, SparkHadoopUtil}
@@ -2481,6 +2480,10 @@ object SparkContext extends Logging {
    * @return current `SparkContext` (or a new one if it wasn't created before the function call)
    */
   def getOrCreate(config: SparkConf): SparkContext = {
+
+    // [[Modified]]
+    DFTEnv.init(config)
+
     // Synchronize to ensure that multiple create requests don't trigger an exception
     // from assertNoOtherContextIsRunning within setActiveContext
     SPARK_CONTEXT_CONSTRUCTOR_LOCK.synchronized {
