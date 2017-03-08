@@ -64,7 +64,7 @@ object DFTEnv {
   }
 
   def init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new SparkArgumentHandle(any.asInstanceOf[SparkConf]))
+    dFTEnv = new DFTEnv(new ConfFileHandle("/Users/max/dft.conf"))
     if (dFTEnv._isServer) {
       networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     } else {

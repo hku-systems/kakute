@@ -7,6 +7,8 @@ import play.api.libs.json.Format
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
+import scala.io.Source
+
 
 /**
   * Created by max on 8/3/2017.
@@ -34,18 +36,26 @@ class SparkArgumentHandle(sparkConf: SparkConf) extends ArgumentHandle {
   }
 }
 
-case class JsonConf(server: String, port: Int, tracking: String, sample: String)
+class ConfFileHandle(filename: String) extends ArgumentHandle {
 
-class JsonArgumentHandle(file: String) extends ArgumentHandle {
-  implicit val residentReads = Json.reads[JsonConf]
-  override def init(): Unit = {
+  var keyMap: Map[String, String] = Map()
 
+  for (line <- Source.fromFile(filename).getLines()) {
+    if (!line.trim.startsWith("#")) {
+      val arr = line.split("=")
+      if (arr.length >= 3) throw new Exception("wrong format")
+      val key = arr(0).trim
+      val value = arr(1).trim
+      keyMap += key -> value
+      println("add key value " + key + " " + value)
+    }
   }
 
-  override def parseArgs(key: String):String = {
+  override def init(): Boolean = true
 
+  override def parseArgs(key: String): String = {
+    keyMap.getOrElse(key, null)
   }
-
 }
 
 /**
