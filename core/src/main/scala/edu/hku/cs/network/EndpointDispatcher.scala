@@ -20,7 +20,7 @@ class EndpointDispatcher {
     if (returnMsg == null) {
       null
     } else {
-      BoxMessage(box.endpointId, found.get._2.receiveAndReply(box.message))
+      BoxMessage(box.endpointId, returnMsg)
     }
   }
 
