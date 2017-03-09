@@ -1,23 +1,21 @@
 package edu.hku.cs.Optimization
 
-import edu.hku.cs.network.{Message, NettyEndpoint, RuleRegister, RuleRegistered}
+import edu.hku.cs.network._
 
 /**
   * Created by jianyu on 3/9/17.
   */
 
-
+//TODO Is this class atomic?
 class RuleLocalControl extends NettyEndpoint{
 
   override val id: String = "Rule"
 
-  private var manager = 0
-
-  private var ruleManagers: Map[Int, RuleManager] = Map()
-
   override def receiveAndReply(message: Message): Message = {
     message match {
       case registered: RuleRegistered => null
+      //TODO put the non-confirm rule to a pool and resent - need to do this?
+      case added: RuleAdded => null
     }
   }
 
@@ -25,16 +23,27 @@ class RuleLocalControl extends NettyEndpoint{
     this.send(RuleRegister(true))
   }
 
-  def managerInstance(_id: Int): RuleManager = {
-    val foundManager = ruleManagers.find(_._1 == _id)
-    val ruleManager = if (foundManager.isEmpty) {
-      manager += 1
-      _id -> new RuleManager(_id, this)
+  private var collector = 0
+
+  private var ruleCollectors: Map[Int, RuleCollector] = Map()
+
+  def collectorInstance(_id: Int): RuleCollector = {
+    val foundCollector = ruleCollectors.find(_._1 == id)
+    val ruleCollector = if (foundCollector.isEmpty) {
+      collector += 1
+      _id -> new RuleCollector(_id)
     } else {
-      foundManager.get
+      foundCollector.get
     }
-    ruleManagers += ruleManager
-    ruleManager._2
+    ruleCollectors += ruleCollector
+    ruleCollector._2
+  }
+
+  def collect(): Unit = {
+    ruleCollectors.foreach(mm => {
+      this.send(RuleInfered(mm._1, mm._2.collect()))
+    })
+    ruleCollectors = Map()
   }
 
 }

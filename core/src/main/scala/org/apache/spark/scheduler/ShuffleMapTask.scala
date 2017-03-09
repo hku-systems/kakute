@@ -21,7 +21,7 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import edu.hku.cs.Optimization.RuleManager
+import edu.hku.cs.DFTEnv
 
 import scala.language.existentials
 import org.apache.spark._
@@ -96,7 +96,10 @@ private[spark] class ShuffleMapTask(
       writer = manager.getWriter[Any, Any](dep.shuffleHandle, partitionId, context)
       writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
       val status = writer.stop(success = true).get
-//      RuleManager.managerInstance(0).collect()
+
+      // [[Modified]] collect and send the rule here
+      DFTEnv.localControl.collect()
+
       status
     } catch {
       case e: Exception =>

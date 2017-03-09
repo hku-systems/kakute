@@ -22,6 +22,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+import edu.hku.cs.DFTEnv
 import edu.hku.cs.DataModel.GraphManager
 
 import scala.annotation.tailrec
@@ -1009,8 +1010,11 @@ class DAGScheduler(
 
     val tasks: Seq[Task[_]] = try {
       val serializedTaskMetrics = closureSerializer.serialize(stage.latestInfo.taskMetrics).array()
-      GraphManager.graphManager.spark_entry(stage.rdd)
-      val a = GraphManager.graphManager
+
+      // [[Modified]] to add rdd to our framework
+      DFTEnv.graphManager.spark_entry(stage.rdd)
+      val a = DFTEnv.graphManager
+
       stage match {
         case stage: ShuffleMapStage =>
           stage.pendingPartitions.clear()

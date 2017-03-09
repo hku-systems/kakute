@@ -1,7 +1,7 @@
 package edu.hku.cs.DataModel
 
 import edu.hku.cs.Optimization.RuleCollector.RuleSet
-import edu.hku.cs.network.{Message, NettyEndpoint, RuleRegister, RuleRegistered}
+import edu.hku.cs.network._
 import org.apache.spark.rdd.RDD
 
 /**
@@ -22,6 +22,11 @@ class GraphManager extends NettyEndpoint {
   override def receiveAndReply(message: Message): Message = {
     message match {
       case register: RuleRegister => RuleRegistered(true)
+      case rule: RuleInfered => {
+        addTrackingRule(rule.id, rule.id, rule.ruleSet)
+        RuleAdded(rule.id)
+      }
+      case _ => null
     }
   }
 
@@ -76,17 +81,19 @@ class GraphManager extends NettyEndpoint {
     returnVal
   }
 
-  def getDatamodelOrThrow(platformHandle: PlatformHandle): DataModel = {
-    val found = frameworkIdMapData.find(_._1 == platformHandle.frameworkId())
+  def getDatamodelOrThrow(platformId: Int): DataModel = {
+    val found = frameworkIdMapData.find(_._1 == platformId)
     if (found.isEmpty) {
-      throw DataNotFoundException(platformHandle.frameworkId())
+      throw DataNotFoundException(platformId)
     }
     found.get._2
   }
 
-  def addTrackingRule(platformHandle: PlatformHandle, depDataHandle: PlatformHandle,ruleSet: RuleSet): Unit = {
-    val ruleData = getDatamodelOrThrow(platformHandle)
-    val depData = getDatamodelOrThrow(depDataHandle)
+  def addTrackingRule(platformId: Int, depDataId: Int,ruleSet: RuleSet): Unit = {
+    println("add rule " + platformId + " " + depDataId + ruleSet)
+    println(getDatamodelOrThrow(platformId).dataType())
+    val ruleData = getDatamodelOrThrow(platformId)
+    val depData = getDatamodelOrThrow(depDataId)
     ruleData.addDeps(ruleSet, depData)
   }
 

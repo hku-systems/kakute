@@ -3,7 +3,7 @@ package edu.hku.cs
 import edu.hku.cs.DataModel.GraphManager
 import edu.hku.cs.Optimization.RuleLocalControl
 import edu.hku.cs.SampleMode.SampleMode
-import edu.hku.cs.TaintTracking.PhosphorRunner
+import edu.hku.cs.TaintTracking.{PhosphorRunner, TrackingPolicy}
 import edu.hku.cs.TrackingMode.TrackingMode
 import edu.hku.cs.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
 
@@ -59,6 +59,8 @@ object DFTEnv {
 
   var dFTEnv: DFTEnv = _
 
+  var trackingPolicy: TrackingPolicy = new TrackingPolicy
+
   var graphManager: GraphManager = _
 
   var localControl: RuleLocalControl = _
@@ -88,6 +90,10 @@ object DFTEnv {
   def server_init(any: Any): Unit = {
     dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
     networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
+    new Thread(new Runnable {
+      override def run():Unit = networkEnv.run()
+    }).start()
+    Thread.sleep(1000)
     dFTEnv._isServer = true
     graphManager = new GraphManager
     networkEnv.register(graphManager)
@@ -96,6 +102,10 @@ object DFTEnv {
   def client_init(any: Any): Unit = {
     dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
     networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
+    new Thread(new Runnable {
+      override def run():Unit = networkEnv.run()
+    }).start()
+    Thread.sleep(1000)
     dFTEnv._isServer = false
     localControl = new RuleLocalControl
     networkEnv.register(localControl)

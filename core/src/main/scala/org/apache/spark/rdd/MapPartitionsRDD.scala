@@ -18,6 +18,9 @@
 package org.apache.spark.rdd
 
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.RuleTainter
+
 import scala.reflect.ClassTag
 import org.apache.spark.{Partition, TaskContext}
 
@@ -35,12 +38,14 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
   override def getPartitions: Array[Partition] = firstParent[T].partitions
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
-    // val ruleCollector = RuleManager.managerInstance(0).collectorInstance(this.id)
-    // val typeTainter = new TypeTainter(ruleCollector)
+    // [[Modified]]
+    val ruleCollector = DFTEnv.localControl.collectorInstance(this.id)
+     val typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
+
     var parentResult = firstParent[T].iterator(split, context)
-      // .map(typeTainter.setTaint)
+      .map(typeTainter.setTaint) // set taint before computation
     f(context, split.index, parentResult)
-      // .map(typeTainter.getTaint)
+      .map(typeTainter.getTaintAndReturn) // get taint after computation
   }
 
   override def clearDependencies() {

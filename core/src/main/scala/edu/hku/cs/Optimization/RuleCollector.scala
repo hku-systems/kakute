@@ -8,6 +8,7 @@ import edu.hku.cs.Optimization.RuleCollector.{Rule, RuleSet}
 
 /**
   * A [[RuleCollector]] collect the rule infer in a rdd operation
+  * its id should be the rdd id of spark
 */
 
 class RuleCollector(id: Int) {

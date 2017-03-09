@@ -63,4 +63,6 @@ class DataModel(id: Long, op: DataOperation,
 
   def frameworkId(): Int = frameworkHandle.frameworkId()
 
+  def dataType(): String = frameworkHandle.typeInto()
+
 }

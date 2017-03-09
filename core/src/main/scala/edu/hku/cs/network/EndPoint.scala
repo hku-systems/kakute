@@ -17,6 +17,7 @@ trait EndpointRegister {
   def register(endPoint: EndPoint): Unit = {
     endPoint.onRegister()
   }
+  def run(): Unit
 }
 
 trait NettyHandle {
@@ -53,3 +54,5 @@ case class RuleRegister(bool: Boolean) extends Message
 case class RuleRegistered(bool: Boolean) extends Message
 
 case class RuleInfered(id: Int, ruleSet: RuleSet) extends Message
+
+case class RuleAdded(id: Int) extends Message

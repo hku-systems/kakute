@@ -2,7 +2,7 @@ package edu.hku.cs.DataModel
 
 import edu.hku.cs.DataModel.DataOperation.DataOperation
 import org.apache.spark.rdd.RDD
-
+import scala.reflect.runtime.{universe => ru}
 /**
   * Created by jianyu on 3/5/17.
   */
@@ -17,12 +17,19 @@ import org.apache.spark.rdd.RDD
 trait PlatformHandle {
   def frameworkId(): Int
   def fathers(): List[PlatformHandle]
+  def typeInto(): String
   def op(): DataOperation
   def variable(): String
 }
 
 class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
   override def frameworkId(): Int = frameworkR.id
+
+  override def typeInto(): String = {
+    getTypeTag(frameworkR).tpe.toString()
+  }
+
+  def getTypeTag[T: ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
 
   override def fathers(): List[PlatformHandle] = {
     var fa: List[PlatformHandle] = List()
