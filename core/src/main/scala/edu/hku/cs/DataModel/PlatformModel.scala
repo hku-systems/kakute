@@ -26,7 +26,7 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
   override def frameworkId(): Int = frameworkR.id
 
   override def typeInto(): String = {
-    getTypeTag(frameworkR).tpe.toString()
+    frameworkR.elementClassTag.toString()
   }
 
   def getTypeTag[T: ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
