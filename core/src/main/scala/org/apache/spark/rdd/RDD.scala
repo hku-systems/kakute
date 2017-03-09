@@ -1666,9 +1666,12 @@ abstract class RDD[T: ClassTag](
   private[spark] def getCreationSite: String = Option(creationSite).map(_.shortForm).getOrElse("")
 
   /**
-    * [[Modified]] change this method from private to public
-  * */
-  def elementClassTag: ClassTag[T] = classTag[T]
+    * [[Modified]] add this method to infer a clear type info
+  */
+
+  def elementTypeTag(): String = scala.reflect.runtime.universe.TypeTag[T].toString()
+
+  private[spark] def elementClassTag: ClassTag[T] = classTag[T]
 
   private[spark] var checkpointData: Option[RDDCheckpointData[T]] = None
 
