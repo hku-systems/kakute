@@ -1,5 +1,7 @@
 package edu.hku.cs.network
 
+import edu.hku.cs.Optimization.RuleCollector.RuleSet
+
 /**
   * Created by jianyu on 3/8/17.
   */
@@ -8,10 +10,13 @@ trait EndPoint {
   // def onReceive(message: Message): Unit
   def receiveAndReply(message: Message): Message
   def send(obj: Message): Unit
+  def onRegister()
 }
 
 trait EndpointRegister {
-  def register(endPoint: EndPoint)
+  def register(endPoint: EndPoint): Unit = {
+    endPoint.onRegister()
+  }
 }
 
 trait NettyHandle {
@@ -43,3 +48,8 @@ case class onEnded(int: Int) extends Message
 
 case class EndpointError(string: String) extends Message
 
+case class RuleRegister(bool: Boolean) extends Message
+
+case class RuleRegistered(bool: Boolean) extends Message
+
+case class RuleInfered(id: Int, ruleSet: RuleSet) extends Message

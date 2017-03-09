@@ -18,6 +18,7 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
   override def register(endPoint: EndPoint): Unit = {
     endPoint.asInstanceOf[NettyEndpoint].setHandle(nettyHandle)
     endpointDispatcher.registerEndpoint(endPoint)
+    super.register(endPoint)
   }
 
   def run(): Unit = {
@@ -44,6 +45,7 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
 }
 
+/*
 class RuleEndpoint extends NettyEndpoint {
   val id: String = "Rule"
 
@@ -56,6 +58,7 @@ class RuleEndpoint extends NettyEndpoint {
     }
   }
 }
+*/
 
 object NettyClient{
   def main(args: Array[String]): Unit = {
@@ -67,8 +70,8 @@ object NettyClient{
       }
     }).start()
     Thread.sleep(1000)
-    val rule = new RuleEndpoint
-    nettyClient.register(rule)
-    rule.send(onStart(1, "aa", 1.5))
+//    val rule = new RuleEndpoint
+//    nettyClient.register(rule)
+//    rule.send(onStart(1, "aa", 1.5))
   }
 }

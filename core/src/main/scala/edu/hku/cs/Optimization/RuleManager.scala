@@ -1,15 +1,21 @@
 package edu.hku.cs.Optimization
 
+import edu.hku.cs.network.RuleInfered
+
 /**
   * Created by jianyu on 3/4/17.
   */
 
 /**
-  * A [[RuleManager]] manages a stage
+  * A [[RuleManager]] manages a stage(tasks)
  */
-class RuleManager(id: Int) {
+class RuleManager(id: Int, local: RuleLocalControl) {
   private var collector = 0
+
   private var ruleCollectors: Map[Int, RuleCollector] = Map()
+
+  private val localControl: RuleLocalControl = local
+
   def collectorInstance(_id: Int): RuleCollector = {
     val foundCollector = ruleCollectors.find(_._1 == id)
     val ruleCollector = if (foundCollector.isEmpty) {
@@ -23,24 +29,9 @@ class RuleManager(id: Int) {
   }
   def collect(): Unit = {
     ruleCollectors.foreach(mm => {
-      println("Infer " + mm._1 + " " + mm._2.collect())
+      localControl.send(RuleInfered(mm._1, mm._2.collect()))
     })
     ruleCollectors = Map()
   }
 }
 
-object RuleManager {
-  private var manager = 0
-  private var ruleManagers: Map[Int, RuleManager] = Map()
-  def managerInstance(_id: Int): RuleManager = {
-    val foundManager = ruleManagers.find(_._1 == _id)
-    val ruleManager = if (foundManager.isEmpty) {
-      manager += 1
-      _id -> new RuleManager(_id)
-    } else {
-      foundManager.get
-    }
-    ruleManagers += ruleManager
-    ruleManager._2
-  }
-}

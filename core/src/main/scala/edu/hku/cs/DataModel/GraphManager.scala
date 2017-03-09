@@ -1,6 +1,7 @@
 package edu.hku.cs.DataModel
 
 import edu.hku.cs.Optimization.RuleCollector.RuleSet
+import edu.hku.cs.network.{Message, NettyEndpoint, RuleRegister, RuleRegistered}
 import org.apache.spark.rdd.RDD
 
 /**
@@ -13,14 +14,24 @@ import org.apache.spark.rdd.RDD
  *
  * T is Platform reference */
 
-class GraphManager {
+class GraphManager extends NettyEndpoint {
+
+  override val id: String = "Rule"
 
   // Create EndPoint here to communicate with the client
+  override def receiveAndReply(message: Message): Message = {
+    message match {
+      case register: RuleRegister => RuleRegistered(true)
+    }
+  }
+
+  override def onRegister(): Unit = {
+
+  }
 
   var frameworkIdMapData: Map[Int, DataModel] = Map()
 
   var rootData: List[DataModel] = List()
-
 
 
   private var _currentId: Long = 0
@@ -83,7 +94,3 @@ class GraphManager {
 
 }
 
-object GraphManager{
-  val graphManager = new GraphManager
-
-}

@@ -6,6 +6,10 @@ import edu.hku.cs.Optimization.RuleCollector.{Rule, RuleSet}
   * Created by jianyu on 3/4/17.
   */
 
+/**
+  * A [[RuleCollector]] collect the rule infer in a rdd operation
+*/
+
 class RuleCollector(id: Int) {
   private var ruleSet: RuleSet = Map()
 

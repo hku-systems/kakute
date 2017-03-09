@@ -1,5 +1,7 @@
 package edu.hku.cs
 
+import edu.hku.cs.DataModel.GraphManager
+import edu.hku.cs.Optimization.RuleLocalControl
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TaintTracking.PhosphorRunner
 import edu.hku.cs.TrackingMode.TrackingMode
@@ -57,6 +59,10 @@ object DFTEnv {
 
   var dFTEnv: DFTEnv = _
 
+  var graphManager: GraphManager = _
+
+  var localControl: RuleLocalControl = _
+
   var phosphorRunner: PhosphorRunner = new PhosphorRunner("/home/jianyu/spark-dft-cache",
     "/home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar",
     "/home/jianyu/phosphor/Phosphor/target/jre-inst-int")
@@ -83,12 +89,16 @@ object DFTEnv {
     dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
     networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     dFTEnv._isServer = true
+    graphManager = new GraphManager
+    networkEnv.register(graphManager)
   }
 
   def client_init(any: Any): Unit = {
     dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
     networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
     dFTEnv._isServer = false
+    localControl = new RuleLocalControl
+    networkEnv.register(localControl)
   }
 
 

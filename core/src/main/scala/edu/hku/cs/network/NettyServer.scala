@@ -18,6 +18,7 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
   override def register(endPoint: EndPoint): Unit = {
     endPoint.asInstanceOf[NettyEndpoint].setHandle(nettyHandle)
     endpointDispatcher.registerEndpoint(endPoint)
+    super.register(endPoint)
   }
 
   def run() {
