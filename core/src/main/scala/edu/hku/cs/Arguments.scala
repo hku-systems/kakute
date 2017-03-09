@@ -3,9 +3,6 @@ package edu.hku.cs
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TrackingMode.TrackingMode
 import org.apache.spark.SparkConf
-import play.api.libs.json.Format
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
 
 import scala.io.Source
 

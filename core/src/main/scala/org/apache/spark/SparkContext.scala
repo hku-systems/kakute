@@ -368,6 +368,10 @@ class SparkContext(config: SparkConf) extends Logging {
   }
 
   try {
+
+    // [[Modified]]
+    DFTEnv.server_init(null)
+
     _conf = config.clone()
     _conf.validateSettings()
 

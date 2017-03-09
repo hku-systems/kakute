@@ -1,9 +1,9 @@
 package edu.hku.cs
 
 import edu.hku.cs.SampleMode.SampleMode
+import edu.hku.cs.TaintTracking.PhosphorRunner
 import edu.hku.cs.TrackingMode.TrackingMode
 import edu.hku.cs.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
-import org.apache.spark.SparkConf
 
 /**
   * Created by jianyu on 3/6/17.
@@ -49,12 +49,19 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
   var _isServer: Boolean = argumentHandle.parseArgs("mode") match {
     case "server" => true
     case "worker" => false
+    case _ => false
   }
 }
 
 object DFTEnv {
 
   var dFTEnv: DFTEnv = _
+
+  var phosphorRunner: PhosphorRunner = new PhosphorRunner("/home/jianyu/spark-dft-cache",
+    "/home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar",
+    "/home/jianyu/phosphor/Phosphor/target/jre-inst-int")
+
+  phosphorRunner.setTracking(true)
 
   var networkEnv: EndpointRegister = _
 
@@ -71,4 +78,18 @@ object DFTEnv {
       networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
     }
   }
+
+  def server_init(any: Any): Unit = {
+    dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
+    networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
+    dFTEnv._isServer = true
+  }
+
+  def client_init(any: Any): Unit = {
+    dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
+    networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
+    dFTEnv._isServer = false
+  }
+
+
 }

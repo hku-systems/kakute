@@ -34,16 +34,11 @@
   <url>http://spark.apache.org/</url>
   <dependencies>
     <dependency>
-        <groupId>com.typesafe.play</groupId>
-        <artifactId>play-json_2.11</artifactId>
-        <version>2.5.12</version>
-      </dependency>
-    <dependency>
       <groupId>edu.columbia.cs</groupId>
       <artifactId>phosphor</artifactId>
       <version>0.0.3</version>
       <scope>system</scope>
-      <systemPath>/Users/max/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
+      <systemPath>/home/jianyu/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>

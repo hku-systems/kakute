@@ -178,10 +178,6 @@ private[deploy] class Worker(
   }
 
   override def onStart() {
-
-    // [[Modified]]
-    DFTEnv.init(conf)
-
     assert(!registered)
     logInfo("Starting Spark worker %s:%d with %d cores, %s RAM".format(
       host, port, cores, Utils.megabytesToString(memory)))

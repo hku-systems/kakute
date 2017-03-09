@@ -1,13 +1,5 @@
 package edu.hku.cs.network
 
-import edu.hku.cs.DFTEnv
-import io.netty.bootstrap.{Bootstrap, ServerBootstrap}
-import io.netty.channel.{ChannelInitializer, SimpleChannelInboundHandler}
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
-import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
-import io.netty.handler.codec.serialization.{ClassResolvers, ObjectDecoder, ObjectEncoder}
-
 /**
   * Created by jianyu on 3/8/17.
   */
