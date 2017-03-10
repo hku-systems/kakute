@@ -16,8 +16,9 @@ import scala.reflect.runtime.{universe => ru}
 
 trait PlatformHandle {
   def frameworkId(): Int
+  def frameworkName(): String
   def fathers(): List[PlatformHandle]
-  def typeInto(): String
+  def frameworkType(): String
   def op(): DataOperation
   def variable(): String
 }
@@ -25,8 +26,13 @@ trait PlatformHandle {
 class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
   override def frameworkId(): Int = frameworkR.id
 
-  override def typeInto(): String = {
-    frameworkR.elementTypeTag()
+  override def frameworkName(): String = {
+    frameworkR.toString
+  }
+
+  override def frameworkType(): String = {
+    frameworkR.rddType()
+    ""
   }
 
   def getTypeTag[T: ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
@@ -40,7 +46,14 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
   }
 
   override def op(): DataOperation = {
-    null
+    frameworkR.rddType() match {
+      case "HadoopRDD" => DataOperation.Input
+      case "UnionRDD" => DataOperation.Union
+      case "ShuffledRDD" => DataOperation.Reduce
+      case "ZippedWithIndexRDD" => DataOperation.ZipWithIndex
+      case "MapPartitionsRDD" => DataOperation.Map
+      case _ => DataOperation.None
+    }
   }
 
   override def variable(): String = {

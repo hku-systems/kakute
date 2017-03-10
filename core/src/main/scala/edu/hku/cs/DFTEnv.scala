@@ -1,6 +1,6 @@
 package edu.hku.cs
 
-import edu.hku.cs.DataModel.GraphManager
+import edu.hku.cs.DataModel.{GraphDumper, GraphManager}
 import edu.hku.cs.Optimization.RuleLocalControl
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TaintTracking.{PhosphorRunner, TrackingPolicy}
@@ -113,6 +113,10 @@ object DFTEnv {
 
   def stop_all(): Unit = {
     networkEnv.stop()
+    val graphDumper = new GraphDumper("/home/jianyu/graph.dump")
+    graphDumper.open()
+    graphDumper.dumpGraph(graphManager)
+    graphDumper.close()
     println("Stop all")
   }
 

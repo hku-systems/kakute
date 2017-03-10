@@ -28,7 +28,7 @@ class RuleLocalControl extends NettyEndpoint{
   private var ruleCollectors: Map[Int, RuleCollector] = Map()
 
   def collectorInstance(_id: Int): RuleCollector = {
-    val foundCollector = ruleCollectors.find(_._1 == id)
+    val foundCollector = ruleCollectors.find(_._1 == _id)
     val ruleCollector = if (foundCollector.isEmpty) {
       collector += 1
       _id -> new RuleCollector(_id)

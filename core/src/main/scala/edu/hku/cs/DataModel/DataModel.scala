@@ -10,7 +10,7 @@ import edu.hku.cs.Optimization.RuleCollector.RuleSet
 
 object DataOperation extends Enumeration {
   type DataOperation = Value
-  val Map, Reduce, Union, Collect = Value
+  val Map, Reduce, Union, Sample, ZipWithIndex, CoGroup, Input, None = Value
 }
 
 class DataModel(id: Long, op: DataOperation,
@@ -63,6 +63,26 @@ class DataModel(id: Long, op: DataOperation,
 
   def frameworkId(): Int = frameworkHandle.frameworkId()
 
-  def dataType(): String = frameworkHandle.typeInto()
+  def dataType(): String = ""
+
+  override def toString: String = {
+    val newBuilder = new StringBuilder
+    newBuilder.append("[" + id + "] ")
+    newBuilder.append(" " + this.op + " ")
+    newBuilder.append(frameworkHandle.frameworkName())
+    newBuilder.append(" => [ ")
+    _sons.foreach(data => {
+      newBuilder.append(data.ID)
+      newBuilder.append(" ")
+    })
+    newBuilder.append("] ")
+    if (_deps != null) {
+      _deps.foreach(dep => {
+        newBuilder.append(dep._2)
+      })
+    }
+    newBuilder.append("\n")
+    newBuilder.toString()
+  }
 
 }

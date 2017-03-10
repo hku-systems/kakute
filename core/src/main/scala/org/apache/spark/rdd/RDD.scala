@@ -1669,7 +1669,7 @@ abstract class RDD[T: ClassTag](
     * [[Modified]] add this method to infer a clear type info
   */
 
-  def elementTypeTag(): String = elementClassTag.toString()
+  def rddType(): String = getClass.getSimpleName
 
   private[spark] def elementClassTag: ClassTag[T] = classTag[T]
 
