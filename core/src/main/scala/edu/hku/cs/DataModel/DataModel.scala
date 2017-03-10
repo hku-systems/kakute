@@ -26,6 +26,10 @@ class DataModel(id: Long, op: DataOperation,
 
   private var _deps: Map[DataModel, RuleSet] = _
 
+  private var _dataType: String = "null"
+
+  def set_type(string: String): Unit = _dataType = string
+
   override def equals(obj: Any): Boolean = {
     obj match {
       case dataModel: DataModel => dataModel.ID == this.id
@@ -63,13 +67,13 @@ class DataModel(id: Long, op: DataOperation,
 
   def frameworkId(): Int = frameworkHandle.frameworkId()
 
-  def dataType(): String = ""
-
   override def toString: String = {
     val newBuilder = new StringBuilder
     newBuilder.append("[" + id + "] ")
     newBuilder.append(" " + this.op + " ")
     newBuilder.append(frameworkHandle.frameworkName())
+    newBuilder.append(" ")
+    newBuilder.append(this._dataType)
     newBuilder.append(" => [ ")
     _sons.foreach(data => {
       newBuilder.append(data.ID)

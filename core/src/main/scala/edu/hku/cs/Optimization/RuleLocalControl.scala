@@ -27,6 +27,12 @@ class RuleLocalControl extends NettyEndpoint{
 
   private var ruleCollectors: Map[Int, RuleCollector] = Map()
 
+  private var typeCollectors: Map[Int, String] = Map()
+
+  def addType(id: Int, string: String): Unit = {
+    typeCollectors += id -> string
+  }
+
   def collectorInstance(_id: Int): RuleCollector = {
     val foundCollector = ruleCollectors.find(_._1 == _id)
     val ruleCollector = if (foundCollector.isEmpty) {
@@ -42,6 +48,9 @@ class RuleLocalControl extends NettyEndpoint{
   def collect(): Unit = {
     ruleCollectors.foreach(mm => {
       this.send(RuleInfered(mm._1, mm._2.collect()))
+    })
+    typeCollectors.foreach(t => {
+      this.send(DataType(t._1, t._2))
     })
     ruleCollectors = Map()
   }

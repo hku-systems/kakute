@@ -27,6 +27,10 @@ class GraphManager extends NettyEndpoint {
         addTrackingRule(rule.id, rule.id, rule.ruleSet)
         RuleAdded(rule.id)
       }
+      case tt: DataType => {
+        addTypeData(tt.id, tt.typeString)
+        null
+      }
       case _ => null
     }
   }
@@ -92,10 +96,13 @@ class GraphManager extends NettyEndpoint {
 
   def addTrackingRule(platformId: Int, depDataId: Int,ruleSet: RuleSet): Unit = {
     println("add rule " + platformId + " " + depDataId + ruleSet)
-    println(getDatamodelOrThrow(platformId).dataType())
     val ruleData = getDatamodelOrThrow(platformId)
     val depData = getDatamodelOrThrow(depDataId)
     ruleData.addDeps(ruleSet, depData)
+  }
+
+  def addTypeData(int: Int, string: String): Unit = {
+    getDatamodelOrThrow(int).set_type(string)
   }
 
   case class DataNotFoundException(i: Int) extends Exception

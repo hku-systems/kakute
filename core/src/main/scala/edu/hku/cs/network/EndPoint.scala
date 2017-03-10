@@ -58,3 +58,5 @@ case class RuleRegistered(bool: Boolean) extends Message
 case class RuleInfered(id: Int, ruleSet: RuleSet) extends Message
 
 case class RuleAdded(id: Int) extends Message
+
+case class DataType(id: Int, typeString: String) extends Message

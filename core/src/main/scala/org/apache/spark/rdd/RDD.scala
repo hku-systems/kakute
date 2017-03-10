@@ -19,17 +19,17 @@ package org.apache.spark.rdd
 
 import java.util.Random
 
-import scala.collection.{mutable, Map}
+import scala.collection.{Map, mutable}
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Codec
 import scala.language.implicitConversions
-import scala.reflect.{classTag, ClassTag}
-
+import scala.reflect.{ClassTag, classTag}
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.TypeGetter
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.hadoop.mapred.TextOutputFormat
-
 import org.apache.spark._
 import org.apache.spark.Partitioner._
 import org.apache.spark.annotation.{DeveloperApi, Since}
@@ -42,8 +42,7 @@ import org.apache.spark.partial.PartialResult
 import org.apache.spark.storage.{RDDBlockId, StorageLevel}
 import org.apache.spark.util.{BoundedPriorityQueue, Utils}
 import org.apache.spark.util.collection.OpenHashMap
-import org.apache.spark.util.random.{BernoulliCellSampler, BernoulliSampler, PoissonSampler,
-  SamplingUtils}
+import org.apache.spark.util.random.{BernoulliCellSampler, BernoulliSampler, PoissonSampler, SamplingUtils}
 
 /**
  * A Resilient Distributed Dataset (RDD), the basic abstraction in Spark. Represents an immutable,
@@ -320,7 +319,16 @@ abstract class RDD[T: ClassTag](
     if (isCheckpointedAndMaterialized) {
       firstParent[T].iterator(split, context)
     } else {
-      compute(split, context)
+
+      /**
+        * [[Modified]] to infer type info in runtime
+      */
+
+      val result = compute(split, context)
+
+      val typeString = TypeGetter.getTypeTag(this.iterator(split, context).next())
+      DFTEnv.localControl.addType(this.id, typeString)
+      result
     }
   }
 
