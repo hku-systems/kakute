@@ -284,7 +284,10 @@ abstract class RDD[T: ClassTag](
       getOrCompute(split, context)
     } else {
       computeOrReadCheckpoint(split, context)
-    }
+    }.map(t => {
+      DFTEnv.localControl.addType(this.id, TypeGetter.getTypeTag(t))
+      t
+    })
   }
 
   /**
@@ -321,12 +324,6 @@ abstract class RDD[T: ClassTag](
     } else {
       compute(split, context)
     }
-  }
-
-  private[spark] def iterateType(split: Partition, context: TaskContext):Unit = {
-    if (deps != Nil)
-      firstParent[T].iterateType(split, context)
-    DFTEnv.localControl.addType(this.id, TypeGetter.getTypeTag(this.iterator(split, context).next()))
   }
 
   /**
