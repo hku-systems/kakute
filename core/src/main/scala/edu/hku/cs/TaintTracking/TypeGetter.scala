@@ -8,6 +8,10 @@ import scala.reflect.runtime.{universe => ru}
 
 object TypeGetter {
 
+  def getTypeTag(obj: Any): String = {
+    getTypeHelper(obj)
+  }
+
   def getTypeHelper[T: ClassTag](obj: T): String = {
     obj match {
       case (_1, _2) => (getTypeHelper(_1), getTypeHelper(_2)).toString()
