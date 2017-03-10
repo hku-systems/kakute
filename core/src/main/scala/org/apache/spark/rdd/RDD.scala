@@ -319,17 +319,14 @@ abstract class RDD[T: ClassTag](
     if (isCheckpointedAndMaterialized) {
       firstParent[T].iterator(split, context)
     } else {
-
-      /**
-        * [[Modified]] to infer type info in runtime
-      */
-
-      val result = compute(split, context)
-
-      val typeString = TypeGetter.getTypeTag(this.iterator(split, context).next())
-      DFTEnv.localControl.addType(this.id, typeString)
-      result
+      compute(split, context)
     }
+  }
+
+  private[spark] def iterateType(split: Partition, context: TaskContext):Unit = {
+    if (deps != Nil)
+      firstParent[T].iterateType(split, context)
+    DFTEnv.localControl.addType(this.id, TypeGetter.getTypeTag(this.iterator(split, context).next()))
   }
 
   /**
