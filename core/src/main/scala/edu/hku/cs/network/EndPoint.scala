@@ -18,6 +18,8 @@ trait EndpointRegister {
     endPoint.onRegister()
   }
   def run(): Unit
+
+  def stop(): Unit
 }
 
 trait NettyHandle {

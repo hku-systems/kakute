@@ -15,6 +15,10 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
   private var nettyHandle: NettyHandle = _
 
+  private var eventLoopGroup: NioEventLoopGroup = _
+
+  override def stop(): Unit = eventLoopGroup.shutdownGracefully()
+
   override def register(endPoint: EndPoint): Unit = {
     endPoint.asInstanceOf[NettyEndpoint].setHandle(nettyHandle)
     endpointDispatcher.registerEndpoint(endPoint)
@@ -22,7 +26,7 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
   }
 
   def run(): Unit = {
-    val eventLoopGroup = new NioEventLoopGroup()
+    eventLoopGroup = new NioEventLoopGroup()
     try {
       val boostrap = new Bootstrap()
       boostrap.group(eventLoopGroup)

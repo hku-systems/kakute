@@ -8,7 +8,8 @@ import org.apache.spark.rdd.RDD
   * Created by jianyu on 3/5/17.
   */
 
-/* This class manage the graph creation
+/**
+ * This class manage the graph creation
  * Create / Update Data Model
  * Travel the graph when one task trigger
  *

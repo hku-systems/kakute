@@ -15,6 +15,15 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
   var nettyHandle: NettyHandle = _
 
+  private var bossGroup: NioEventLoopGroup = _
+
+  private var workerGroup: NioEventLoopGroup = _
+
+  override def stop(): Unit = {
+    bossGroup.shutdownGracefully()
+    workerGroup.shutdownGracefully()
+  }
+
   override def register(endPoint: EndPoint): Unit = {
     endPoint.asInstanceOf[NettyEndpoint].setHandle(nettyHandle)
     endpointDispatcher.registerEndpoint(endPoint)
@@ -23,8 +32,8 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
   def run() {
     // create it in new thread ?
-    val bossGroup = new NioEventLoopGroup()
-    val workerGroup = new NioEventLoopGroup()
+    bossGroup = new NioEventLoopGroup()
+    workerGroup = new NioEventLoopGroup()
     try {
       val bootstrapServer = new ServerBootstrap()
       bootstrapServer.group(bossGroup, workerGroup)

@@ -111,5 +111,9 @@ object DFTEnv {
     networkEnv.register(localControl)
   }
 
+  def stop_all(): Unit = {
+    networkEnv.stop()
+    println("Stop all")
+  }
 
 }
