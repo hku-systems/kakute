@@ -80,7 +80,7 @@ object DFTEnv {
 
   type DFTLoggig = org.apache.spark.internal.Logging
 
-  var dFTEnv: DFTEnv = _
+  val dFTEnv: DFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
 
   var trackingPolicy: TrackingPolicy = new TrackingPolicy
 
@@ -102,7 +102,6 @@ object DFTEnv {
   }
 
   def init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
     if (dFTEnv.isServer) {
       networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     } else {
@@ -111,7 +110,6 @@ object DFTEnv {
   }
 
   def server_init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
     networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
@@ -123,7 +121,6 @@ object DFTEnv {
   }
 
   def client_init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
     networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
