@@ -1,6 +1,7 @@
 package edu.hku.cs.TaintTracking
 
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
+import edu.columbia.cs.psl.phosphor.struct.{LazyArrayIntTags, TaintedPrimitiveWithIntTag, TaintedWithIntTag}
 import edu.hku.cs.Optimization.RuleCollector
 import edu.hku.cs.Optimization.RuleCollector.Rule
 
