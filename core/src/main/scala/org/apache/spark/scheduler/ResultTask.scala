@@ -22,6 +22,8 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.TypeGetter
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -84,7 +86,10 @@ private[spark] class ResultTask[T, U](
       threadMXBean.getCurrentThreadCpuTime - deserializeStartCpuTime
     } else 0L
 
-    func(context, rdd.iterator(partition, context))
+    val result = func(context, rdd.iterator(partition, context))
+    DFTEnv.localControl.addType(rdd.id, TypeGetter.getTypeTag(result))
+    DFTEnv.localControl.collect()
+    result
   }
 
   // This is only callable on the driver side.
