@@ -1,5 +1,7 @@
 package edu.hku.cs
 
+import java.io.FileNotFoundException
+
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TrackingMode.TrackingMode
 import org.apache.spark.SparkConf
@@ -33,19 +35,25 @@ class SparkArgumentHandle(sparkConf: SparkConf) extends ArgumentHandle {
   }
 }
 
-class ConfFileHandle(filename: String) extends ArgumentHandle {
+class ConfFileHandle(filename: String) extends ArgumentHandle with DFTEnv.DFTLoggig {
 
   var keyMap: Map[String, String] = Map()
 
-  for (line <- Source.fromFile(filename).getLines()) {
-    if (!line.trim.startsWith("#")) {
-      val arr = line.split("=")
-      if (arr.length >= 3) throw new Exception("wrong format")
-      val key = arr(0).trim
-      val value = arr(1).trim
-      keyMap += key -> value
-      println("add key value " + key + " " + value)
+  try {
+    logInfo("Read configuration file from " + filename)
+    for (line <- Source.fromFile(filename).getLines()) {
+      if (!line.trim.startsWith("#")) {
+        val arr = line.split("=")
+        if (arr.length >= 3) throw new Exception("wrong format")
+        val key = arr(0).trim
+        val value = arr(1).trim
+        keyMap += key -> value
+        logInfo("conf: " + key + " -> " + value)
+      }
     }
+  } catch {
+    case e: FileNotFoundException => logInfo("conf file " + filename + " not found")
+    // use the default setting
   }
 
   override def init(): Boolean = true
@@ -68,6 +76,9 @@ class CustomArgumentHandle extends ArgumentHandle {
       case "tracking" => "mix"
       case "sample" => "off"
       case "mode" => "server"
+      case "phosphor_java" => ""
+      case "phosphor_jar" => ""
+      case "phosphor_cache" => "./phosphor_cache/"
     }
   }
 }

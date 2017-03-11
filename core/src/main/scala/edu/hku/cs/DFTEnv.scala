@@ -48,14 +48,37 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
       case _ => DefaultArgument.sampleMode
     }
   }
-  var _isServer: Boolean = argumentHandle.parseArgs("mode") match {
+  var isServer: Boolean = argumentHandle.parseArgs("mode") match {
     case "server" => true
     case "worker" => false
     case _ => false
   }
+  val phosphorEnv: PhosphorEnv = {
+    var java = argumentHandle.parseArgs("phosphor_java")
+    if (java != null) {
+      java = "phosphor/bin/"
+    }
+    var jar = argumentHandle.parseArgs("phosphor_jar")
+    if (jar != null) {
+      jar = "phosphor/phosphor.jar"
+    }
+    var cache = argumentHandle.parseArgs("phosphor_cache")
+    if (cache != null) {
+      cache = "phosphor/cache"
+    }
+    PhosphorEnv(java, jar, cache)
+  }
+  val graphDumpPath: String = argumentHandle.parseArgs("graph_dump_path") match {
+    case s: String => s
+    case _ => "phosphor/graph.dump"
+  }
 }
 
+case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
+
 object DFTEnv {
+
+  type DFTLoggig = org.apache.spark.internal.Logging
 
   var dFTEnv: DFTEnv = _
 
@@ -65,9 +88,9 @@ object DFTEnv {
 
   var localControl: RuleLocalControl = _
 
-  var phosphorRunner: PhosphorRunner = new PhosphorRunner("/home/jianyu/spark-dft-cache",
-    "/home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar",
-    "/home/jianyu/phosphor/Phosphor/target/jre-inst-int")
+  var phosphorRunner: PhosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.phosphorJava,
+    DFTEnv.dftEnv().phosphorEnv.phosphorJar,
+    DFTEnv.dftEnv().phosphorEnv.cache)
 
   phosphorRunner.setTracking(true)
 
@@ -79,8 +102,8 @@ object DFTEnv {
   }
 
   def init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("/Users/max/dft.conf"))
-    if (dFTEnv._isServer) {
+    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
+    if (dFTEnv.isServer) {
       networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     } else {
       networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
@@ -88,36 +111,37 @@ object DFTEnv {
   }
 
   def server_init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
+    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
     networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
     }).start()
     Thread.sleep(1000)
-    dFTEnv._isServer = true
+    dFTEnv.isServer = true
     graphManager = new GraphManager
     networkEnv.register(graphManager)
   }
 
   def client_init(any: Any): Unit = {
-    dFTEnv = new DFTEnv(new ConfFileHandle("/home/jianyu/dft.conf"))
+    dFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
     networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
     }).start()
     Thread.sleep(1000)
-    dFTEnv._isServer = false
+    dFTEnv.isServer = false
     localControl = new RuleLocalControl
     networkEnv.register(localControl)
   }
 
   def stop_all(): Unit = {
     networkEnv.stop()
-    val graphDumper = new GraphDumper("/home/jianyu/graph.dump")
-    graphDumper.open()
-    graphDumper.dumpGraph(graphManager)
-    graphDumper.close()
-    println("Stop all")
+    if (DFTEnv.dftEnv().isServer) {
+      val graphDumper = new GraphDumper(DFTEnv.dftEnv().graphDumpPath)
+      graphDumper.open()
+      graphDumper.dumpGraph(graphManager)
+      graphDumper.close()
+    }
   }
 
 }
