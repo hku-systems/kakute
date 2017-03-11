@@ -55,15 +55,15 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
   }
   val phosphorEnv: PhosphorEnv = {
     var java = argumentHandle.parseArgs("phosphor_java")
-    if (java != null) {
+    if (java == null) {
       java = "phosphor/bin/"
     }
     var jar = argumentHandle.parseArgs("phosphor_jar")
-    if (jar != null) {
+    if (jar == null) {
       jar = "phosphor/phosphor.jar"
     }
     var cache = argumentHandle.parseArgs("phosphor_cache")
-    if (cache != null) {
+    if (cache == null) {
       cache = "phosphor/cache"
     }
     PhosphorEnv(java, jar, cache)
@@ -88,9 +88,9 @@ object DFTEnv {
 
   var localControl: RuleLocalControl = _
 
-  var phosphorRunner: PhosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.phosphorJava,
+  var phosphorRunner: PhosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
     DFTEnv.dftEnv().phosphorEnv.phosphorJar,
-    DFTEnv.dftEnv().phosphorEnv.cache)
+    DFTEnv.dftEnv().phosphorEnv.phosphorJava)
 
   phosphorRunner.setTracking(true)
 
