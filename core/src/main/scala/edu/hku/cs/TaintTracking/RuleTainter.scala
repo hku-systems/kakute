@@ -8,6 +8,8 @@ import edu.hku.cs.Optimization.RuleCollector.Rule
   * Created by jianyu on 3/7/17.
   */
 
+
+//TODO Bug: Could not infer String/Object ? see matrix multiplication
 class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) extends BaseTainter{
 
   val policy: TrackingPolicy = trackingPolicy
@@ -66,7 +68,9 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
         case char: Array[Char] => Tainter.taintedCharArray(char, currentValueIndex()).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, currentValueIndex()).asInstanceOf[T]
         /* Object */
-        case obj: Object => obj.asInstanceOf[T]
+        case obj: Object =>
+          Tainter.taintedObject(obj, currentValueIndex())
+          obj.asInstanceOf[T]
         case _ => obj
       }
     } else if (policy._tracking_type == TrackingType.KeyValues) {
@@ -90,7 +94,9 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, currentValueIndex()).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, currentValueIndex()).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, currentValueIndex()).asInstanceOf[T]
-        case obj: Object => obj.asInstanceOf[T]
+        case obj: Object =>
+          Tainter.taintedObject(obj, currentValueIndex())
+          obj.asInstanceOf[T]
         case _ => obj
       }
     } else {

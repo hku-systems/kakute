@@ -224,3 +224,10 @@ private[spark] class BypassMergeSortShuffleHandle[K, V](
   dependency: ShuffleDependency[K, V, V])
   extends BaseShuffleHandle(shuffleId, numMaps, dependency) {
 }
+
+/**
+  * [[Modified]] add a map to map between shuffle id to rdd id
+*/
+object ShuffleDFT {
+  var ShuffleIdRDD: Map[Int, Int] = Map()
+}

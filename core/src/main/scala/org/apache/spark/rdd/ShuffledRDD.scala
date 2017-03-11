@@ -17,11 +17,14 @@
 
 package org.apache.spark.rdd
 
-import scala.reflect.ClassTag
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.RuleTainter
 
+import scala.reflect.ClassTag
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.serializer.Serializer
+import org.apache.spark.shuffle.sort.ShuffleDFT
 
 private[spark] class ShuffledRDDPartition(val idx: Int) extends Partition {
   override val index: Int = idx
@@ -101,9 +104,18 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
 
   override def compute(split: Partition, context: TaskContext): Iterator[(K, C)] = {
     val dep = dependencies.head.asInstanceOf[ShuffleDependency[K, V, C]]
+
+    /**
+      * [[Modified]] map shuffle id to rdd
+    */
+
+    ShuffleDFT.ShuffleIdRDD += dep.shuffleHandle.shuffleId -> this.id
+    val collector = DFTEnv.localControl.collectorInstance(this.id)
+    val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
     SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
       .read()
       .asInstanceOf[Iterator[(K, C)]]
+      .map(t => tainter.getTaintAndReturn(t))
   }
 
   override def clearDependencies() {

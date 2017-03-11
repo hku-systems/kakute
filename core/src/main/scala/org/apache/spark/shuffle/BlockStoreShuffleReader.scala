@@ -17,9 +17,12 @@
 
 package org.apache.spark.shuffle
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.RuleTainter
 import org.apache.spark._
 import org.apache.spark.internal.Logging
 import org.apache.spark.serializer.SerializerManager
+import org.apache.spark.shuffle.sort.ShuffleDFT
 import org.apache.spark.storage.{BlockManager, ShuffleBlockFetcherIterator}
 import org.apache.spark.util.CompletionIterator
 import org.apache.spark.util.collection.ExternalSorter
@@ -72,8 +75,15 @@ private[spark] class BlockStoreShuffleReader[K, C](
       },
       context.taskMetrics().mergeShuffleReadMetrics())
 
+    /**
+      * [[modified]] add taint for map
+    */
+    val collector = DFTEnv.localControl.collectorInstance(ShuffleDFT.ShuffleIdRDD.getOrElse(handle.shuffleId, 0))
+    val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+
     // An interruptible iterator must be used here in order to support task cancellation
     val interruptibleIter = new InterruptibleIterator[(Any, Any)](context, metricIter)
+        .map(t => tainter.setTaint(t))
 
     val aggregatedIter: Iterator[Product2[K, C]] = if (dep.aggregator.isDefined) {
       if (dep.mapSideCombine) {
