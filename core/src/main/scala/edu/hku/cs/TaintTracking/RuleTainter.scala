@@ -46,7 +46,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
   }
 
   def taintOne[T](obj: T): T = {
-    if (policy._tracking_type == TrackingType.Keys) {
+    if (policy.tracking_type == TrackingType.Keys) {
       obj match {
         case int: Int => Tainter.taintedInt(int, currentKeyIndex()).asInstanceOf[T]
         case long: Long => Tainter.taintedLong(long, currentKeyIndex()).asInstanceOf[T]
@@ -58,7 +58,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
         case byte: Byte => Tainter.taintedByte(byte, currentKeyIndex()).asInstanceOf[T]
         case _ => obj
       }
-    } else if (policy._tracking_type == TrackingType.Values) {
+    } else if (policy.tracking_type == TrackingType.Values) {
       obj match {
         case int: Array[Int] => Tainter.taintedIntArray(int, currentValueIndex()).asInstanceOf[T]
         case long: Array[Long] => Tainter.taintedLongArray(long, currentValueIndex()).asInstanceOf[T]
@@ -74,7 +74,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
           obj.asInstanceOf[T]
         case _ => obj
       }
-    } else if (policy._tracking_type == TrackingType.KeyValues) {
+    } else if (policy.tracking_type == TrackingType.KeyValues) {
       obj match {
         // Primitive
         case int: Int => Tainter.taintedInt(int, currentKeyIndex()).asInstanceOf[T]

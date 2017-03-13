@@ -40,12 +40,20 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
     // [[Modified]]
     val ruleCollector = DFTEnv.localControl.collectorInstance(this.id)
-     val typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
+    val typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
 
-    var parentResult = firstParent[T].iterator(split, context)
-      .map(typeTainter.setTaint) // set taint before computation
-    f(context, split.index, parentResult)
-      .map(typeTainter.getTaintAndReturn) // get taint after computation
+    var parentIter =
+      if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+        firstParent[T].iterator(split, context).map(typeTainter.setTaint) // set taint before computation
+      } else {
+        firstParent[T].iterator(split, context)
+      }
+
+    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+      f(context, split.index, parentIter).map(typeTainter.getTaintAndReturn) // get taint after computation
+    } else {
+      f(context, split.index, parentIter)
+    }
   }
 
   override def clearDependencies() {

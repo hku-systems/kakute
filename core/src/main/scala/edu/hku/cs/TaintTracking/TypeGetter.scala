@@ -60,4 +60,9 @@ object Utils {
     seq
   }
 
+  def markPositionToMap(filter: Map[Int, Int]): Map[Int, Any => Int] = {
+    filter.map(pair => {
+      (pair._1, (_: Any) => pair._2)
+    })
+  }
 }

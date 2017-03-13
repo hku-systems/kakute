@@ -112,10 +112,13 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
     ShuffleDFT.ShuffleIdRDD += dep.shuffleHandle.shuffleId -> this.id
     val collector = DFTEnv.localControl.collectorInstance(this.id)
     val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-    SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
+    var result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
       .read()
       .asInstanceOf[Iterator[(K, C)]]
-      .map(t => tainter.getTaintAndReturn(t))
+    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+      result = result.map(t => tainter.getTaintAndReturn(t))
+    }
+    result
   }
 
   override def clearDependencies() {

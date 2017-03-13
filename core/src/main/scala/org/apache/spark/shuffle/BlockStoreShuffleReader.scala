@@ -86,8 +86,11 @@ private[spark] class BlockStoreShuffleReader[K, C](
     val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
 
     // An interruptible iterator must be used here in order to support task cancellation
-    val interruptibleIter = new InterruptibleIterator[(Any, Any)](context, metricIter)
-        .map(t => tainter.setTaint(t))
+    val interruptibleIter =
+      if (DFTEnv.trackingPolicy.add_tags_per_ops)
+        new InterruptibleIterator[(Any, Any)](context, metricIter).map(t => tainter.setTaint(t))
+      else
+        new InterruptibleIterator[(Any, Any)](context, metricIter)
 
     val aggregatedIter: Iterator[Product2[K, C]] = if (dep.aggregator.isDefined) {
       if (dep.mapSideCombine) {

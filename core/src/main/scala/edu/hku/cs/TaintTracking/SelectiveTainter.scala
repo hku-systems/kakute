@@ -15,11 +15,6 @@ import edu.hku.cs.Optimization.RuleCollector.Rule
 
 class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
 
-  override def setTaint[T](obj: T): T = {
-    _index = 0
-    taintAllHelper(obj)
-  }
-
   private var _index = 0
 
   private var _indexDeps = 0
@@ -30,6 +25,21 @@ class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
 
   // if there are no rule for default, just make then untainted
   private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => 0)
+
+  def setTaintWithTaint[T](obj: T, filter: Map[Int, Int]): T = {
+    setFilter(Utils.markPositionToMap(filter))
+    setTaint(obj)
+  }
+
+  def setFilter(filter: Map[Int, Any => Int]): SelectiveTainter = {
+    _positionFilter = filter
+    this
+  }
+
+  override def setTaint[T](obj: T): T = {
+    _index = 0
+    taintAllHelper(obj)
+  }
 
   def taintOne[T](obj: T): T = {
     _index += 1
@@ -62,6 +72,24 @@ class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
         case _ => obj
       }
     }
+  }
+
+  def getOne[T](obj: T): T = {
+    _indexDeps += 1
+    val tag = obj match {
+      case v: Int => Tainter.getTaint(v)
+      case v: Short => Tainter.getTaint(v)
+      case v: Long => Tainter.getTaint(v)
+      case v: Double => Tainter.getTaint(v)
+      case v: Float => Tainter.getTaint(v)
+      case v: Byte => Tainter.getTaint(v)
+      case v: Char => Tainter.getTaint(v)
+      case v: Boolean => Tainter.getTaint(v)
+      case v: Object => Tainter.getTaint(v)
+      case _ => throw new Exception("type mismatch")
+    }
+    _deps += _indexDeps -> tag
+    obj
   }
 
   private def taintAllHelper[T](obj: T): T = {
@@ -99,14 +127,14 @@ class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
     _deps
   }
 
-  private def getTaintHelper[T](obj: T): T = {
-    val tag = obj match {
+  def getTaintHelper[T](obj: T): T = {
+    obj match {
       case product: Product => product.productIterator.foreach(getTaintHelper)
-      case _ => taintOne(obj)
+      case _ => getOne(obj)
     }
-    _deps += _indexDeps -> tag
     obj
   }
+
   override def getTaintAndReturn[T](obj: T): T = {
     throw new TaintException("Not implemented")
   }

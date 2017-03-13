@@ -36,12 +36,12 @@ class TrackingPolicy {
   /*
   * Default Setting
   * */
-  var _clear_tags_per_ops = false
-  var _add_tags_per_ops = true
-  var _add_tags_emitted = true
-  var _add_tags_input_files = false
-  var _tags_propagation_machines = false
-  var _tracking_type = TrackingType.KeyValues
+  var clear_tags_per_ops = false
+  var add_tags_per_ops = true
+  var add_tags_emitted = true
+  var add_tags_input_files = false
+  var propagation_across_machines = false
+  var tracking_type = TrackingType.KeyValues
 
 }
 
