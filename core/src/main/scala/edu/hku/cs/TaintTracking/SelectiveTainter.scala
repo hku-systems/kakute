@@ -7,27 +7,37 @@ import edu.hku.cs.Optimization.RuleCollector.Rule
   */
 
 /**
-* A [[SelectiveTainter]] add to taint to a specific record,
-* when a record fullfill some conditions
+  * A [[SelectiveTainter]] add to taint to a specific record,
+  * when a record fullfill some conditions
+  * The default rule is in the rule
+  * So 0 -> default_func
 */
 
-class SelectiveTainter extends BaseTainter{
+class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
 
   override def setTaint[T](obj: T): T = {
-    throw new TaintException("Not implemented")
+    _index = 0
+    taintAllHelper(obj)
   }
 
   private var _index = 0
 
-  private var _tagPosition: Set[(Int, Int)] = _
+  private var _indexDeps = 0
+
+  private var _deps: Map[Int, Int] = Map()
+
+  private var _positionFilter: Map[Int, Any => Int] = filter
+
+  // if there are no rule for default, just make then untainted
+  private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => 0)
 
   def taintOne[T](obj: T): T = {
     _index += 1
-    var tag = 0
-    if (_tagPosition.exists(k => {
-      tag = k._2
-      k._1 == _index
-    })) {
+    val f = _positionFilter.getOrElse(_index, _defaultFilter)
+    val tag = f(obj)
+    if (tag == 0) {
+      obj
+    } else {
       obj match {
         // Primitive
         case int: Int => Tainter.taintedInt(int, tag).asInstanceOf[T]
@@ -51,8 +61,6 @@ class SelectiveTainter extends BaseTainter{
         case obj: Object => obj.asInstanceOf[T]
         case _ => obj
       }
-    } else {
-      obj
     }
   }
 
@@ -84,21 +92,21 @@ class SelectiveTainter extends BaseTainter{
     }
   }
 
-  def setTaint[T](obj: T, conditions: List[T => Boolean], tagPosition: Set[(Int, Int)]): T = {
-    _tagPosition = tagPosition
-    conditions.foreach(f => {
-      if (f(obj)) {
-        return taintAllHelper(obj)
-      }
-    })
+  override def getTaintList(obj: Any): Map[Int, Int] = {
+    _indexDeps = 0
+    _deps = Map()
+    getTaintHelper(obj)
+    _deps
+  }
+
+  private def getTaintHelper[T](obj: T): T = {
+    val tag = obj match {
+      case product: Product => product.productIterator.foreach(getTaintHelper)
+      case _ => taintOne(obj)
+    }
+    _deps += _indexDeps -> tag
     obj
   }
-
-  override def getTaintList(obj: Any): Rule = {
-    //TODO
-    null
-  }
-
   override def getTaintAndReturn[T](obj: T): T = {
     throw new TaintException("Not implemented")
   }

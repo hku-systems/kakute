@@ -17,17 +17,8 @@ abstract class BaseTainter {
   val TAINT_START_VALUE : Int = 0x4fffffff + 1
 
   def setTaint[T](obj: T): T
-  def getTaintList(obj: Any): RuleCollector.Rule
+  def getTaintList(obj: Any): Map[Int, Int]
   def getTaintAndReturn[T](obj: T): T
-
-  def decomposeTaint(tag: Int): List[Int] = {
-    var seq = List[Int]()
-    for (i <- 0 until 30) {
-      if ((tag & (1 << i)) != 0)
-        seq = (i + 1) :: seq
-    }
-    seq
-  }
 
 }
 

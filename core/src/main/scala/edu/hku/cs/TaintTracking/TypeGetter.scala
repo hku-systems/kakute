@@ -39,3 +39,25 @@ object TypeGetter {
     }
   }
 }
+
+object Utils {
+
+  def compressTaintMap(map: Map[Int, Int]): Map[Int, Int] = {
+    val found = map.find(_._2 != 0)
+    var r: Map[Int, Int] = Map()
+    found.foreach(rr => {
+      r += rr
+    })
+    r
+  }
+
+  def decomposeTaint(tag: Int): List[Int] = {
+    var seq = List[Int]()
+    for (i <- 0 until 30) {
+      if ((tag & (1 << i)) != 0)
+        seq = (i + 1) :: seq
+    }
+    seq
+  }
+
+}
