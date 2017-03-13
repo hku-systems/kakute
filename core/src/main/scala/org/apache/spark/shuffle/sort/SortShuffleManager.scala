@@ -119,6 +119,11 @@ private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager 
       handle.asInstanceOf[BaseShuffleHandle[K, _, C]], startPartition, endPartition, context)
   }
 
+
+  /**
+    * [[Modified]] All the 3 kinds of witters should be modify
+  */
+
   /** Get a writer for a given partition. Called on executors by map tasks. */
   override def getWriter[K, V](
       handle: ShuffleHandle,

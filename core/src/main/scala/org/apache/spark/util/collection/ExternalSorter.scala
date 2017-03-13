@@ -784,8 +784,9 @@ private[spark] class ExternalSorter[K, V, C](
         val inMemoryIterator = new WritablePartitionedIterator {
           private[this] var cur = if (upstream.hasNext) upstream.next() else null
 
+          // Modified add taint here
           def writeNext(writer: DiskBlockObjectWriter): Unit = {
-            writer.write(cur._1._2, cur._2)
+            writer.write(cur._1._2, (List(1, 2, 3), cur._2))
             cur = if (upstream.hasNext) upstream.next() else null
           }
 
