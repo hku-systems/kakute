@@ -2,7 +2,7 @@
 
 ### Building the project
 
-1. Modify JDK source code (to aviod a bug of phosphor)
+1. Modify JDK source code (to avoid a bug of phosphor)
 
    ```bash
    vim /usr/lib/jvm/java-1.8.0-openjdk-amd64/src.zip -> UnixLoginModule.java
@@ -62,6 +62,6 @@
 
    change the phosphor_java and phosphor_jar dir to your coresponding phosphor dir
 
-2. Star spark master and worker, the submit the task
+2. Start spark master and worker, then submit the task
 
 3. stop the task and see the tracking dependency in graph.dump
