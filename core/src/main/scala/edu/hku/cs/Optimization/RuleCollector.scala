@@ -24,6 +24,8 @@ class RuleCollector(id: Int) {
     ruleSet += returnVal
   }
 
+  def isEmpty(): Boolean = ruleSet.isEmpty
+
   def collect(): Map[Rule, Int] = ruleSet
 }
 

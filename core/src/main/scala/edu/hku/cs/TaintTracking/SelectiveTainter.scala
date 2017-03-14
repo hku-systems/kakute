@@ -27,7 +27,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
   private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => 0)
 
   def setTaintWithTaint[T](obj: T, filter: Map[Int, Int]): T = {
-    setFilter(Utils.markPositionToMap(filter))
+    setFilter(DFTUtils.markPositionToMap(filter))
     setTaint(obj)
   }
 

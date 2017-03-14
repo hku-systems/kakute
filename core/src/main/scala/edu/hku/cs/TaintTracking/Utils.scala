@@ -6,7 +6,7 @@ import scala.reflect.runtime.{universe => ru}
   * Created by jianyu on 3/10/17.
   */
 
-object TypeGetter {
+object DFTUtils {
 
   def getTypeTag(obj: Any): String = {
     getTypeHelper(obj)
@@ -38,9 +38,6 @@ object TypeGetter {
       case _ => obj.getClass.getSimpleName
     }
   }
-}
-
-object Utils {
 
   def compressTaintMap(map: Map[Int, Int]): Map[Int, Int] = {
     val found = map.find(_._2 != 0)

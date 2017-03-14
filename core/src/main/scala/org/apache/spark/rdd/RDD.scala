@@ -26,7 +26,7 @@ import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.TypeGetter
+import edu.hku.cs.TaintTracking.DFTUtils
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.hadoop.mapred.TextOutputFormat
@@ -280,14 +280,18 @@ abstract class RDD[T: ClassTag](
    * subclasses of RDD.
    */
   final def iterator(split: Partition, context: TaskContext): Iterator[T] = {
-    if (storageLevel != StorageLevel.NONE) {
+    val r = if (storageLevel != StorageLevel.NONE) {
       getOrCompute(split, context)
     } else {
       computeOrReadCheckpoint(split, context)
-    }.map(t => {
-      DFTEnv.localControl.addType(this.id, TypeGetter.getTypeTag(t))
-      t
-    })
+    }
+    if (DFTEnv.trackingPolicy.typeInfering)
+      r.map(t => {
+        DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
+        t
+     })
+    else
+      r
   }
 
   /**

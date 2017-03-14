@@ -47,7 +47,8 @@ class RuleLocalControl extends NettyEndpoint{
 
   def collect(): Unit = {
     ruleCollectors.foreach(mm => {
-      this.send(RuleInfered(mm._1, mm._2.collect()))
+      if (!mm._2.isEmpty())
+        this.send(RuleInfered(mm._1, mm._2.collect()))
     })
     typeCollectors.foreach(t => {
       this.send(DataType(t._1, t._2))

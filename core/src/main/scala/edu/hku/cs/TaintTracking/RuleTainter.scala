@@ -154,15 +154,15 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
   private def getTaintHelper[T](obj: T): T = {
     obj match {
       case product: Product => product.productIterator.foreach(getTaintHelper)
-      case v: Int => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Short => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Long => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Double => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Float => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Byte => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Char => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Boolean => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case v: Object => deps = (currentIndex(), Utils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Int => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Short => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Long => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Double => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Float => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Byte => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Char => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Boolean => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case v: Object => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
     }
     obj
   }

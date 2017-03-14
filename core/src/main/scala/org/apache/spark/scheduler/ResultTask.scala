@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
 import java.util.Properties
 
 import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.TypeGetter
+import edu.hku.cs.TaintTracking.DFTUtils
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -87,8 +87,10 @@ private[spark] class ResultTask[T, U](
     } else 0L
 
     val result = func(context, rdd.iterator(partition, context))
-    DFTEnv.localControl.addType(rdd.id, TypeGetter.getTypeTag(result))
-    DFTEnv.localControl.collect()
+    if (DFTEnv.trackingPolicy.typeInfering) {
+      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
+      DFTEnv.localControl.collect()
+    }
     result
   }
 

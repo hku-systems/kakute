@@ -1,5 +1,9 @@
 package edu.hku.cs.TaintTracking
 
+import edu.hku.cs.TaintTracking.TrackingType.TrackingType
+import edu.hku.cs.{DFTEnv, TrackingMode}
+import edu.hku.cs.TrackingMode.TrackingMode
+
 
 /**
   * Created by jianyu on 3/7/17.
@@ -31,27 +35,54 @@ object TrackingType extends Enumeration {
   val Values, Keys, KeyValues, Optional = Value
 }
 
-class TrackingPolicy {
+class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode) {
 
   /*
   * Default Setting
   * */
-  var clear_tags_per_ops = false
-  var add_tags_per_ops = true
-  var add_tags_emitted = true
-  var add_tags_input_files = false
-  var propagation_across_machines = false
-  var tracking_type = TrackingType.KeyValues
-
-}
-
-object TrackingPolicy {
-  var _trackingPolicy: TrackingPolicy = new TrackingPolicy
-
-  private def setPolicy(trackingPolicy: TrackingPolicy) {
-      if (trackingPolicy == null) throw new TaintException("Null Policy")
-      _trackingPolicy = new TrackingPolicy
+  val typeInfering: Boolean = {
+    trackingMode match {
+      case TrackingMode.FullTracking => false
+      case TrackingMode.RuleTracking => true
+      case _ => true
+    }
   }
 
-  def currentOrDefaultPolicy(): TrackingPolicy = _trackingPolicy
+  val clear_tags_per_ops: Boolean = {
+    trackingMode match {
+      case TrackingMode.RuleTracking => true
+      case TrackingMode.FullTracking => false
+      case _ => false
+    }
+  }
+  val add_tags_per_ops: Boolean = {
+    trackingMode match {
+      case TrackingMode.RuleTracking => true
+      case TrackingMode.FullTracking => false
+      case _ => true
+    }
+  }
+  val add_tags_emitted: Boolean = {
+    trackingMode match {
+      case TrackingMode.RuleTracking => false //TODO
+      case TrackingMode.FullTracking => true //TODO
+      case _ => true
+    }
+  }
+  val add_tags_input_files: Boolean = {
+    trackingMode match {
+      case TrackingMode.RuleTracking => false
+      case TrackingMode.FullTracking => true
+      case _ => false
+    }
+  }
+  val propagation_across_machines: Boolean = {
+    trackingMode match {
+      case TrackingMode.RuleTracking => false
+      case TrackingMode.FullTracking => true
+      case _ => false
+    }
+  }
+  var tracking_type: TrackingType = trackType
+
 }

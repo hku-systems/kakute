@@ -3,7 +3,8 @@ package edu.hku.cs
 import edu.hku.cs.DataModel.{GraphDumper, GraphManager}
 import edu.hku.cs.Optimization.RuleLocalControl
 import edu.hku.cs.SampleMode.SampleMode
-import edu.hku.cs.TaintTracking.{PhosphorRunner, TrackingPolicy}
+import edu.hku.cs.TaintTracking.TrackingType.TrackingType
+import edu.hku.cs.TaintTracking.{PhosphorRunner, TrackingPolicy, TrackingType}
 import edu.hku.cs.TrackingMode.TrackingMode
 import edu.hku.cs.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
 
@@ -39,6 +40,16 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
       case _ => DefaultArgument.trackingMode
     }
   }
+
+  val trackingType: TrackingType = {
+    argumentHandle.parseArgs("type") match {
+      case "key" => TrackingType.Keys
+      case "value" => TrackingType.Values
+      case "KeyValue" => TrackingType.KeyValues
+      case _ => TrackingType.KeyValues
+    }
+  }
+
   val sampleMode: SampleMode = {
     argumentHandle.parseArgs("sample") match {
       case "sample" => SampleMode.Sample
@@ -80,9 +91,9 @@ object DFTEnv {
 
   type DFTLoggig = org.apache.spark.internal.Logging
 
-  val dFTEnv: DFTEnv = new DFTEnv(new ConfFileHandle("dft.conf"))
+  val dFTEnv: DFTEnv = new DFTEnv(new ConfFileHandle("/etc/dft.conf"))
 
-  var trackingPolicy: TrackingPolicy = new TrackingPolicy
+  var trackingPolicy: TrackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType, DFTEnv.dftEnv().trackingMode)
 
   var graphManager: GraphManager = _
 
