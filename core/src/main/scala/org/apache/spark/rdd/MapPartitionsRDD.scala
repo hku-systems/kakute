@@ -49,7 +49,7 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
         firstParent[T].iterator(split, context)
       }
 
-    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+    if (true) {
       f(context, split.index, parentIter).map(typeTainter.getTaintAndReturn) // get taint after computation
     } else {
       f(context, split.index, parentIter)

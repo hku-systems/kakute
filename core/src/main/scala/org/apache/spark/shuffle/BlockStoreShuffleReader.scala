@@ -71,7 +71,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
     }.map(k => {
       if (DFTEnv.trackingPolicy.propagation_across_machines) {
         val value_with_tag = k._2.asInstanceOf[(Map[Int, Int], Any)]
-        println(value_with_tag._1)
+//        println(value_with_tag._1)
         selectiveTainter.setTaintWithTaint((k._1, value_with_tag._2), value_with_tag._1)
       }
       else

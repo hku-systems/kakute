@@ -38,7 +38,8 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
 
   override def setTaint[T](obj: T): T = {
     _index = 0
-    taintAllHelper(obj)
+    val k = taintAllHelper(obj)
+    k
   }
 
   def taintOne[T](obj: T): T = {
@@ -68,7 +69,10 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
-        case obj: Object => obj.asInstanceOf[T]
+        case obj: Object => {
+          Tainter.taintedObject(obj, tag)
+          obj.asInstanceOf[T]
+        }
         case _ => obj
       }
     }
