@@ -151,5 +151,4 @@ object DFTEnv {
       graphDumper.close()
     }
   }
-
 }

@@ -18,7 +18,7 @@
 package org.apache.spark.shuffle
 
 import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.RuleTainter
+import edu.hku.cs.TaintTracking.{RuleTainter, SelectiveTainter}
 import org.apache.spark._
 import org.apache.spark.internal.Logging
 import org.apache.spark.serializer.SerializerManager
@@ -59,15 +59,23 @@ private[spark] class BlockStoreShuffleReader[K, C](
     val serializerInstance = dep.serializer.newInstance()
 
     // Create a key/value iterator for each stream
+    val selectiveTainter = if (DFTEnv.trackingPolicy.propagation_across_machines)
+      new SelectiveTainter(Map(), 0)
+    else
+      null
     val recordIter = wrappedStreams.flatMap { case (blockId, wrappedStream) =>
       // Note: the asKeyValueIterator below wraps a key/value iterator inside of a
       // NextIterator. The NextIterator makes sure that close() is called on the
       // underlying InputStream when all records have been read.
       serializerInstance.deserializeStream(wrappedStream).asKeyValueIterator
     }.map(k => {
-      val value_with_tag = k._2.asInstanceOf[(List[Int], Any)]
-//      println("tag is " + value_with_tag._1)
-      (k._1, value_with_tag._2)
+      if (DFTEnv.trackingPolicy.propagation_across_machines) {
+        val value_with_tag = k._2.asInstanceOf[(Map[Int, Int], Any)]
+        println(value_with_tag._1)
+        selectiveTainter.setTaintWithTaint((k._1, value_with_tag._2), value_with_tag._1)
+      }
+      else
+        (k._1, k._2)
     })
 
     // Update the context task metrics for each record read.

@@ -22,9 +22,9 @@ import java.util.Comparator
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-
 import com.google.common.io.ByteStreams
-
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.SelectiveTainter
 import org.apache.spark._
 import org.apache.spark.executor.ShuffleWriteMetrics
 import org.apache.spark.internal.Logging
@@ -785,8 +785,15 @@ private[spark] class ExternalSorter[K, V, C](
           private[this] var cur = if (upstream.hasNext) upstream.next() else null
 
           // Modified add taint here
+          val tainter: SelectiveTainter = if (DFTEnv.trackingPolicy.propagation_across_machines)
+            new SelectiveTainter(Map())
+          else
+            null
           def writeNext(writer: DiskBlockObjectWriter): Unit = {
-            writer.write(cur._1._2, (List(1, 2, 3), cur._2))
+            if (DFTEnv.trackingPolicy.propagation_across_machines)
+              writer.write(cur._1._2, (tainter.getTaintList((cur._1._2, cur._2)), cur._2))
+            else
+              writer.write(cur._1._2, cur._2)
             cur = if (upstream.hasNext) upstream.next() else null
           }
 

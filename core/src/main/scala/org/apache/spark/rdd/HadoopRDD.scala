@@ -21,15 +21,16 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.{DFTUtils, SelectiveTainter}
+
 import scala.collection.immutable.Map
 import scala.reflect.ClassTag
-
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.mapred._
 import org.apache.hadoop.mapred.lib.CombineFileSplit
 import org.apache.hadoop.mapreduce.TaskType
 import org.apache.hadoop.util.ReflectionUtils
-
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.broadcast.Broadcast
@@ -301,7 +302,17 @@ class HadoopRDD[K, V](
         }
       }
     }
-    new InterruptibleIterator[(K, V)](context, iter)
+    val interuptIter = new InterruptibleIterator[(K, V)](context, iter)
+
+    /**
+      * [[Modified]] taint the input
+    */
+    if (DFTEnv.trackingPolicy.propagation_across_machines) {
+      val selectiveTainter = new SelectiveTainter(Map(), 1)
+      new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)))
+    } else {
+      interuptIter
+    }
   }
 
   /** Maps over a partition, providing the InputSplit that was used as the base of the partition. */

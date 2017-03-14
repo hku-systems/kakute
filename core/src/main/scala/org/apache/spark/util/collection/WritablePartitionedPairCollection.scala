@@ -19,6 +19,8 @@ package org.apache.spark.util.collection
 
 import java.util.Comparator
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.SelectiveTainter
 import org.apache.spark.storage.DiskBlockObjectWriter
 
 /**
@@ -52,8 +54,16 @@ private[spark] trait WritablePartitionedPairCollection[K, V] {
     new WritablePartitionedIterator {
       private[this] var cur = if (it.hasNext) it.next() else null
 
+      var tainter: SelectiveTainter =
+      if (DFTEnv.trackingPolicy.propagation_across_machines)
+        new SelectiveTainter(Map())
+      else
+        null
       def writeNext(writer: DiskBlockObjectWriter): Unit = {
-        writer.write(cur._1._2, (List(2, 3, 4), cur._2))
+        if (DFTEnv.trackingPolicy.propagation_across_machines)
+          writer.write(cur._1._2, (tainter.getTaintList((cur._1._2, cur._2)), cur._2))
+        else
+          writer.write(cur._1._2, cur._2)
         cur = if (it.hasNext) it.next() else null
       }
 

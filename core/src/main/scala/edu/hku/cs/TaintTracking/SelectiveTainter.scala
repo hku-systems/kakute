@@ -13,7 +13,7 @@ import edu.hku.cs.Optimization.RuleCollector.Rule
   * So 0 -> default_func
 */
 
-class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
+class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extends BaseTainter{
 
   private var _index = 0
 
@@ -24,7 +24,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int]) extends BaseTainter{
   private var _positionFilter: Map[Int, Any => Int] = filter
 
   // if there are no rule for default, just make then untainted
-  private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => 0)
+  private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => defaultTag)
 
   def setTaintWithTaint[T](obj: T, filter: Map[Int, Int]): T = {
     setFilter(DFTUtils.markPositionToMap(filter))
