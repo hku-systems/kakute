@@ -98,7 +98,7 @@ private[spark] class ShuffleMapTask(
       val status = writer.stop(success = true).get
 
       // [[Modified]] collect and send the rule here
-      DFTEnv.localControl.collect()
+      DFTEnv.localControl.collect(partition.index)
 
       status
     } catch {

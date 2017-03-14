@@ -6,6 +6,16 @@ import edu.hku.cs.network._
   * Created by jianyu on 3/9/17.
   */
 
+class SplitCollector(_split: Int) {
+  var ruleCollector: Map[Int, RuleCollector] = Map()
+  val split:Int = _split
+  def collectorInstance(_id: Int): RuleCollector = {
+    val r = ruleCollector.getOrElse(_id, new RuleCollector(_id))
+    ruleCollector += _id -> r
+    r
+  }
+}
+
 //TODO Is this class atomic?
 class RuleLocalControl extends NettyEndpoint{
 
@@ -25,7 +35,7 @@ class RuleLocalControl extends NettyEndpoint{
 
   private var collector = 0
 
-  private var ruleCollectors: Map[Int, RuleCollector] = Map()
+  private var splitCollectors: Map[Int, SplitCollector] = Map()
 
   private var typeCollectors: Map[Int, String] = Map()
 
@@ -33,27 +43,24 @@ class RuleLocalControl extends NettyEndpoint{
     typeCollectors += id -> string
   }
 
-  def collectorInstance(_id: Int): RuleCollector = {
-    val foundCollector = ruleCollectors.find(_._1 == _id)
-    val ruleCollector = if (foundCollector.isEmpty) {
-      collector += 1
-      _id -> new RuleCollector(_id)
-    } else {
-      foundCollector.get
-    }
-    ruleCollectors += ruleCollector
-    ruleCollector._2
+  def splitInstance(_id: Int): SplitCollector = {
+    val r = splitCollectors.getOrElse(_id, new SplitCollector(_id))
+    splitCollectors += _id -> r
+    r
   }
 
-  def collect(): Unit = {
-    ruleCollectors.foreach(mm => {
-      if (!mm._2.isEmpty())
+  def collect(_split: Int): Unit = {
+    val splitCollector = splitCollectors.getOrElse(_split, null)
+    if (splitCollector != null) {
+      splitCollectors -= _split
+      splitCollector.ruleCollector.foreach(mm => {
+        println("new " + _split + " " + mm._1 + " " + mm._2.collect())
         this.send(RuleInfered(mm._1, mm._2.collect()))
-    })
+      })
+    }
     typeCollectors.foreach(t => {
       this.send(DataType(t._1, t._2))
     })
-    ruleCollectors = Map()
   }
 
 }

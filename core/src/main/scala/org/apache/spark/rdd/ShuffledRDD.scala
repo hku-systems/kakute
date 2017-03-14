@@ -110,7 +110,7 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
     */
 
     ShuffleDFT.ShuffleIdRDD += dep.shuffleHandle.shuffleId -> this.id
-    val collector = DFTEnv.localControl.collectorInstance(this.id)
+    val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
     val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
     var result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
       .read()

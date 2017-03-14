@@ -90,7 +90,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
     /**
       * [[modified]] add taint for map
     */
-    val collector = DFTEnv.localControl.collectorInstance(ShuffleDFT.ShuffleIdRDD.getOrElse(handle.shuffleId, 0))
+    val collector = DFTEnv.localControl.splitInstance(startPartition).collectorInstance(ShuffleDFT.ShuffleIdRDD.getOrElse(handle.shuffleId, 0))
     val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
 
     // An interruptible iterator must be used here in order to support task cancellation

@@ -95,7 +95,6 @@ class GraphManager extends NettyEndpoint {
   }
 
   def addTrackingRule(platformId: Int, depDataId: Int,ruleSet: RuleSet): Unit = {
-    println("add rule " + platformId + " " + depDataId + ruleSet)
     val ruleData = getDatamodelOrThrow(platformId)
     val depData = getDatamodelOrThrow(depDataId)
     ruleData.addDeps(ruleSet, depData)

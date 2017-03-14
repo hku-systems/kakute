@@ -39,7 +39,7 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
     // [[Modified]]
-    val ruleCollector = DFTEnv.localControl.collectorInstance(this.id)
+    val ruleCollector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
     val typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
 
     var parentIter =
