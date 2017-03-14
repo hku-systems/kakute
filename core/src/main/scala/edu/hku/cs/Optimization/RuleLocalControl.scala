@@ -44,15 +44,20 @@ class RuleLocalControl extends NettyEndpoint{
   }
 
   def splitInstance(_id: Int): SplitCollector = {
-    val r = splitCollectors.getOrElse(_id, new SplitCollector(_id))
-    splitCollectors += _id -> r
-    r
+    synchronized {
+      val r = splitCollectors.getOrElse(_id, new SplitCollector(_id))
+      splitCollectors += _id -> r
+      r
+    }
   }
 
   def collect(_split: Int): Unit = {
-    val splitCollector = splitCollectors.getOrElse(_split, null)
-    if (splitCollector != null) {
+    val splitCollector = synchronized {
+      val got = splitCollectors.getOrElse(_split, null)
       splitCollectors -= _split
+      got
+    }
+    if (splitCollector != null) {
       splitCollector.ruleCollector.foreach(mm => {
         println("new " + _split + " " + mm._1 + " " + mm._2.collect())
         this.send(RuleInfered(mm._1, mm._2.collect()))
