@@ -163,6 +163,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
       case v: Char => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Boolean => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Object => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
+      case _ =>
     }
     obj
   }
