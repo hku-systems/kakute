@@ -89,4 +89,6 @@ object DefaultArgument {
   val trackingMode: TrackingMode = TrackingMode.RuleTracking
   val sampleMode: SampleMode = SampleMode.Off
   val mode: String = "server"
+  // By default, 10% of the data is used when in the data sampling mode
+  val sampleInt: Int = 10
 }

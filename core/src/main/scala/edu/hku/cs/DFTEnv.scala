@@ -59,6 +59,17 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
       case _ => DefaultArgument.sampleMode
     }
   }
+
+  //use percentage sampling
+  val sampleNum: Int = {
+    val stringInt = argumentHandle.parseArgs("sample_int")
+    if (stringInt != null) {
+      Integer.valueOf(stringInt)
+    } else {
+      DefaultArgument.sampleInt
+    }
+  }
+
   var isServer: Boolean = argumentHandle.parseArgs("mode") match {
     case "server" => true
     case "worker" => false

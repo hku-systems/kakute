@@ -21,7 +21,8 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.{DFTEnv, SampleMode}
+import edu.hku.cs.Optimization.Sampler
 import edu.hku.cs.TaintTracking.{DFTUtils, SelectiveTainter}
 
 import scala.collection.immutable.Map
@@ -307,9 +308,15 @@ class HadoopRDD[K, V](
     /**
       * [[Modified]] taint the input
     */
+    var sampler: Sampler = null
     if (DFTEnv.trackingPolicy.propagation_across_machines) {
       val selectiveTainter = new SelectiveTainter(Map(), 1)
-      new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)))
+      if (DFTEnv.dftEnv().sampleMode == SampleMode.Sample) {
+        sampler = new Sampler(DFTEnv.dftEnv().sampleNum)
+        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)).filter(sampler.filterFunc))
+      }
+      else
+        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)))
     } else {
       interuptIter
     }
