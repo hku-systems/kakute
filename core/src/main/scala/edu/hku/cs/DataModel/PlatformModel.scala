@@ -27,7 +27,7 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
   override def frameworkId(): Int = frameworkR.id
 
   override def frameworkName(): String = {
-    frameworkR.toString
+    frameworkR.name
   }
 
   override def frameworkType(): String = {
@@ -52,11 +52,11 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
       case "ShuffledRDD" => DataOperation.Reduce
       case "ZippedWithIndexRDD" => DataOperation.ZipWithIndex
       case "MapPartitionsRDD" => DataOperation.Map
+      case "CoGroupRDD" => DataOperation.Reduce
       case _ => DataOperation.None
     }
   }
 
-  override def variable(): String = {
-    frameworkR.name
-  }
+  override def variable(): String = if (frameworkR.name == null) "" else frameworkR.name
+
 }

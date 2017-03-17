@@ -61,6 +61,7 @@ private[spark] class BlockResult(
  *
  * Note that [[initialize()]] must be called before the BlockManager is usable.
  */
+//TODO Add tag after being persisted into disk
 private[spark] class BlockManager(
     executorId: String,
     rpcEnv: RpcEnv,

@@ -313,7 +313,7 @@ class HadoopRDD[K, V](
       val selectiveTainter = new SelectiveTainter(Map(), 1)
       if (DFTEnv.dftEnv().sampleMode == SampleMode.Sample) {
         sampler = new Sampler(DFTEnv.dftEnv().sampleNum)
-        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)).filter(sampler.filterFunc))
+        new InterruptibleIterator[(K, V)](context, interuptIter.filter(sampler.filterFunc).map(o => selectiveTainter.setTaint(o)))
       }
       else
         new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)))

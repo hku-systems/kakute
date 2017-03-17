@@ -64,8 +64,8 @@ class GraphManager extends NettyEndpoint {
   def getOrElseCreate(platformHandle: PlatformHandle): DataModel = {
     val found = frameworkIdMapData.find(_._1 == platformHandle.frameworkId())
     val returnVal = if (found.isEmpty) {
-      val data = new DataModel(currentId(),
-        platformHandle.op(), platformHandle, null)
+      val data = new DataModel(platformHandle.op(),
+        platformHandle, null)
       val fathersHandle = platformHandle.fathers()
       if (fathersHandle.isEmpty) {
         data.isOrigin = true
@@ -78,6 +78,7 @@ class GraphManager extends NettyEndpoint {
         }
         )
       }
+      data.ID = currentId()
       data
     } else {
       found.get._2

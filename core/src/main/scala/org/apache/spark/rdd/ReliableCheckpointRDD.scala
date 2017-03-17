@@ -19,11 +19,12 @@ package org.apache.spark.rdd
 
 import java.io.{FileNotFoundException, IOException}
 
+import edu.hku.cs.DFTEnv
+import edu.hku.cs.TaintTracking.SelectiveTainter
+
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
-
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.internal.Logging
@@ -153,6 +154,10 @@ private[spark] object ReliableCheckpointRDD extends Logging {
   /**
    * Write an RDD partition's data to a checkpoint file.
    */
+  /**
+  * [[Modified]] cross-machine checkpoint tag to files
+  */
+  //TODO test checkpoint
   def writePartitionToCheckpointFile[T: ClassTag](
       path: String,
       broadcastedConf: Broadcast[SerializableConfiguration],
@@ -178,7 +183,14 @@ private[spark] object ReliableCheckpointRDD extends Logging {
     val serializer = env.serializer.newInstance()
     val serializeStream = serializer.serializeStream(fileOutputStream)
     Utils.tryWithSafeFinally {
-      serializeStream.writeAll(iterator)
+      if (DFTEnv.trackingPolicy.propagation_across_machines) {
+        val selectiveTainter = new SelectiveTainter(Map(), 1)
+        serializeStream.writeAll(iterator.map(t => {
+          (t, selectiveTainter.getTaintList(t))
+        }))
+      } else {
+        serializeStream.writeAll(iterator)
+      }
     } {
       serializeStream.close()
     }
@@ -279,8 +291,14 @@ private[spark] object ReliableCheckpointRDD extends Logging {
 
     // Register an on-task-completion callback to close the input stream.
     context.addTaskCompletionListener(context => deserializeStream.close())
-
-    deserializeStream.asIterator.asInstanceOf[Iterator[T]]
+    if (DFTEnv.trackingPolicy.propagation_across_machines) {
+      val selectiveTainter = new SelectiveTainter(Map(), 1)
+      deserializeStream.asIterator.asInstanceOf[Iterator[(T, Map[Int, Int])]].map(t => {
+        selectiveTainter.setTaintWithTaint(t._1, t._2)
+      })
+    } else {
+      deserializeStream.asIterator.asInstanceOf[Iterator[T]]
+    }
   }
 
 }

@@ -2,6 +2,8 @@ package edu.hku.cs.DataModel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
+import edu.hku.cs.Optimization.Analyser
+
 
 /**
   * Created by jianyu on 3/10/17.
@@ -37,6 +39,9 @@ class GraphDumper(fn: String) {
       }
       dumpList = dumpList.init
     }
+    val analyser: Analyser = new Analyser
+    analyser.entry(graphManager)
+    analyser.exitPoint()
   }
 
 }

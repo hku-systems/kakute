@@ -13,12 +13,22 @@ object DataOperation extends Enumeration {
   val Map, Reduce, Union, Sample, ZipWithIndex, CoGroup, Input, None = Value
 }
 
-class DataModel(id: Long, op: DataOperation,
-                        frameworkHandle: PlatformHandle, variableId: String) {
+class DataModel(_op: DataOperation,
+                frameworkHandle: PlatformHandle, variableId: String) {
 
-  val ID: Long = id
+  private var _name: String = ""
+
+  var ID: Long = 0
 
   var isOrigin = false
+
+  def setName(sname: String): Unit = {
+    _name = sname
+  }
+
+  def name(): String = if (_name == "") frameworkHandle.variable() else _name
+
+  def op(): DataOperation = _op
 
   private var _fathers: List[DataModel] = List()
 
@@ -32,7 +42,7 @@ class DataModel(id: Long, op: DataOperation,
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case dataModel: DataModel => dataModel.ID == this.id
+      case dataModel: DataModel => dataModel.ID == this.ID
       case _ => false
     }
   }
@@ -69,7 +79,7 @@ class DataModel(id: Long, op: DataOperation,
 
   override def toString: String = {
     val newBuilder = new StringBuilder
-    newBuilder.append("[" + id + "] ")
+    newBuilder.append("[" + ID + "] ")
     newBuilder.append(" " + this.op + " ")
     newBuilder.append(frameworkHandle.frameworkName())
     newBuilder.append(" ")

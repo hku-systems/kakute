@@ -547,7 +547,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
   def join[W](other: RDD[(K, W)], partitioner: Partitioner): RDD[(K, (V, W))] = self.withScope {
     this.cogroup(other, partitioner).flatMapValues( pair =>
       for (v <- pair._1.iterator; w <- pair._2.iterator) yield (v, w)
-    )
+    ).setName(self.name + ".CoGroup-MapValues" )
   }
 
   /**
@@ -804,10 +804,10 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
     if (partitioner.isInstanceOf[HashPartitioner] && keyClass.isArray) {
       throw new SparkException("HashPartitioner cannot partition array keys.")
     }
-    val cg = new CoGroupedRDD[K](Seq(self, other), partitioner)
+    val cg = new CoGroupedRDD[K](Seq(self, other), partitioner).setName(self.name + ".CoGroup-CoGroup")
     cg.mapValues { case Array(vs, w1s) =>
       (vs.asInstanceOf[Iterable[V]], w1s.asInstanceOf[Iterable[W]])
-    }
+    }.setName(self.name + ".CoGroup-MapValues")
   }
 
   /**
