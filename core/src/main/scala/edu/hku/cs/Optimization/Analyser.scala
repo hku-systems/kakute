@@ -1,6 +1,7 @@
 package edu.hku.cs.Optimization
 
-import edu.hku.cs.DataModel.{DataModel, GraphManager}
+import edu.hku.cs.DataModel.DataOperation.DataOperation
+import edu.hku.cs.DataModel.{DataModel, GraphManager, PlatformHandle}
 import edu.hku.cs.TaintTracking
 import edu.hku.cs.TaintTracking.DFTUtils
 
@@ -8,11 +9,11 @@ import edu.hku.cs.TaintTracking.DFTUtils
   * Created by jianyu on 3/16/17.
   */
 
-class DataSet(id: Int, name: String) {
-  var dataModels: List[DataModel] = List()
-  def append(dataModel: DataModel): Unit = {
-    dataModels = dataModel :: dataModels
-  }
+class LoopReducedDataModel(op: DataOperation, platformHandle: PlatformHandle,
+                           variable: String) extends DataModel(op, platformHandle, variable) {
+  val iterations: Int = 0
+  val ids: List[Int] = _
+
 }
 
 

@@ -34,10 +34,34 @@ object RuleCollector {
   type Rule = List[Dependency]
   type RuleSet = Map[Rule, Int]
 
+  def equalsList(listA: List[Int], listB: List[Int]): Boolean = {
+    if (listA.length != listB.length) {
+      false
+    } else {
+      listA.zip(listB).count(t => t._1 == t._2) == listA.length
+    }
+  }
+
+  def equalsRule(ruleA: Rule, ruleB: Rule): Boolean = {
+    if (ruleA.length != ruleB.length){
+      false
+    } else {
+      val mA = ruleA.toMap
+      val mB = ruleB.toMap
+      mB.foreach(t => {
+        if (!mA.contains(t._1))
+          return false
+        if (!equalsList(t._2, mA(t._1)))
+          return false
+      })
+      true
+    }
+  }
+
   def CombineRule(rule_a: RuleSet, rule_b: RuleSet): RuleSet = {
     var returnVal = rule_a
     rule_b.foreach(rule => {
-      val found = rule_a.find(_._1 == rule)
+      val found = rule_a.find(t => equalsRule(t._1, rule._1))
       if (found.isEmpty) {
         returnVal += rule
       } else {
