@@ -13,8 +13,7 @@ object DataOperation extends Enumeration {
   val Map, Reduce, Union, Sample, ZipWithIndex, CoGroup, Input, None = Value
 }
 
-class DataModel(_op: DataOperation,
-                frameworkHandle: PlatformHandle, variableId: String) {
+class DataModel(frameworkHandle: PlatformHandle) {
 
   private var _name: String = ""
 
@@ -26,15 +25,19 @@ class DataModel(_op: DataOperation,
     _name = sname
   }
 
+  def deps(): Map[DataModel, RuleSet] = _deps
+
+  def handle(): PlatformHandle = frameworkHandle
+
   def name(): String = if (_name == "") frameworkHandle.variable() else _name
 
-  def op(): DataOperation = _op
+  def op(): DataOperation = frameworkHandle.op()
 
   private var _fathers: List[DataModel] = List()
 
   private var _sons: List[DataModel] = List()
 
-  private var _deps: Map[DataModel, RuleSet] = _
+  private var _deps: Map[DataModel, RuleSet] = Map()
 
   private var _dataType: String = "null"
 

@@ -24,5 +24,10 @@ object RuleCollectorSuite {
     val t = RuleCollector.CombineRule(r, k)
     assert(t.size == 3)
     //TODO Run more test
+
+    val testA = Map(List((3,List(2)), (2,List(1)), (1,List(1))) -> 24)
+    val testB = Map(List((3,List(2)), (2,List(1)), (1,List(1))) -> 16)
+    val testC = RuleCollector.CombineRule(testA, testB)
+    val c = 1 + 2
   }
 }

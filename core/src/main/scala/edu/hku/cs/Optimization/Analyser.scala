@@ -2,6 +2,7 @@ package edu.hku.cs.Optimization
 
 import edu.hku.cs.DataModel.DataOperation.DataOperation
 import edu.hku.cs.DataModel.{DataModel, GraphManager, PlatformHandle}
+import edu.hku.cs.Optimization.RuleCollector.RuleSet
 import edu.hku.cs.TaintTracking
 import edu.hku.cs.TaintTracking.DFTUtils
 
@@ -9,11 +10,40 @@ import edu.hku.cs.TaintTracking.DFTUtils
   * Created by jianyu on 3/16/17.
   */
 
-class LoopReducedDataModel(op: DataOperation, platformHandle: PlatformHandle,
-                           variable: String) extends DataModel(op, platformHandle, variable) {
-  val iterations: Int = 0
-  val ids: List[Int] = _
+class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
+  var modelSet: Set[DataModel] = Set()
+
+  var count: Int = 0
+
+  var deps: Map[String, RuleSet] = Map()
+
+  def addModel(dataModel: DataModel):this.type = {
+    modelSet += dataModel
+    count += 1
+    dataModel.deps().foreach(dp => {
+      if (deps.contains(dp._1.name())) {
+        deps += dp._1.name() -> RuleCollector.CombineRule(dp._2, deps(dp._1.name()))
+      } else {
+        deps += dp._1.name() -> dp._2
+      }
+    })
+    this
+  }
+
+  override def toString: String = {
+    val stringBuilder = new StringBuilder
+    stringBuilder.append(s"[$variable] -> {$count} ")
+    modelSet.foreach(d => {
+      stringBuilder.append(d.ID)
+      stringBuilder.append(" ")
+    })
+    deps.foreach(r => {
+      stringBuilder.append(r._2)
+      stringBuilder.append(" ")
+    })
+    stringBuilder.toString()
+  }
 }
 
 
@@ -28,10 +58,14 @@ class Analyser {
   // String to String generation
   private var setMap: Map[String, Set[String]] = Map()
 
-  // String to set of datamodel, they are the same
-  private var dataSet: Map[String, Set[DataModel]] = Map()
+  // String to set of dataModel, they are the same
+  private var dataSet: Map[String, LoopReducedDataModel] = Map()
+
+  private var rootData: List[String] = List()
 
   private var nullNum = 1
+
+  private var visitedSet: Set[Int] = Set()
 
   def entry(graphManager: GraphManager): Unit = {
     var dumpList = graphManager.rootData
@@ -40,6 +74,7 @@ class Analyser {
         dump.setName(prefixRoot + rootCurrent)
         rootCurrent += 1
       }
+      rootData = dump.name() :: rootData
       entryHelper(dump, null)
     })
   }
@@ -61,7 +96,11 @@ class Analyser {
         setMap += fatherModel.name() -> Set[String](dataModel.name())
       }
     }
-    dataSet += dataModel.name() -> (dataSet.getOrElse(dataModel.name(), Set[DataModel]()) + dataModel)
+    if (visitedSet.contains(dataModel.ID.toInt))
+      return
+
+    dataSet += dataModel.name() -> dataSet.getOrElse(dataModel.name(), new LoopReducedDataModel(dataModel.handle(), dataModel.name())).addModel(dataModel)
+    visitedSet += dataModel.ID.toInt
     dataModel.sons().foreach(t => {
       entryHelper(t, dataModel)
     })
@@ -69,18 +108,22 @@ class Analyser {
   }
 
   def dump(): Unit = {
-    setMap.foreach(s => {
-      print("[" + s._1 + "] -> ")
-      s._2.foreach(u => {
-        val dataSetIds = new StringBuilder
-        dataSet(u).foreach(k => {
-          dataSetIds.append(k.ID)
-          dataSetIds.append(",")
+    var startStrings: List[String] = rootData
+    var dumpSet: Set[String] = Set()
+    while (startStrings.nonEmpty) {
+      val v = startStrings.last
+      if (!dumpSet.contains(v)) {
+        print(dataSet(v))
+        dumpSet += v
+        print(" ===>>> ")
+        setMap(v).foreach(k => {
+          startStrings = k :: startStrings
+          print(k + " ")
         })
-        print(u + "[" + dataSetIds.toString() + "]")
-      })
-      println()
-    })
+        println()
+      }
+      startStrings = startStrings.init
+    }
   }
 
   // print the graph when exit
