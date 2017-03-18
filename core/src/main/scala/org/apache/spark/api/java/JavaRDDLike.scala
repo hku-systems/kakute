@@ -90,7 +90,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * Return a new RDD by applying a function to all elements of this RDD.
    */
   def map[R](f: JFunction[T, R]): JavaRDD[R] =
-    new JavaRDD(rdd.map(f)(fakeClassTag))(fakeClassTag)
+    new JavaRDD(rdd.map(f)(fakeClassTag, null))(fakeClassTag)
 
   /**
    * Return a new RDD by applying a function to each partition of this RDD, while tracking the index
@@ -114,7 +114,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def mapToPair[K2, V2](f: PairFunction[T, K2, V2]): JavaPairRDD[K2, V2] = {
     def cm: ClassTag[(K2, V2)] = implicitly[ClassTag[(K2, V2)]]
-    new JavaPairRDD(rdd.map[(K2, V2)](f)(cm))(fakeClassTag[K2], fakeClassTag[V2])
+    new JavaPairRDD(rdd.map[(K2, V2)](f)(cm, null))(fakeClassTag[K2], fakeClassTag[V2])
   }
 
   /**
@@ -123,7 +123,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def flatMap[U](f: FlatMapFunction[T, U]): JavaRDD[U] = {
     def fn: (T) => Iterator[U] = (x: T) => f.call(x).asScala
-    JavaRDD.fromRDD(rdd.flatMap(fn)(fakeClassTag[U]))(fakeClassTag[U])
+    JavaRDD.fromRDD(rdd.flatMap(fn)(fakeClassTag[U], null))(fakeClassTag[U])
   }
 
   /**
@@ -142,7 +142,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
   def flatMapToPair[K2, V2](f: PairFlatMapFunction[T, K2, V2]): JavaPairRDD[K2, V2] = {
     def fn: (T) => Iterator[(K2, V2)] = (x: T) => f.call(x).asScala
     def cm: ClassTag[(K2, V2)] = implicitly[ClassTag[(K2, V2)]]
-    JavaPairRDD.fromRDD(rdd.flatMap(fn)(cm))(fakeClassTag[K2], fakeClassTag[V2])
+    JavaPairRDD.fromRDD(rdd.flatMap(fn)(cm, null))(fakeClassTag[K2], fakeClassTag[V2])
   }
 
   /**

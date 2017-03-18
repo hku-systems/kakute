@@ -39,9 +39,9 @@ class GraphDumper(fn: String) {
       }
       dumpList = dumpList.init
     }
-    val analyser: Analyser = new Analyser
-    analyser.entry(graphManager)
-    analyser.exitPoint()
+//    val analyser: Analyser = new Analyser
+//    analyser.entry(graphManager)
+//    analyser.exitPoint()
   }
 
 }

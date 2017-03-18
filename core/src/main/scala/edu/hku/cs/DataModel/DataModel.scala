@@ -83,6 +83,7 @@ class DataModel(frameworkHandle: PlatformHandle) {
   override def toString: String = {
     val newBuilder = new StringBuilder
     newBuilder.append("[" + ID + "] ")
+    newBuilder.append(" " + this.frameworkHandle.variable() + " ")
     newBuilder.append(" " + this.op + " ")
     newBuilder.append(frameworkHandle.frameworkName())
     newBuilder.append(" ")
