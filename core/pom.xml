@@ -41,6 +41,13 @@
       <systemPath>/home/jianyu/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
     </dependency>
     <dependency>
+      <groupId>edu.hku.cs</groupId>
+      <artifactId>CallLocation</artifactId>
+      <version>0.0.1</version>
+      <scope>system</scope>
+      <systemPath>/home/jianyu/CallLocation/out/artifacts/CallLocation/CallLocation.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro-mapred</artifactId>
       <classifier>${avro.mapred.classifier}</classifier>
