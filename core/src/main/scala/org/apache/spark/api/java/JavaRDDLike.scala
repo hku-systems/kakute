@@ -90,7 +90,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * Return a new RDD by applying a function to all elements of this RDD.
    */
   def map[R](f: JFunction[T, R]): JavaRDD[R] =
-    new JavaRDD(rdd.map(f)(fakeClassTag))(fakeClassTag)
+    new JavaRDD(rdd.map(f)(fakeClassTag, null))(fakeClassTag)
 
   /**
    * Return a new RDD by applying a function to each partition of this RDD, while tracking the index
@@ -100,7 +100,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
       f: JFunction2[jl.Integer, JIterator[T], JIterator[R]],
       preservesPartitioning: Boolean = false): JavaRDD[R] =
     new JavaRDD(rdd.mapPartitionsWithIndex((a, b) => f.call(a, b.asJava).asScala,
-        preservesPartitioning)(fakeClassTag))(fakeClassTag)
+        preservesPartitioning)(fakeClassTag, null))(fakeClassTag)
 
   /**
    * Return a new RDD by applying a function to all elements of this RDD.
@@ -114,7 +114,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def mapToPair[K2, V2](f: PairFunction[T, K2, V2]): JavaPairRDD[K2, V2] = {
     def cm: ClassTag[(K2, V2)] = implicitly[ClassTag[(K2, V2)]]
-    new JavaPairRDD(rdd.map[(K2, V2)](f)(cm))(fakeClassTag[K2], fakeClassTag[V2])
+    new JavaPairRDD(rdd.map[(K2, V2)](f)(cm, null))(fakeClassTag[K2], fakeClassTag[V2])
   }
 
   /**
@@ -123,7 +123,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def flatMap[U](f: FlatMapFunction[T, U]): JavaRDD[U] = {
     def fn: (T) => Iterator[U] = (x: T) => f.call(x).asScala
-    JavaRDD.fromRDD(rdd.flatMap(fn)(fakeClassTag[U]))(fakeClassTag[U])
+    JavaRDD.fromRDD(rdd.flatMap(fn)(fakeClassTag[U], null))(fakeClassTag[U])
   }
 
   /**
@@ -142,7 +142,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
   def flatMapToPair[K2, V2](f: PairFlatMapFunction[T, K2, V2]): JavaPairRDD[K2, V2] = {
     def fn: (T) => Iterator[(K2, V2)] = (x: T) => f.call(x).asScala
     def cm: ClassTag[(K2, V2)] = implicitly[ClassTag[(K2, V2)]]
-    JavaPairRDD.fromRDD(rdd.flatMap(fn)(cm))(fakeClassTag[K2], fakeClassTag[V2])
+    JavaPairRDD.fromRDD(rdd.flatMap(fn)(cm, null))(fakeClassTag[K2], fakeClassTag[V2])
   }
 
   /**
@@ -152,7 +152,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
     def fn: (Iterator[T]) => Iterator[U] = {
       (x: Iterator[T]) => f.call(x.asJava).asScala
     }
-    JavaRDD.fromRDD(rdd.mapPartitions(fn)(fakeClassTag[U]))(fakeClassTag[U])
+    JavaRDD.fromRDD(rdd.mapPartitions(fn)(fakeClassTag[U], null))(fakeClassTag[U])
   }
 
   /**
@@ -164,7 +164,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
       (x: Iterator[T]) => f.call(x.asJava).asScala
     }
     JavaRDD.fromRDD(
-      rdd.mapPartitions(fn, preservesPartitioning)(fakeClassTag[U]))(fakeClassTag[U])
+      rdd.mapPartitions(fn, preservesPartitioning)(fakeClassTag[U], null))(fakeClassTag[U])
   }
 
   /**
@@ -230,7 +230,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * elements (a, b) where a is in `this` and b is in `other`.
    */
   def cartesian[U](other: JavaRDDLike[U, _]): JavaPairRDD[T, U] =
-    JavaPairRDD.fromRDD(rdd.cartesian(other.rdd)(other.classTag))(classTag, other.classTag)
+    JavaPairRDD.fromRDD(rdd.cartesian(other.rdd)(other.classTag, null))(classTag, other.classTag)
 
   /**
    * Return an RDD of grouped elements. Each group consists of a key and a sequence of elements
@@ -240,7 +240,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
     // The type parameter is U instead of K in order to work around a compiler bug; see SPARK-4459
     implicit val ctagK: ClassTag[U] = fakeClassTag
     implicit val ctagV: ClassTag[JList[T]] = fakeClassTag
-    JavaPairRDD.fromRDD(groupByResultToJava(rdd.groupBy(f)(fakeClassTag)))
+    JavaPairRDD.fromRDD(groupByResultToJava(rdd.groupBy(f)(fakeClassTag, null)))
   }
 
   /**
@@ -251,7 +251,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
     // The type parameter is U instead of K in order to work around a compiler bug; see SPARK-4459
     implicit val ctagK: ClassTag[U] = fakeClassTag
     implicit val ctagV: ClassTag[JList[T]] = fakeClassTag
-    JavaPairRDD.fromRDD(groupByResultToJava(rdd.groupBy(f, numPartitions)(fakeClassTag[U])))
+    JavaPairRDD.fromRDD(groupByResultToJava(rdd.groupBy(f, numPartitions)(fakeClassTag[U], null)))
   }
 
   /**
@@ -303,7 +303,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * a map on the other).
    */
   def zip[U](other: JavaRDDLike[U, _]): JavaPairRDD[T, U] = {
-    JavaPairRDD.fromRDD(rdd.zip(other.rdd)(other.classTag))(classTag, other.classTag)
+    JavaPairRDD.fromRDD(rdd.zip(other.rdd)(other.classTag, null))(classTag, other.classTag)
   }
 
   /**
@@ -319,7 +319,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
       (x: Iterator[T], y: Iterator[U]) => f.call(x.asJava, y.asJava).asScala
     }
     JavaRDD.fromRDD(
-      rdd.zipPartitions(other.rdd)(fn)(other.classTag, fakeClassTag[V]))(fakeClassTag[V])
+      rdd.zipPartitions(other.rdd)(fn)(other.classTag, fakeClassTag[V], null))(fakeClassTag[V])
   }
 
   /**
@@ -423,7 +423,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def aggregate[U](zeroValue: U)(seqOp: JFunction2[U, T, U],
     combOp: JFunction2[U, U, U]): U =
-    rdd.aggregate(zeroValue)(seqOp, combOp)(fakeClassTag[U])
+    rdd.aggregate(zeroValue)(seqOp, combOp)(fakeClassTag[U], null)
 
   /**
    * Aggregates the elements of this RDD in a multi-level tree pattern.
@@ -436,7 +436,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
       seqOp: JFunction2[U, T, U],
       combOp: JFunction2[U, U, U],
       depth: Int): U = {
-    rdd.treeAggregate(zeroValue)(seqOp, combOp, depth)(fakeClassTag[U])
+    rdd.treeAggregate(zeroValue)(seqOp, combOp, depth)(fakeClassTag[U], null)
   }
 
   /**
@@ -652,7 +652,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * @return the maximum of the RDD
    */
   def max(comp: Comparator[T]): T = {
-    rdd.max()(Ordering.comparatorToOrdering(comp))
+    rdd.max()(Ordering.comparatorToOrdering(comp), null)
   }
 
   /**
@@ -663,7 +663,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * @return the minimum of the RDD
    */
   def min(comp: Comparator[T]): T = {
-    rdd.min()(Ordering.comparatorToOrdering(comp))
+    rdd.min()(Ordering.comparatorToOrdering(comp), null)
   }
 
   /**

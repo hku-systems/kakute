@@ -29,9 +29,10 @@ import org.apache.spark.util.StatCounter
 /**
  * Extra functions available on RDDs of Doubles through an implicit conversion.
  */
+//TODO intecept those functions
 class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
   /** Add up the elements in this RDD. */
-  def sum(): Double = self.withScope {
+  def sum(): Double = self.withScope() {
     self.fold(0.0)(_ + _)
   }
 
@@ -39,22 +40,22 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * Return a [[org.apache.spark.util.StatCounter]] object that captures the mean, variance and
    * count of the RDD's elements in one operation.
    */
-  def stats(): StatCounter = self.withScope {
+  def stats(): StatCounter = self.withScope() {
     self.mapPartitions(nums => Iterator(StatCounter(nums))).reduce((a, b) => a.merge(b))
   }
 
   /** Compute the mean of this RDD's elements. */
-  def mean(): Double = self.withScope {
+  def mean(): Double = self.withScope() {
     stats().mean
   }
 
   /** Compute the population variance of this RDD's elements. */
-  def variance(): Double = self.withScope {
+  def variance(): Double = self.withScope() {
     stats().variance
   }
 
   /** Compute the population standard deviation of this RDD's elements. */
-  def stdev(): Double = self.withScope {
+  def stdev(): Double = self.withScope() {
     stats().stdev
   }
 
@@ -62,7 +63,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * Compute the sample standard deviation of this RDD's elements (which corrects for bias in
    * estimating the standard deviation by dividing by N-1 instead of N).
    */
-  def sampleStdev(): Double = self.withScope {
+  def sampleStdev(): Double = self.withScope() {
     stats().sampleStdev
   }
 
@@ -70,7 +71,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * Compute the sample variance of this RDD's elements (which corrects for bias in
    * estimating the variance by dividing by N-1 instead of N).
    */
-  def sampleVariance(): Double = self.withScope {
+  def sampleVariance(): Double = self.withScope() {
     stats().sampleVariance
   }
 
@@ -78,7 +79,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * Compute the population standard deviation of this RDD's elements.
    */
   @Since("2.1.0")
-  def popStdev(): Double = self.withScope {
+  def popStdev(): Double = self.withScope() {
     stats().popStdev
   }
 
@@ -86,7 +87,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * Compute the population variance of this RDD's elements.
    */
   @Since("2.1.0")
-  def popVariance(): Double = self.withScope {
+  def popVariance(): Double = self.withScope() {
     stats().popVariance
   }
 
@@ -95,7 +96,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    */
   def meanApprox(
       timeout: Long,
-      confidence: Double = 0.95): PartialResult[BoundedDouble] = self.withScope {
+      confidence: Double = 0.95): PartialResult[BoundedDouble] = self.withScope() {
     val processPartition = (ctx: TaskContext, ns: Iterator[Double]) => StatCounter(ns)
     val evaluator = new MeanEvaluator(self.partitions.length, confidence)
     self.context.runApproximateJob(self, processPartition, evaluator, timeout)
@@ -106,7 +107,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    */
   def sumApprox(
       timeout: Long,
-      confidence: Double = 0.95): PartialResult[BoundedDouble] = self.withScope {
+      confidence: Double = 0.95): PartialResult[BoundedDouble] = self.withScope() {
     val processPartition = (ctx: TaskContext, ns: Iterator[Double]) => StatCounter(ns)
     val evaluator = new SumEvaluator(self.partitions.length, confidence)
     self.context.runApproximateJob(self, processPartition, evaluator, timeout)
@@ -120,7 +121,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    * If the RDD contains infinity, NaN throws an exception
    * If the elements in RDD do not vary (max == min) always returns a single bucket.
    */
-  def histogram(bucketCount: Int): (Array[Double], Array[Long]) = self.withScope {
+  def histogram(bucketCount: Int): (Array[Double], Array[Long]) = self.withScope() {
     // Scala's built-in range has issues. See #SI-8782
     def customRange(min: Double, max: Double, steps: Int): IndexedSeq[Double] = {
       val span = max - min
@@ -169,7 +170,7 @@ class DoubleRDDFunctions(self: RDD[Double]) extends Logging with Serializable {
    */
   def histogram(
       buckets: Array[Double],
-      evenBuckets: Boolean = false): Array[Long] = self.withScope {
+      evenBuckets: Boolean = false): Array[Long] = self.withScope() {
     if (buckets.length < 2) {
       throw new IllegalArgumentException("buckets array must have at least two elements")
     }

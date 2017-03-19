@@ -787,8 +787,8 @@ class RDDSuite extends SparkFunSuite with SharedSparkContext {
     }
 
     import scala.reflect.classTag
-    assert(data.sortBy(parse, true, 2)(AgeOrdering, classTag[Person]).collect() === ageOrdered)
-    assert(data.sortBy(parse, true, 2)(NameOrdering, classTag[Person]).collect() === nameOrdered)
+    assert(data.sortBy(parse, true, 2)(AgeOrdering, classTag[Person], null).collect() === ageOrdered)
+    assert(data.sortBy(parse, true, 2)(NameOrdering, classTag[Person], null).collect() === nameOrdered)
   }
 
   test("repartitionAndSortWithinPartitions") {
