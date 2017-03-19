@@ -57,6 +57,7 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
     }
   }
 
-  override def variable(): String = if (frameworkR.name == null) "null" else frameworkR.name
+  override def variable():String = frameworkR.callLocation
+//  override def variable(): String = if (frameworkR.name == null) "null" else frameworkR.name
 
 }

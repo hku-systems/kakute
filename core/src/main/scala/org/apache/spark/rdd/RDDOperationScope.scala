@@ -24,7 +24,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.common.base.Objects
-
+import edu.hku.cs.Optimization.SymbolManager
+import edu.hku.cs.tools.CallLocation
 import org.apache.spark.SparkContext
 import org.apache.spark.internal.Logging
 
@@ -98,7 +99,7 @@ private[spark] object RDDOperationScope extends Logging {
    */
   private[spark] def withScope[T](
       sc: SparkContext,
-      allowNesting: Boolean = false)(body: => T): T = {
+      allowNesting: Boolean = false)(body: => T)(implicit callLocation: CallLocation): T = {
     val ourMethodName = "withScope"
     val callerMethodName = Thread.currentThread.getStackTrace()
       .dropWhile(_.getMethodName != ourMethodName)
@@ -109,6 +110,7 @@ private[spark] object RDDOperationScope extends Logging {
         logWarning("No valid method name for this RDD operation scope!")
         "N/A"
       }
+    SymbolManager.scopt = callLocation.location
     withScope[T](sc, callerMethodName, allowNesting, ignoreParent = false)(body)
   }
 

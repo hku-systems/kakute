@@ -26,6 +26,7 @@ import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.DFTEnv
+import edu.hku.cs.Optimization.SymbolManager
 import edu.hku.cs.TaintTracking.DFTUtils
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
@@ -373,33 +374,33 @@ abstract class RDD[T: ClassTag](
   /**
    * Return a new RDD by applying a function to all elements of this RDD.
    */
-  def map[U: ClassTag](f: T => U)(implicit callLocation: CallLocation): RDD[U] = withScope {
+  def map[U: ClassTag](f: T => U): RDD[U] = withScope {
     val cleanF = sc.clean(f)
     new MapPartitionsRDD[U, T](this, (context, pid, iter) => iter.map(cleanF))
-      .setName(callLocation.location)
+      
   }
 
   /**
    *  Return a new RDD by first applying a function to all elements of this
    *  RDD, and then flattening the results.
    */
-  def flatMap[U: ClassTag](f: T => TraversableOnce[U])(implicit callLocation: CallLocation): RDD[U] = withScope {
+  def flatMap[U: ClassTag](f: T => TraversableOnce[U]): RDD[U] = withScope {
     val cleanF = sc.clean(f)
     new MapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(cleanF))
-      .setName(callLocation.location)
+      
   }
 
   /**
    * Return a new RDD containing only the elements that satisfy a predicate.
    */
   def filter(f: T => Boolean)
-    (implicit callLocation: CallLocation): RDD[T] = withScope {
+    : RDD[T] = withScope {
     val cleanF = sc.clean(f)
     new MapPartitionsRDD[T, T](
       this,
       (context, pid, iter) => iter.filter(cleanF),
       preservesPartitioning = true)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -412,9 +413,9 @@ abstract class RDD[T: ClassTag](
   /**
    * Return a new RDD containing the distinct elements in this RDD.
    */
-  def distinct()(implicit callLocation: CallLocation): RDD[T] = withScope {
+  def distinct(): RDD[T] = withScope {
     distinct(partitions.length)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -1664,6 +1665,7 @@ abstract class RDD[T: ClassTag](
   /** User code that created this RDD (e.g. `textFile`, `parallelize`). */
   @transient private[spark] val creationSite = sc.getCallSite()
 
+  val callLocation: String = SymbolManager.scopt
   /**
    * The scope associated with the operation that created this RDD.
    *

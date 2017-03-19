@@ -49,8 +49,7 @@ import edu.hku.cs.tools.CallLocation
  * Extra functions available on RDDs of (key, value) pairs through an implicit conversion.
  */
 class PairRDDFunctions[K, V](self: RDD[(K, V)])
-    (implicit kt: ClassTag[K], vt: ClassTag[V], ord: Ordering[K] = null,
-     callLocation: CallLocation)
+    (implicit kt: ClassTag[K], vt: ClassTag[V], ord: Ordering[K] = null)
   extends Logging with Serializable {
 
   /**
@@ -95,13 +94,13 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       self.mapPartitions(iter => {
         val context = TaskContext.get()
         new InterruptibleIterator(context, aggregator.combineValuesByKey(iter, context))
-      }, preservesPartitioning = true).setName(callLocation.location)
+      }, preservesPartitioning = true)
     } else {
       new ShuffledRDD[K, V, C](self, partitioner)
         .setSerializer(serializer)
         .setAggregator(aggregator)
         .setMapSideCombine(mapSideCombine)
-        .setName(callLocation.location)
+        
     }
   }
 
@@ -121,7 +120,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       serializer: Serializer = null): RDD[(K, C)] = self.withScope {
     combineByKeyWithClassTag(createCombiner, mergeValue, mergeCombiners,
       partitioner, mapSideCombine, serializer)(null)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -137,7 +136,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       mergeCombiners: (C, C) => C,
       numPartitions: Int): RDD[(K, C)] = self.withScope {
     combineByKeyWithClassTag(createCombiner, mergeValue, mergeCombiners, numPartitions)(null)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -152,7 +151,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       numPartitions: Int)(implicit ct: ClassTag[C]): RDD[(K, C)] = self.withScope {
     combineByKeyWithClassTag(createCombiner, mergeValue, mergeCombiners,
       new HashPartitioner(numPartitions))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -178,7 +177,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
     val cleanedSeqOp = self.context.clean(seqOp)
     combineByKeyWithClassTag[U]((v: V) => cleanedSeqOp(createZero(), v),
       cleanedSeqOp, combOp, partitioner)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -193,7 +192,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
   def aggregateByKey[U: ClassTag](zeroValue: U, numPartitions: Int)(seqOp: (U, V) => U,
       combOp: (U, U) => U): RDD[(K, U)] = self.withScope {
     aggregateByKey(zeroValue, new HashPartitioner(numPartitions))(seqOp, combOp)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -208,7 +207,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
   def aggregateByKey[U: ClassTag](zeroValue: U)(seqOp: (U, V) => U,
       combOp: (U, U) => U): RDD[(K, U)] = self.withScope {
     aggregateByKey(zeroValue, defaultPartitioner(self))(seqOp, combOp)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -231,7 +230,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
     val cleanedFunc = self.context.clean(func)
     combineByKeyWithClassTag[V]((v: V) => cleanedFunc(createZero(), v),
       cleanedFunc, cleanedFunc, partitioner)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -241,7 +240,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def foldByKey(zeroValue: V, numPartitions: Int)(func: (V, V) => V): RDD[(K, V)] = self.withScope {
     foldByKey(zeroValue, new HashPartitioner(numPartitions))(func)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -251,7 +250,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def foldByKey(zeroValue: V)(func: (V, V) => V): RDD[(K, V)] = self.withScope {
     foldByKey(zeroValue, defaultPartitioner(self))(func)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -279,7 +278,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       StratifiedSamplingUtils.getBernoulliSamplingFunction(self, fractions, false, seed)
     }
     self.mapPartitionsWithIndex(samplingFunc, preservesPartitioning = true)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -310,7 +309,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       StratifiedSamplingUtils.getBernoulliSamplingFunction(self, fractions, true, seed)
     }
     self.mapPartitionsWithIndex(samplingFunc, preservesPartitioning = true)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -320,7 +319,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def reduceByKey(partitioner: Partitioner, func: (V, V) => V): RDD[(K, V)] = self.withScope {
     combineByKeyWithClassTag[V]((v: V) => v, func, func, partitioner)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -330,7 +329,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def reduceByKey(func: (V, V) => V, numPartitions: Int): RDD[(K, V)] = self.withScope {
     reduceByKey(new HashPartitioner(numPartitions), func)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -340,8 +339,8 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    * parallelism level.
    */
   def reduceByKey(func: (V, V) => V): RDD[(K, V)] = self.withScope {
-    reduceByKey(defaultPartitioner(self), func).setName(callLocation.location)
-      .setName(callLocation.location)
+    reduceByKey(defaultPartitioner(self), func)
+      
   }
 
   /**
@@ -523,7 +522,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
     val mergeCombiners = (c1: CompactBuffer[V], c2: CompactBuffer[V]) => c1 ++= c2
     val bufs = combineByKeyWithClassTag[CompactBuffer[V]](
       createCombiner, mergeValue, mergeCombiners, partitioner, mapSideCombine = false)
-      .setName(callLocation.location)
+      
     bufs.asInstanceOf[RDD[(K, Iterable[V])]]
   }
 
@@ -541,7 +540,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def groupByKey(numPartitions: Int): RDD[(K, Iterable[V])] = self.withScope {
     groupByKey(new HashPartitioner(numPartitions))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -555,7 +554,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       self
     } else {
       new ShuffledRDD[K, V, V](self, partitioner)
-    }.setName(callLocation.location)
+    }
   }
 
   /**
@@ -633,7 +632,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       mergeValue: (C, V) => C,
       mergeCombiners: (C, C) => C): RDD[(K, C)] = self.withScope {
     combineByKeyWithClassTag(createCombiner, mergeValue, mergeCombiners)(null)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -647,7 +646,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       mergeValue: (C, V) => C,
       mergeCombiners: (C, C) => C)(implicit ct: ClassTag[C]): RDD[(K, C)] = self.withScope {
     combineByKeyWithClassTag(createCombiner, mergeValue, mergeCombiners, defaultPartitioner(self))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -662,7 +661,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def groupByKey(): RDD[(K, Iterable[V])] = self.withScope {
     groupByKey(defaultPartitioner(self))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -672,7 +671,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))] = self.withScope {
     join(other, defaultPartitioner(self, other))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -682,7 +681,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def join[W](other: RDD[(K, W)], numPartitions: Int): RDD[(K, (V, W))] = self.withScope {
     join(other, new HashPartitioner(numPartitions))
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -782,7 +781,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
     new MapPartitionsRDD[(K, U), (K, V)](self,
       (context, pid, iter) => iter.map { case (k, v) => (k, cleanF(v)) },
       preservesPartitioning = true)
-      .setName(callLocation.location)
+      
   }
 
   /**
@@ -798,7 +797,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
         cleanF(v).map(x => (k, x))
       },
       preservesPartitioning = true)
-      .setName(callLocation.location)
+      
   }
 
   /**
