@@ -23,7 +23,7 @@ import java.net.Socket
 import scala.collection.mutable
 import scala.util.Properties
 import com.google.common.collect.MapMaker
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.dft.DFTEnv
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.api.python.PythonWorkerFactory
 import org.apache.spark.broadcast.BroadcastManager

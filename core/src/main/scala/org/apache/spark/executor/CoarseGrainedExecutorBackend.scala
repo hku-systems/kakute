@@ -21,7 +21,7 @@ import java.net.URL
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.dft.DFTEnv
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}

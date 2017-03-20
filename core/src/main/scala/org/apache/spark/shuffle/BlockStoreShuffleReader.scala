@@ -17,8 +17,8 @@
 
 package org.apache.spark.shuffle
 
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.{RuleTainter, SelectiveTainter}
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.{RuleTainter, SelectiveTainter}
 import org.apache.spark._
 import org.apache.spark.internal.Logging
 import org.apache.spark.serializer.SerializerManager

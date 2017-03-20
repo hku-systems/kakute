@@ -1,6 +1,7 @@
 package edu.hku.cs.dft
 
-import edu.hku.cs.Optimization.Sampler
+import edu.hku.cs.dft.optimization.Sampler
+
 
 /**
   * Created by max on 15/3/2017.

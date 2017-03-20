@@ -19,8 +19,8 @@ package org.apache.spark.util.collection
 
 import java.util.Comparator
 
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.SelectiveTainter
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.SelectiveTainter
 import org.apache.spark.storage.DiskBlockObjectWriter
 
 /**

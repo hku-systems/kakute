@@ -2,7 +2,7 @@ package edu.hku.cs.dft.datamodel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
-import edu.hku.cs.Optimization.Analyser
+import edu.hku.cs.dft.optimization.Analyser
 
 
 /**

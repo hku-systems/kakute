@@ -1,10 +1,9 @@
-package edu.hku.cs.Optimization
+package edu.hku.cs.dft.optimization
 
 import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
 import edu.hku.cs.dft.datamodel.{DataModel, GraphManager, PlatformHandle}
-import edu.hku.cs.Optimization.RuleCollector.RuleSet
-import edu.hku.cs.TaintTracking
-import edu.hku.cs.TaintTracking.DFTUtils
+import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
+import edu.hku.cs.dft.tracker.DFTUtils
 
 /**
   * Created by jianyu on 3/16/17.

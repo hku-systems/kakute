@@ -1,8 +1,8 @@
-package edu.hku.cs.TaintTracking
+package edu.hku.cs.dft.tracker
 
-import edu.hku.cs.TaintTracking.TrackingType.TrackingType
-import edu.hku.cs.{DFTEnv, TrackingMode}
-import edu.hku.cs.TrackingMode.TrackingMode
+import edu.hku.cs.dft.TrackingMode
+import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 
 /**

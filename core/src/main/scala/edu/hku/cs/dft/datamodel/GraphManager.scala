@@ -1,7 +1,7 @@
 package edu.hku.cs.dft.datamodel
 
-import edu.hku.cs.Optimization.RuleCollector.RuleSet
-import edu.hku.cs.network._
+import edu.hku.cs.dft.network._
+import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
 import org.apache.spark.rdd.RDD
 
 /**

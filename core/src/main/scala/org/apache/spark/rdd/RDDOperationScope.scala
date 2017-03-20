@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.common.base.Objects
-import edu.hku.cs.Optimization.SymbolManager
 import edu.hku.cs.tools.CallLocation
 import org.apache.spark.SparkContext
 import org.apache.spark.internal.Logging

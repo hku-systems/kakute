@@ -32,7 +32,7 @@ import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.dft.DFTEnv
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}

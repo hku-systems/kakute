@@ -1,6 +1,7 @@
 package edu.hku.cs.dft
 
-import edu.hku.cs.TaintTracking.SelectiveTainter
+import edu.hku.cs.dft.tracker.SelectiveTainter
+
 
 /**
   * Created by jianyu on 3/14/17.

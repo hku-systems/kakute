@@ -22,8 +22,8 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.DFTUtils
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.DFTUtils
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD

@@ -1,4 +1,4 @@
-package edu.hku.cs.network
+package edu.hku.cs.dft.network
 
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandler, ChannelInboundHandlerAdapter, SimpleChannelInboundHandler}
 

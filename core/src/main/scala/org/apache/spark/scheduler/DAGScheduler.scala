@@ -22,7 +22,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.datamodel.GraphManager
 
 import scala.annotation.tailrec

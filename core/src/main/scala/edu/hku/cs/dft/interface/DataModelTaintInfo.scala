@@ -1,4 +1,4 @@
-package edu.hku.cs.interface
+package edu.hku.cs.dft.interface
 
 /**
   * Created by jianyu on 3/20/17.

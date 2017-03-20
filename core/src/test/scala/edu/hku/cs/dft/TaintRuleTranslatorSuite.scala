@@ -1,6 +1,7 @@
 package edu.hku.cs.dft
 
-import edu.hku.cs.interface.TaintRuleTranslator
+import edu.hku.cs.dft.interface.TaintRuleTranslator
+
 
 /**
   * Created by jianyu on 3/20/17.

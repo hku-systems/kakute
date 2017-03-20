@@ -1,8 +1,8 @@
 package edu.hku.cs.dft.datamodel
 
 import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
-import edu.hku.cs.Optimization.RuleCollector
-import edu.hku.cs.Optimization.RuleCollector.RuleSet
+import edu.hku.cs.dft.optimization.RuleCollector
+import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
 
 /**
   * Created by jianyu on 3/5/17.

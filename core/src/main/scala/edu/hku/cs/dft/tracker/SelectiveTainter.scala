@@ -1,6 +1,5 @@
-package edu.hku.cs.TaintTracking
+package edu.hku.cs.dft.tracker
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
-import edu.hku.cs.Optimization.RuleCollector.Rule
 
 /**
   * Created by jianyu on 3/7/17.

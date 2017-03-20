@@ -19,8 +19,8 @@ package org.apache.spark.rdd
 
 import java.io.{FileNotFoundException, IOException}
 
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.SelectiveTainter
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.SelectiveTainter
 
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal

@@ -1,4 +1,4 @@
-package edu.hku.cs.Optimization
+package edu.hku.cs.dft.optimization
 
 import scala.util.Random
 

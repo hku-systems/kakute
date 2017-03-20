@@ -21,7 +21,7 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import edu.hku.cs.DFTEnv
+import edu.hku.cs.dft.DFTEnv
 
 import scala.language.existentials
 import org.apache.spark._

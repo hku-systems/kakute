@@ -22,8 +22,7 @@ import java.nio.charset.StandardCharsets
 
 import scala.collection.JavaConverters._
 import com.google.common.io.Files
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.PhosphorRunner
+import edu.hku.cs.dft.DFTEnv
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.deploy.{ApplicationDescription, ExecutorState}
 import org.apache.spark.deploy.DeployMessages.ExecutorStateChanged

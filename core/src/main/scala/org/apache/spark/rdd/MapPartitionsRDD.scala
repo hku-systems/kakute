@@ -18,8 +18,8 @@
 package org.apache.spark.rdd
 
 
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.RuleTainter
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.RuleTainter
 
 import scala.reflect.ClassTag
 import org.apache.spark.{Partition, TaskContext}

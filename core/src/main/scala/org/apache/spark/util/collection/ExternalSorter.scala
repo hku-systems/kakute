@@ -23,8 +23,8 @@ import java.util.Comparator
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import com.google.common.io.ByteStreams
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.TaintTracking.SelectiveTainter
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.SelectiveTainter
 import org.apache.spark._
 import org.apache.spark.executor.ShuffleWriteMetrics
 import org.apache.spark.internal.Logging

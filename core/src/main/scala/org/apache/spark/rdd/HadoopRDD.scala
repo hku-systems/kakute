@@ -21,9 +21,9 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 
-import edu.hku.cs.{DFTEnv, SampleMode}
-import edu.hku.cs.Optimization.Sampler
-import edu.hku.cs.TaintTracking.{DFTUtils, SelectiveTainter}
+import edu.hku.cs.dft.{DFTEnv, SampleMode}
+import edu.hku.cs.dft.optimization.Sampler
+import edu.hku.cs.dft.tracker.SelectiveTainter
 
 import scala.collection.immutable.Map
 import scala.reflect.ClassTag

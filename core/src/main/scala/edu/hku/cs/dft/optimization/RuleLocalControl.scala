@@ -1,6 +1,7 @@
-package edu.hku.cs.Optimization
+package edu.hku.cs.dft.optimization
 
-import edu.hku.cs.network._
+import edu.hku.cs.dft.network._
+import edu.hku.cs.dft.network.NettyEndpoint
 
 /**
   * Created by jianyu on 3/9/17.

@@ -1,7 +1,8 @@
 package edu.hku.cs.dft
 
-import edu.hku.cs.Optimization.RuleCollector
-import edu.hku.cs.Optimization.RuleCollector.RuleSet
+import edu.hku.cs.dft.optimization.RuleCollector
+import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
+
 
 /**
   * Created by max on 18/3/2017.

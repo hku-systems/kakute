@@ -1,9 +1,9 @@
-package edu.hku.cs
+package edu.hku.cs.dft
 
 import java.io.FileNotFoundException
 
-import edu.hku.cs.SampleMode.SampleMode
-import edu.hku.cs.TrackingMode.TrackingMode
+import edu.hku.cs.dft.SampleMode.SampleMode
+import edu.hku.cs.dft.TrackingMode.TrackingMode
 import org.apache.spark.SparkConf
 
 import scala.io.Source

@@ -25,10 +25,10 @@ import scala.io.Codec
 import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
-import edu.hku.cs.DFTEnv
-import edu.hku.cs.Optimization.SymbolManager
-import edu.hku.cs.TaintTracking.{DFTUtils, SelectiveTainter}
-import edu.hku.cs.interface.{DataModelTaintInfo, TaintRuleTranslator}
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.interface.{DataModelTaintInfo, TaintRuleTranslator}
+import edu.hku.cs.dft.optimization.SymbolManager
+import edu.hku.cs.dft.tracker.{DFTUtils, SelectiveTainter}
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
