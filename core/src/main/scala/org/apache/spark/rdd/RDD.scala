@@ -975,7 +975,7 @@ abstract class RDD[T: ClassTag](
   }
 
   /**
-   * Return an array that contains all of the elements in this RDD.
+   * Return an RDD that contains all of the elements in this RDD.
    *
    * @note This method should only be used if the resulting array is expected to be small, as
    * all the data is loaded into the driver's memory.
@@ -983,6 +983,21 @@ abstract class RDD[T: ClassTag](
   //TODO how to keep collect consistent to the previous declaretion
   def collect(): Array[T] = withScope() {
     val results = sc.runJob(this, (iter: Iterator[T]) => iter.toArray)
+    Array.concat(results: _*)
+  }
+
+  /**
+    * Collect all data along with their taint
+    * Each record will be encoded as (DATA, TAG)
+  */
+
+  def zipWithTaint(): RDD[(T, scala.Predef.Map[Int, Int])] = withScope() {
+    new WithTaintRDD[T](this)
+  }
+
+  def collectWithTaint(): Array[(T, Map[Int, Int])] = withScope() {
+    val taintedResult = zipWithTaint()
+    val results = sc.runJob(taintedResult, (iter: Iterator[(T, Map[Int, Int])]) => iter.toArray)
     Array.concat(results: _*)
   }
 
