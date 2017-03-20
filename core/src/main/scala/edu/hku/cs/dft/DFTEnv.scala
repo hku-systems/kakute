@@ -2,11 +2,10 @@ package edu.hku.cs.dft
 
 import edu.hku.cs.dft.datamodel.{GraphDumper, GraphManager}
 import edu.hku.cs.dft.SampleMode.SampleMode
-import edu.hku.cs.dft.TaintTracking.PhosphorRunner
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
 import edu.hku.cs.dft.optimization.RuleLocalControl
-import edu.hku.cs.dft.tracker.{TrackingPolicy, TrackingType}
+import edu.hku.cs.dft.tracker.{PhosphorRunner, TrackingPolicy, TrackingType}
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 /**
