@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import edu.hku.cs.DFTEnv
-import edu.hku.cs.DataModel.GraphManager
+import edu.hku.cs.dft.datamodel.GraphManager
 
 import scala.annotation.tailrec
 import scala.collection.Map

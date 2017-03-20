@@ -1,4 +1,4 @@
-package edu.hku.cs
+package edu.hku.cs.dft
 
 import edu.hku.cs.Optimization.Sampler
 

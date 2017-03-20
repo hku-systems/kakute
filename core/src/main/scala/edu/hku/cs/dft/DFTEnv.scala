@@ -1,6 +1,6 @@
 package edu.hku.cs
 
-import edu.hku.cs.DataModel.{GraphDumper, GraphManager}
+import edu.hku.cs.dft.datamodel.{GraphDumper, GraphManager}
 import edu.hku.cs.Optimization.RuleLocalControl
 import edu.hku.cs.SampleMode.SampleMode
 import edu.hku.cs.TaintTracking.TrackingType.TrackingType

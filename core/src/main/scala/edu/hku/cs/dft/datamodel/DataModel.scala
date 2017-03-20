@@ -1,6 +1,6 @@
-package edu.hku.cs.DataModel
+package edu.hku.cs.dft.datamodel
 
-import edu.hku.cs.DataModel.DataOperation.DataOperation
+import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
 import edu.hku.cs.Optimization.RuleCollector
 import edu.hku.cs.Optimization.RuleCollector.RuleSet
 

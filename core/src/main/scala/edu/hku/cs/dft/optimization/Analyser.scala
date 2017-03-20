@@ -1,7 +1,7 @@
 package edu.hku.cs.Optimization
 
-import edu.hku.cs.DataModel.DataOperation.DataOperation
-import edu.hku.cs.DataModel.{DataModel, GraphManager, PlatformHandle}
+import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
+import edu.hku.cs.dft.datamodel.{DataModel, GraphManager, PlatformHandle}
 import edu.hku.cs.Optimization.RuleCollector.RuleSet
 import edu.hku.cs.TaintTracking
 import edu.hku.cs.TaintTracking.DFTUtils

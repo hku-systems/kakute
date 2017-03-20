@@ -1,4 +1,4 @@
-package edu.hku.cs.DataModel
+package edu.hku.cs.dft.datamodel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 

@@ -1,4 +1,4 @@
-package edu.hku.cs.DataModel
+package edu.hku.cs.dft.datamodel
 
 import edu.hku.cs.Optimization.RuleCollector.RuleSet
 import edu.hku.cs.network._
