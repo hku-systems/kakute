@@ -27,7 +27,8 @@ import scala.reflect.{ClassTag, classTag}
 import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.DFTEnv
 import edu.hku.cs.Optimization.SymbolManager
-import edu.hku.cs.TaintTracking.DFTUtils
+import edu.hku.cs.TaintTracking.{DFTUtils, SelectiveTainter}
+import edu.hku.cs.interface.{DataModelTaintInfo, TaintRuleTranslator}
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
@@ -153,6 +154,8 @@ abstract class RDD[T: ClassTag](
   @transient var name: String = null
 
   val variableId: String = SymbolManager.newInstance()
+
+  private var taintInfo: DataModelTaintInfo[T] = null
 
   /** Assign a name to this RDD */
   def setName(_name: String): this.type = {
@@ -294,6 +297,12 @@ abstract class RDD[T: ClassTag](
         DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
         t
      })
+    else if (this.taintInfo != null && this.taintInfo.tainted) {
+      val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)
+      r.map(t => {
+        selectiveTainter.setTaintWithTaint(t, TaintRuleTranslator.translate(taintInfo.taintFunc(t)))
+      })
+    }
     else
       r
   }
@@ -1503,6 +1512,17 @@ abstract class RDD[T: ClassTag](
             callLocation: CallLocation): T = withScope(callLocation) {
     this.reduce(ord.min)(null)
   }
+
+  /**
+    * add taint info to this rdd, so that taint will be add to elements of
+    * this RDD after computation
+    * @return the RDD itself
+  */
+  def taint(f: T => Any): this.type = {
+    this.taintInfo = new DataModelTaintInfo[T](true, f)
+    this
+  }
+
 
   /**
    * @note Due to complications in the internal implementation, this method will raise an

@@ -18,6 +18,8 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   var deps: Map[String, RuleSet] = Map()
 
+  def op(): DataOperation = platformHandle.op()
+
   def addModel(dataModel: DataModel):this.type = {
     modelSet += dataModel
     count += 1
@@ -33,14 +35,16 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   override def toString: String = {
     val stringBuilder = new StringBuilder
-    stringBuilder.append(s"[$variable] -> {$count} ")
+    stringBuilder.append(s"[$variable] -> { ")
     modelSet.foreach(d => {
       stringBuilder.append(d.ID)
       stringBuilder.append(" ")
     })
+    stringBuilder.append(s"}($count) $op deps: ")
     deps.foreach(r => {
+      stringBuilder.append(r._1 + " -> ")
       stringBuilder.append(r._2)
-      stringBuilder.append(" ")
+      stringBuilder.append(" ;")
     })
     stringBuilder.toString()
   }
