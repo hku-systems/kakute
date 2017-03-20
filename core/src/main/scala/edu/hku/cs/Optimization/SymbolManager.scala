@@ -5,15 +5,18 @@ package edu.hku.cs.Optimization
   */
 object SymbolManager {
 
-  var scopt: String = ""
+  var scope: String = ""
 
   private var id: Int = 0
   private var StringId: Map[String, Int] = Map()
 
-  def newId(): Int = {
-    id += 1
-    id
+  def resetScope(s: String): Unit = {
+    scope = s
+    id = 0
   }
 
-  def setAndGet(string: String): Int = StringId.getOrElse(string, newId())
+  def newInstance(): String = {
+    id += 1
+    scope + "-" + id
+  }
 }

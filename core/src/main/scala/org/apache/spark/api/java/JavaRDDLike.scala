@@ -613,7 +613,7 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    * @return an array of top elements
    */
   def top(num: Int, comp: Comparator[T]): JList[T] = {
-    rdd.top(num)(Ordering.comparatorToOrdering(comp)).toSeq.asJava
+    rdd.top(num)(Ordering.comparatorToOrdering(comp), null).toSeq.asJava
   }
 
   /**

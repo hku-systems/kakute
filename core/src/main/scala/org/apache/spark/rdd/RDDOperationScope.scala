@@ -99,7 +99,7 @@ private[spark] object RDDOperationScope extends Logging {
    */
   private[spark] def withScope[T](
       sc: SparkContext,
-      allowNesting: Boolean = false)(body: => T)(implicit callLocation: CallLocation): T = {
+      allowNesting: Boolean = false)(body: => T): T = {
     val ourMethodName = "withScope"
     val callerMethodName = Thread.currentThread.getStackTrace()
       .dropWhile(_.getMethodName != ourMethodName)
@@ -110,7 +110,6 @@ private[spark] object RDDOperationScope extends Logging {
         logWarning("No valid method name for this RDD operation scope!")
         "N/A"
       }
-    SymbolManager.scopt = callLocation.location
     withScope[T](sc, callerMethodName, allowNesting, ignoreParent = false)(body)
   }
 

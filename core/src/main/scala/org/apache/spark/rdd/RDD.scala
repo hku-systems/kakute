@@ -152,6 +152,8 @@ abstract class RDD[T: ClassTag](
   /** A friendly name for this RDD */
   @transient var name: String = null
 
+  val variableId: String = SymbolManager.newInstance()
+
   /** Assign a name to this RDD */
   def setName(_name: String): this.type = {
     name = _name
@@ -367,7 +369,12 @@ abstract class RDD[T: ClassTag](
    *
    * Note: Return statements are NOT allowed in the given body.
    */
-  private[spark] def withScope[U](callLocation: CallLocation = null)(body: => U): U = RDDOperationScope.withScope[U](sc)(body)
+  private[spark] def withScope[U](callLocation: CallLocation = null)(body: => U): U = {
+    if (callLocation != null) {
+      SymbolManager.resetScope(callLocation.location)
+    }
+    RDDOperationScope.withScope[U](sc)(body)
+  }
 
   // Transformations (return a new RDD)
 
@@ -413,7 +420,7 @@ abstract class RDD[T: ClassTag](
    * Return a new RDD containing the distinct elements in this RDD.
    */
   def distinct()(implicit callLocation: CallLocation): RDD[T] = withScope(callLocation) {
-    distinct(partitions.length)(implicitly, null)
+    distinct(partitions.length)(null, null)
   }
 
   /**
@@ -677,7 +684,7 @@ abstract class RDD[T: ClassTag](
    */
   def intersection(other: RDD[T], numPartitions: Int)
                   (implicit callLocation: CallLocation): RDD[T] = withScope(callLocation) {
-    intersection(other, new HashPartitioner(numPartitions))(implicitly, null)
+    intersection(other, new HashPartitioner(numPartitions))(null, null)
   }
 
   /**
@@ -707,7 +714,7 @@ abstract class RDD[T: ClassTag](
    */
   def groupBy[K](f: T => K)(implicit kt: ClassTag[K],
                             callLocation: CallLocation): RDD[(K, Iterable[T])] = withScope(callLocation) {
-    groupBy[K](f, defaultPartitioner(this))(implicitly, implicitly,null)
+    groupBy[K](f, defaultPartitioner(this))(implicitly, null, null)
   }
 
   /**
@@ -723,7 +730,7 @@ abstract class RDD[T: ClassTag](
       f: T => K,
       numPartitions: Int)(implicit kt: ClassTag[K],
                           callLocation: CallLocation): RDD[(K, Iterable[T])] = withScope(callLocation) {
-    groupBy(f, new HashPartitioner(numPartitions))(implicitly, implicitly, null)
+    groupBy(f, new HashPartitioner(numPartitions))(implicitly, null, null)
   }
 
   /**
@@ -834,8 +841,7 @@ abstract class RDD[T: ClassTag](
    */
   private[spark] def mapPartitionsWithIndexInternal[U: ClassTag](
       f: (Int, Iterator[T]) => Iterator[U],
-      preservesPartitioning: Boolean = false,
-      callLocation: CallLocation): RDD[U] = withScope(callLocation) {
+      preservesPartitioning: Boolean = false)(implicit callLocation: CallLocation): RDD[U] = withScope(callLocation) {
     new MapPartitionsRDD(
       this,
       (context: TaskContext, index: Int, iter: Iterator[T]) => f(index, iter),
@@ -901,7 +907,7 @@ abstract class RDD[T: ClassTag](
       (rdd2: RDD[B], preservesPartitioning: Boolean)
       (f: (Iterator[T], Iterator[B]) => Iterator[V])
       (implicit callLocation: CallLocation): RDD[V] = withScope(callLocation) {
-    new ZippedPartitionsRDD2(sc, sc.clean(f), this, rdd2, preservesPartitioning)(null)
+    new ZippedPartitionsRDD2(sc, sc.clean(f), this, rdd2, preservesPartitioning)
   }
 
   def zipPartitions[B: ClassTag, V: ClassTag]
@@ -915,7 +921,7 @@ abstract class RDD[T: ClassTag](
       (rdd2: RDD[B], rdd3: RDD[C], preservesPartitioning: Boolean)
       (f: (Iterator[T], Iterator[B], Iterator[C]) => Iterator[V])
       (implicit callLocation: CallLocation): RDD[V] = withScope(callLocation) {
-    new ZippedPartitionsRDD3(sc, sc.clean(f), this, rdd2, rdd3, preservesPartitioning)(implicitly, implicitly, implicitly, null)
+    new ZippedPartitionsRDD3(sc, sc.clean(f), this, rdd2, rdd3, preservesPartitioning)
   }
 
   def zipPartitions[B: ClassTag, C: ClassTag, V: ClassTag]
@@ -929,7 +935,7 @@ abstract class RDD[T: ClassTag](
       (rdd2: RDD[B], rdd3: RDD[C], rdd4: RDD[D], preservesPartitioning: Boolean)
       (f: (Iterator[T], Iterator[B], Iterator[C], Iterator[D]) => Iterator[V])
       (implicit callLocation: CallLocation): RDD[V] = withScope(callLocation) {
-    new ZippedPartitionsRDD4(sc, sc.clean(f), this, rdd2, rdd3, rdd4, preservesPartitioning)(implicitly, implicitly, implicitly, implicitly, implicitly, null)
+    new ZippedPartitionsRDD4(sc, sc.clean(f), this, rdd2, rdd3, rdd4, preservesPartitioning)
   }
 
   def zipPartitions[B: ClassTag, C: ClassTag, D: ClassTag, V: ClassTag]
@@ -1004,14 +1010,14 @@ abstract class RDD[T: ClassTag](
    * RDD will be &lt;= us.
    */
   def subtract(other: RDD[T])(implicit callLocation: CallLocation): RDD[T] = withScope(callLocation) {
-    subtract(other, partitioner.getOrElse(new HashPartitioner(partitions.length)))(implicitly ,null)
+    subtract(other, partitioner.getOrElse(new HashPartitioner(partitions.length)))(null, null)
   }
 
   /**
    * Return an RDD with the elements from `this` that are not in `other`.
    */
   def subtract(other: RDD[T], numPartitions: Int)(implicit callLocation: CallLocation): RDD[T] = withScope(callLocation) {
-    subtract(other, new HashPartitioner(numPartitions))(implicitly, null)
+    subtract(other, new HashPartitioner(numPartitions))(null, null)
   }
 
   /**
@@ -1435,8 +1441,8 @@ abstract class RDD[T: ClassTag](
    * @return an array of top elements
    */
   //TODO it seems that takeOrdered will create RDD
-  def top(num: Int)(implicit ord: Ordering[T]): Array[T] = withScope() {
-    takeOrdered(num)(ord.reverse)
+  def top(num: Int)(implicit ord: Ordering[T], callLocation: CallLocation): Array[T] = withScope(callLocation) {
+    takeOrdered(num)(ord.reverse, null)
   }
 
   /**
@@ -1458,7 +1464,8 @@ abstract class RDD[T: ClassTag](
    * @param ord the implicit ordering for T
    * @return an array of top elements
    */
-  def takeOrdered(num: Int)(implicit ord: Ordering[T], callLocation: CallLocation): Array[T] = withScope(callLocation) {
+  def takeOrdered(num: Int)(implicit ord: Ordering[T], callLocation: CallLocation = implicitly): Array[T] =
+    withScope(callLocation) {
     if (num == 0) {
       Array.empty
     } else {
@@ -1700,7 +1707,6 @@ abstract class RDD[T: ClassTag](
   /** User code that created this RDD (e.g. `textFile`, `parallelize`). */
   @transient private[spark] val creationSite = sc.getCallSite()
 
-  val callLocation: String = SymbolManager.scopt
   /**
    * The scope associated with the operation that created this RDD.
    *

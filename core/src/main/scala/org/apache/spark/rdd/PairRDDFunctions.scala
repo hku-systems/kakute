@@ -324,7 +324,6 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def reduceByKey(partitioner: Partitioner, func: (V, V) => V)
                  (implicit callLocation: CallLocation): RDD[(K, V)] = self.withScope(callLocation) {
-    println("doing reduce in " + callLocation.location)
     combineByKeyWithClassTag[V]((v: V) => v, func, func, partitioner)(implicitly, null)
   }
 
@@ -335,7 +334,6 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def reduceByKey(func: (V, V) => V, numPartitions: Int)
                  (implicit callLocation: CallLocation): RDD[(K, V)] = self.withScope(callLocation) {
-    println("doing reduce in " + callLocation.location)
     reduceByKey(new HashPartitioner(numPartitions), func)(null)
   }
 

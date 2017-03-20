@@ -29,7 +29,7 @@ class DataModel(frameworkHandle: PlatformHandle) {
 
   def handle(): PlatformHandle = frameworkHandle
 
-  def name(): String = if (_name == "") frameworkHandle.variable() else _name
+  def name(): String = frameworkHandle.variable()
 
   def op(): DataOperation = frameworkHandle.op()
 
