@@ -17,8 +17,9 @@
 
 package org.apache.spark.graphx.impl
 
-import scala.reflect.{classTag, ClassTag}
+import edu.hku.cs.tools.CallLocation
 
+import scala.reflect.{ClassTag, classTag}
 import org.apache.spark.{HashPartitioner, OneToOneDependency}
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
@@ -47,7 +48,8 @@ class EdgeRDDImpl[ED: ClassTag, VD: ClassTag] private[graphx] (
   override val partitioner =
     partitionsRDD.partitioner.orElse(Some(new HashPartitioner(partitions.length)))
 
-  override def collect(): Array[Edge[ED]] = this.map(_.copy()).collect()
+  override def collect():
+  Array[Edge[ED]] = this.map(_.copy()).collect()
 
   /**
    * Persists the edge partitions at the specified storage level, ignoring any existing target

@@ -176,7 +176,7 @@ class CountVectorizer @Since("1.5.0") (@Since("1.5.0") override val uid: String)
     val fullVocabSize = wordCounts.count()
 
     val vocab = wordCounts
-      .top(math.min(fullVocabSize, vocSize).toInt)(Ordering.by(_._2))
+      .top(math.min(fullVocabSize, vocSize).toInt)(Ordering.by(_._2), null)
       .map(_._1)
 
     require(vocab.length > 0, "The vocabulary size should be > 0. Lower minDF as necessary.")

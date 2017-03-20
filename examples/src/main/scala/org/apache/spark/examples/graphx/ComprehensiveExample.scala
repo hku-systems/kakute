@@ -71,7 +71,7 @@ object ComprehensiveExample {
       case (uid, attrList, None) => (0.0, attrList.toList)
     }
 
-    println(userInfoWithPageRank.vertices.top(5)(Ordering.by(_._2._1)).mkString("\n"))
+    println(userInfoWithPageRank.vertices.top(5)(Ordering.by(_._2._1), null).mkString("\n"))
     // $example off$
 
     spark.stop()

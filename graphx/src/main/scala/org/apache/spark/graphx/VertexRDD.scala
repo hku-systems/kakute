@@ -17,8 +17,9 @@
 
 package org.apache.spark.graphx
 
-import scala.reflect.ClassTag
+import edu.hku.cs.tools.CallLocation
 
+import scala.reflect.ClassTag
 import org.apache.spark._
 import org.apache.spark.graphx.impl.RoutingTablePartition
 import org.apache.spark.graphx.impl.ShippableVertexPartition
@@ -94,7 +95,8 @@ abstract class VertexRDD[VD](
    * @param pred the user defined predicate, which takes a tuple to conform to the
    * `RDD[(VertexId, VD)]` interface
    */
-  override def filter(pred: Tuple2[VertexId, VD] => Boolean): VertexRDD[VD] =
+  override def filter(pred: Tuple2[VertexId, VD] => Boolean)
+                     (implicit callLocation: CallLocation): VertexRDD[VD] =
     this.mapVertexPartitions(_.filter(Function.untupled(pred)))
 
   /**

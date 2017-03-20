@@ -257,7 +257,7 @@ object MatrixFactorizationModel extends Loader[MatrixFactorizationModel] {
     val scored = recommendableFeatures.map { case (id, features) =>
       (id, blas.ddot(features.length, recommendToFeatures, 1, features, 1))
     }
-    scored.top(num)(Ordering.by(_._2))
+    scored.top(num)(Ordering.by(_._2), null)
   }
 
   /**
