@@ -33,6 +33,7 @@ import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.tools.CallLocation
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -698,7 +699,7 @@ class SparkContext(config: SparkConf) extends Logging {
    *
    * @note Return statements are NOT allowed in the given body.
    */
-  private[spark] def withScope[U](body: => U): U = RDDOperationScope.withScope[U](this)(body)
+  private[spark] def withScope[U](callLocation: CallLocation = null)(body: => U): U = RDDOperationScope.withScope[U](this)(body)
 
   // Methods for creating RDDs
 
@@ -715,7 +716,7 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def parallelize[T: ClassTag](
       seq: Seq[T],
-      numSlices: Int = defaultParallelism): RDD[T] = withScope {
+      numSlices: Int = defaultParallelism)(implicit callLocation:CallLocation): RDD[T] = withScope(callLocation) {
     assertNotStopped()
     new ParallelCollectionRDD[T](this, seq, numSlices, Map[Int, Seq[String]]())
   }
@@ -736,7 +737,7 @@ class SparkContext(config: SparkConf) extends Logging {
       start: Long,
       end: Long,
       step: Long = 1,
-      numSlices: Int = defaultParallelism): RDD[Long] = withScope {
+      numSlices: Int = defaultParallelism)(implicit callLocation:CallLocation): RDD[Long] = withScope(callLocation) {
     assertNotStopped()
     // when step is 0, range will run infinitely
     require(step != 0, "step cannot be 0")
@@ -750,7 +751,7 @@ class SparkContext(config: SparkConf) extends Logging {
         (safeEnd - safeStart) / step + 1
       }
     }
-    parallelize(0 until numSlices, numSlices).mapPartitionsWithIndex { (i, _) =>
+    parallelize(0 until numSlices, numSlices)(implicitly, null).mapPartitionsWithIndex { (i, _) =>
       val partitionStart = (i * numElements) / numSlices * step + start
       val partitionEnd = (((i + 1) * numElements) / numSlices) * step + start
       def getSafeMargin(bi: BigInt): Long =
@@ -789,7 +790,7 @@ class SparkContext(config: SparkConf) extends Logging {
           ret
         }
       }
-    }
+    }(implicitly, null)
   }
 
   /** Distribute a local Scala collection to form an RDD.
@@ -801,8 +802,8 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def makeRDD[T: ClassTag](
       seq: Seq[T],
-      numSlices: Int = defaultParallelism): RDD[T] = withScope {
-    parallelize(seq, numSlices)
+      numSlices: Int = defaultParallelism)(implicit callLocation:CallLocation): RDD[T] = withScope(callLocation) {
+    parallelize(seq, numSlices)(implicitly, null)
   }
 
   /**
@@ -812,7 +813,7 @@ class SparkContext(config: SparkConf) extends Logging {
    * @param seq list of tuples of data and location preferences (hostnames of Spark nodes)
    * @return RDD representing data partitioned according to location preferences
    */
-  def makeRDD[T: ClassTag](seq: Seq[(T, Seq[String])]): RDD[T] = withScope {
+  def makeRDD[T: ClassTag](seq: Seq[(T, Seq[String])])(implicit callLocation:CallLocation): RDD[T] = withScope(callLocation) {
     assertNotStopped()
     val indexToPrefs = seq.zipWithIndex.map(t => (t._2, t._1._2)).toMap
     new ParallelCollectionRDD[T](this, seq.map(_._1), math.max(seq.size, 1), indexToPrefs)
@@ -827,7 +828,8 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def textFile(
       path: String,
-      minPartitions: Int = defaultMinPartitions): RDD[String] = withScope {
+      minPartitions: Int = defaultMinPartitions)
+              (implicit callLocation:CallLocation): RDD[String] = withScope(callLocation) {
     assertNotStopped()
     hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text],
       minPartitions).map(pair => pair._2.toString).setName(path)
@@ -869,7 +871,7 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def wholeTextFiles(
       path: String,
-      minPartitions: Int = defaultMinPartitions): RDD[(String, String)] = withScope {
+      minPartitions: Int = defaultMinPartitions)(implicit callLocation:CallLocation): RDD[(String, String)] = withScope(callLocation) {
     assertNotStopped()
     val job = NewHadoopJob.getInstance(hadoopConfiguration)
     // Use setInputPaths so that wholeTextFiles aligns with hadoopFile/textFile in taking
@@ -921,7 +923,8 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def binaryFiles(
       path: String,
-      minPartitions: Int = defaultMinPartitions): RDD[(String, PortableDataStream)] = withScope {
+      minPartitions: Int = defaultMinPartitions)
+                 (implicit callLocation:CallLocation): RDD[(String, PortableDataStream)] = withScope(callLocation) {
     assertNotStopped()
     val job = NewHadoopJob.getInstance(hadoopConfiguration)
     // Use setInputPaths so that binaryFiles aligns with hadoopFile/textFile in taking
