@@ -1,7 +1,7 @@
 package edu.hku.cs.dft.optimization
 
 import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
-import edu.hku.cs.dft.datamodel.{DataModel, GraphManager, PlatformHandle}
+import edu.hku.cs.dft.datamodel.{DataModel, DataOperation, GraphManager, PlatformHandle}
 import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
 import edu.hku.cs.dft.tracker.DFTUtils
 
@@ -13,20 +13,35 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   var modelSet: Set[DataModel] = Set()
 
+  var dataType: Any = _
+
   var count: Int = 0
 
   var deps: Map[String, RuleSet] = Map()
 
   def op(): DataOperation = platformHandle.op()
 
-  def addModel(dataModel: DataModel):this.type = {
+  def addModel(dataModel: DataModel, fatherModel: DataModel):this.type = {
     modelSet += dataModel
     count += 1
+    if (dataType == null)
+      dataType = dataModel.dataType()
     dataModel.deps().foreach(dp => {
-      if (deps.contains(dp._1.name())) {
-        deps += dp._1.name() -> RuleCollector.CombineRule(dp._2, deps(dp._1.name()))
+      val dpName = if (dp._1.name() == dataModel.name()) fatherModel.name() else dp._1.name()
+      if (deps.contains(dpName)) {
+        deps += dpName -> RuleCollector.CombineRule(dp._2, deps(dpName))
       } else {
-        deps += dp._1.name() -> dp._2
+        deps += dpName -> dp._2
+      }
+    })
+
+    /**
+      * fill the legacy data with empty entry
+    */
+
+    dataModel.fathers().foreach(fa => {
+      if (!deps.contains(fa.name())) {
+        deps += fa.name() -> Map()
       }
     })
     this
@@ -34,7 +49,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   override def toString: String = {
     val stringBuilder = new StringBuilder
-    stringBuilder.append(s"[$variable] -> { ")
+    stringBuilder.append(s"[$variable] $dataType -> { ")
     modelSet.foreach(d => {
       stringBuilder.append(d.ID)
       stringBuilder.append(" ")
@@ -50,9 +65,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 }
 
 
-
 class Analyser {
-
 
   private val prefixRoot: String = "Root-"
 
@@ -102,11 +115,33 @@ class Analyser {
     if (visitedSet.contains(dataModel.ID.toInt))
       return
 
-    dataSet += dataModel.name() -> dataSet.getOrElse(dataModel.name(), new LoopReducedDataModel(dataModel.handle(), dataModel.name())).addModel(dataModel)
+    dataSet += dataModel.name() -> dataSet.getOrElse(dataModel.name(), new LoopReducedDataModel(dataModel.handle(), dataModel.name())).addModel(dataModel, fatherModel)
     visitedSet += dataModel.ID.toInt
     dataModel.sons().foreach(t => {
       entryHelper(t, dataModel)
     })
+
+  }
+
+  /**
+    * In the [[firstRoundEntry]], we will add the dependency info that may be hard or unnecessary
+    * to infer
+    * TODO: Now we only consider union, but we actually may use the infomation like union to provide
+    * a higher-level information to optimize the system
+    *
+  */
+  def firstRoundEntry(): Unit = {
+    var checkList: List[String] = rootData
+    while(checkList.nonEmpty) {
+      val v = checkList.last
+      if (dataSet(v).deps.isEmpty) {
+        dataSet(v).op() match {
+          case DataOperation.Union => {
+            dataSet(v)
+          }
+        }
+      }
+    }
 
   }
 

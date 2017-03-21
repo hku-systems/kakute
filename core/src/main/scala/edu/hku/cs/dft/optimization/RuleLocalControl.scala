@@ -38,9 +38,9 @@ class RuleLocalControl extends NettyEndpoint{
 
   private var splitCollectors: Map[Int, SplitCollector] = Map()
 
-  private var typeCollectors: Map[Int, String] = Map()
+  private var typeCollectors: Map[Int, Any] = Map()
 
-  def addType(id: Int, string: String): Unit = {
+  def addType(id: Int, string: Any): Unit = {
     typeCollectors += id -> string
   }
 

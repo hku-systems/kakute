@@ -39,9 +39,11 @@ class DataModel(frameworkHandle: PlatformHandle) {
 
   private var _deps: Map[DataModel, RuleSet] = Map()
 
-  private var _dataType: String = "null"
+  private var _dataType: Any = _
 
-  def set_type(string: String): Unit = _dataType = string
+  def set_type(string: Any): Unit = _dataType = string
+
+  def dataType(): Any = _dataType
 
   override def equals(obj: Any): Boolean = {
     obj match {
@@ -51,6 +53,8 @@ class DataModel(frameworkHandle: PlatformHandle) {
   }
 
   def sons(): List[DataModel] = _sons
+
+  def fathers(): List[DataModel] = _fathers
 
   def addDeps(ruleSet: RuleSet, dataModel: DataModel): Unit = {
     if (_deps == null)

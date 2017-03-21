@@ -100,7 +100,7 @@ class GraphManager extends NettyEndpoint {
     ruleData.addDeps(ruleSet, depData)
   }
 
-  def addTypeData(int: Int, string: String): Unit = {
+  def addTypeData(int: Int, string: Any): Unit = {
     getDatamodelOrThrow(int).set_type(string)
   }
 
