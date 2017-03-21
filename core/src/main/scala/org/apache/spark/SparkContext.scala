@@ -829,7 +829,7 @@ class SparkContext(config: SparkConf) extends Logging {
   def textFile(
       path: String,
       minPartitions: Int = defaultMinPartitions)
-              (implicit callLocation:CallLocation): RDD[String] = withScope(callLocation) {
+              (implicit callLocation:CallLocation = implicitly): RDD[String] = withScope(callLocation) {
     assertNotStopped()
     hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text],
       minPartitions)(null).map(pair => pair._2.toString)(implicitly, null).setName(path)
@@ -1101,7 +1101,7 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def hadoopFile[K, V, F <: InputFormat[K, V]](path: String)
       (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F],
-       callLocation: CallLocation = implicitly): RDD[(K, V)] = withScope(callLocation) {
+       callLocation: CallLocation): RDD[(K, V)] = withScope(callLocation) {
     hadoopFile[K, V, F](path, defaultMinPartitions)(implicitly, implicitly, implicitly, null)
   }
 
