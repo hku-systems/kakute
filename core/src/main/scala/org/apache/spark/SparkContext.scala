@@ -832,7 +832,7 @@ class SparkContext(config: SparkConf) extends Logging {
               (implicit callLocation:CallLocation): RDD[String] = withScope(callLocation) {
     assertNotStopped()
     hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text],
-      minPartitions).map(pair => pair._2.toString).setName(path)
+      minPartitions)(null).map(pair => pair._2.toString)(implicitly, null).setName(path)
   }
 
   /**
@@ -871,7 +871,8 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def wholeTextFiles(
       path: String,
-      minPartitions: Int = defaultMinPartitions)(implicit callLocation:CallLocation): RDD[(String, String)] = withScope(callLocation) {
+      minPartitions: Int = defaultMinPartitions)
+                    (implicit callLocation:CallLocation): RDD[(String, String)] = withScope(callLocation) {
     assertNotStopped()
     val job = NewHadoopJob.getInstance(hadoopConfiguration)
     // Use setInputPaths so that wholeTextFiles aligns with hadoopFile/textFile in taking
@@ -884,7 +885,7 @@ class SparkContext(config: SparkConf) extends Logging {
       classOf[Text],
       classOf[Text],
       updateConf,
-      minPartitions).map(record => (record._1.toString, record._2.toString)).setName(path)
+      minPartitions).map(record => (record._1.toString, record._2.toString))(implicitly, null).setName(path)
   }
 
   /**
@@ -956,19 +957,20 @@ class SparkContext(config: SparkConf) extends Logging {
   def binaryRecords(
       path: String,
       recordLength: Int,
-      conf: Configuration = hadoopConfiguration): RDD[Array[Byte]] = withScope {
+      conf: Configuration = hadoopConfiguration)
+                   (implicit callLocation:CallLocation): RDD[Array[Byte]] = withScope(callLocation) {
     assertNotStopped()
     conf.setInt(FixedLengthBinaryInputFormat.RECORD_LENGTH_PROPERTY, recordLength)
     val br = newAPIHadoopFile[LongWritable, BytesWritable, FixedLengthBinaryInputFormat](path,
       classOf[FixedLengthBinaryInputFormat],
       classOf[LongWritable],
       classOf[BytesWritable],
-      conf = conf)
+      conf = conf)(null)
     br.map { case (k, v) =>
       val bytes = v.copyBytes()
       assert(bytes.length == recordLength, "Byte array does not have correct length")
       bytes
-    }
+    }(implicitly ,null)
   }
 
   /**
@@ -997,7 +999,8 @@ class SparkContext(config: SparkConf) extends Logging {
       inputFormatClass: Class[_ <: InputFormat[K, V]],
       keyClass: Class[K],
       valueClass: Class[V],
-      minPartitions: Int = defaultMinPartitions): RDD[(K, V)] = withScope {
+      minPartitions: Int = defaultMinPartitions)
+                     (implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
 
     // This is a hack to enforce loading hdfs-site.xml.
@@ -1029,7 +1032,8 @@ class SparkContext(config: SparkConf) extends Logging {
       inputFormatClass: Class[_ <: InputFormat[K, V]],
       keyClass: Class[K],
       valueClass: Class[V],
-      minPartitions: Int = defaultMinPartitions): RDD[(K, V)] = withScope {
+      minPartitions: Int = defaultMinPartitions)
+                      (implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
 
     // This is a hack to enforce loading hdfs-site.xml.
@@ -1069,12 +1073,13 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def hadoopFile[K, V, F <: InputFormat[K, V]]
       (path: String, minPartitions: Int)
-      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F]): RDD[(K, V)] = withScope {
+      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F],
+       callLocation: CallLocation): RDD[(K, V)] = withScope(callLocation) {
     hadoopFile(path,
       fm.runtimeClass.asInstanceOf[Class[F]],
       km.runtimeClass.asInstanceOf[Class[K]],
       vm.runtimeClass.asInstanceOf[Class[V]],
-      minPartitions)
+      minPartitions)(null)
   }
 
   /**
@@ -1095,8 +1100,9 @@ class SparkContext(config: SparkConf) extends Logging {
    * @return RDD of tuples of key and corresponding value
    */
   def hadoopFile[K, V, F <: InputFormat[K, V]](path: String)
-      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F]): RDD[(K, V)] = withScope {
-    hadoopFile[K, V, F](path, defaultMinPartitions)
+      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F],
+       callLocation: CallLocation = implicitly): RDD[(K, V)] = withScope(callLocation) {
+    hadoopFile[K, V, F](path, defaultMinPartitions)(implicitly, implicitly, implicitly, null)
   }
 
   /**
@@ -1118,12 +1124,13 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def newAPIHadoopFile[K, V, F <: NewInputFormat[K, V]]
       (path: String)
-      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F]): RDD[(K, V)] = withScope {
+      (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F],
+       callLocation: CallLocation): RDD[(K, V)] = withScope(callLocation) {
     newAPIHadoopFile(
       path,
       fm.runtimeClass.asInstanceOf[Class[F]],
       km.runtimeClass.asInstanceOf[Class[K]],
-      vm.runtimeClass.asInstanceOf[Class[V]])
+      vm.runtimeClass.asInstanceOf[Class[V]])(null)
   }
 
   /**
@@ -1148,7 +1155,8 @@ class SparkContext(config: SparkConf) extends Logging {
       fClass: Class[F],
       kClass: Class[K],
       vClass: Class[V],
-      conf: Configuration = hadoopConfiguration): RDD[(K, V)] = withScope {
+      conf: Configuration = hadoopConfiguration)
+      (implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
 
     // This is a hack to enforce loading hdfs-site.xml.
@@ -1187,7 +1195,7 @@ class SparkContext(config: SparkConf) extends Logging {
       conf: Configuration = hadoopConfiguration,
       fClass: Class[F],
       kClass: Class[K],
-      vClass: Class[V]): RDD[(K, V)] = withScope {
+      vClass: Class[V])(implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
 
     // This is a hack to enforce loading hdfs-site.xml.
@@ -1219,10 +1227,10 @@ class SparkContext(config: SparkConf) extends Logging {
       keyClass: Class[K],
       valueClass: Class[V],
       minPartitions: Int
-      ): RDD[(K, V)] = withScope {
+      )(implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
     val inputFormatClass = classOf[SequenceFileInputFormat[K, V]]
-    hadoopFile(path, inputFormatClass, keyClass, valueClass, minPartitions)
+    hadoopFile(path, inputFormatClass, keyClass, valueClass, minPartitions)(null)
   }
 
   /**
@@ -1242,9 +1250,9 @@ class SparkContext(config: SparkConf) extends Logging {
   def sequenceFile[K, V](
       path: String,
       keyClass: Class[K],
-      valueClass: Class[V]): RDD[(K, V)] = withScope {
+      valueClass: Class[V])(implicit callLocation:CallLocation): RDD[(K, V)] = withScope(callLocation) {
     assertNotStopped()
-    sequenceFile(path, keyClass, valueClass, defaultMinPartitions)
+    sequenceFile(path, keyClass, valueClass, defaultMinPartitions)(null)
   }
 
   /**
@@ -1276,16 +1284,17 @@ class SparkContext(config: SparkConf) extends Logging {
    def sequenceFile[K, V]
        (path: String, minPartitions: Int = defaultMinPartitions)
        (implicit km: ClassTag[K], vm: ClassTag[V],
-        kcf: () => WritableConverter[K], vcf: () => WritableConverter[V]): RDD[(K, V)] = {
-    withScope {
+        kcf: () => WritableConverter[K], vcf: () => WritableConverter[V],
+        callLocation: CallLocation): RDD[(K, V)] = {
+    withScope(callLocation) {
       assertNotStopped()
       val kc = clean(kcf)()
       val vc = clean(vcf)()
       val format = classOf[SequenceFileInputFormat[Writable, Writable]]
       val writables = hadoopFile(path, format,
         kc.writableClass(km).asInstanceOf[Class[Writable]],
-        vc.writableClass(vm).asInstanceOf[Class[Writable]], minPartitions)
-      writables.map { case (k, v) => (kc.convert(k), vc.convert(v)) }
+        vc.writableClass(vm).asInstanceOf[Class[Writable]], minPartitions)(null)
+      writables.map { case (k, v) => (kc.convert(k), vc.convert(v)) }(implicitly ,null)
     }
   }
 
@@ -1304,18 +1313,18 @@ class SparkContext(config: SparkConf) extends Logging {
    */
   def objectFile[T: ClassTag](
       path: String,
-      minPartitions: Int = defaultMinPartitions): RDD[T] = withScope {
+      minPartitions: Int = defaultMinPartitions)(implicit callLocation:CallLocation = implicitly): RDD[T] = withScope(callLocation) {
     assertNotStopped()
-    sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], minPartitions)
-      .flatMap(x => Utils.deserialize[Array[T]](x._2.getBytes, Utils.getContextOrSparkClassLoader))
+    sequenceFile(path, classOf[NullWritable], classOf[BytesWritable], minPartitions)(null)
+      .flatMap(x => Utils.deserialize[Array[T]](x._2.getBytes, Utils.getContextOrSparkClassLoader))(implicitly, null)
   }
 
-  protected[spark] def checkpointFile[T: ClassTag](path: String): RDD[T] = withScope {
+  protected[spark] def checkpointFile[T: ClassTag](path: String): RDD[T] = withScope() {
     new ReliableCheckpointRDD[T](this, path)
   }
 
   /** Build the union of a list of RDDs. */
-  def union[T: ClassTag](rdds: Seq[RDD[T]]): RDD[T] = withScope {
+  def union[T: ClassTag](rdds: Seq[RDD[T]])(implicit callLocation:CallLocation): RDD[T] = withScope(callLocation) {
     val partitioners = rdds.flatMap(_.partitioner).toSet
     if (rdds.forall(_.partitioner.isDefined) && partitioners.size == 1) {
       new PartitionerAwareUnionRDD(this, rdds)
@@ -1325,8 +1334,9 @@ class SparkContext(config: SparkConf) extends Logging {
   }
 
   /** Build the union of a list of RDDs passed as variable-length arguments. */
-  def union[T: ClassTag](first: RDD[T], rest: RDD[T]*): RDD[T] = withScope {
-    union(Seq(first) ++ rest)
+  def union[T: ClassTag](first: RDD[T], rest: RDD[T]*)
+                        (implicit callLocation:CallLocation): RDD[T] = withScope(callLocation) {
+    union(Seq(first) ++ rest)(implicitly, null)
   }
 
   /** Get an RDD that has no partitions or elements. */
