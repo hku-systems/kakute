@@ -60,6 +60,13 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
     }
   }
 
+  val auto_taint_input: Boolean = {
+    argumentHandle.parseArgs("input_taint") match {
+      case "true" => true
+      case _ => false
+    }
+  }
+
   //use percentage sampling
   val sampleNum: Int = {
     val stringInt = argumentHandle.parseArgs("sample_int")
@@ -104,7 +111,7 @@ object DFTEnv {
 
   val dFTEnv: DFTEnv = new DFTEnv(new ConfFileHandle("/etc/dft.conf"))
 
-  var trackingPolicy: TrackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType, DFTEnv.dftEnv().trackingMode)
+  var trackingPolicy: TrackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType, DFTEnv.dftEnv().trackingMode, DFTEnv.dftEnv().auto_taint_input)
 
   var graphManager: GraphManager = _
 

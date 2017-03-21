@@ -119,10 +119,12 @@ class Analyser {
         print(dataSet(v))
         dumpSet += v
         print(" ===>>> ")
-        setMap(v).foreach(k => {
-          startStrings = k :: startStrings
-          print(k + " ")
-        })
+        if (setMap.contains(v)) {
+          setMap(v).foreach(k => {
+            startStrings = k :: startStrings
+            print(k + " ")
+          })
+        }
         println()
       }
       startStrings = startStrings.init

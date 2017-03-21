@@ -309,7 +309,7 @@ class HadoopRDD[K, V](
       * [[Modified]] taint the input
     */
     var sampler: Sampler = null
-    if (DFTEnv.trackingPolicy.propagation_across_machines) {
+    if (DFTEnv.trackingPolicy.add_tags_input_files) {
       val selectiveTainter = new SelectiveTainter(Map(), 1)
       if (DFTEnv.dftEnv().sampleMode == SampleMode.Sample) {
         sampler = new Sampler(DFTEnv.dftEnv().sampleNum)

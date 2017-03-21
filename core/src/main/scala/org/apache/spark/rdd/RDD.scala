@@ -155,7 +155,7 @@ abstract class RDD[T: ClassTag](
 
   val variableId: String = SymbolManager.newInstance()
 
-  private var taintInfo: DataModelTaintInfo[T] = null
+  private var taintInfo: DataModelTaintInfo[T] = _
 
   /** Assign a name to this RDD */
   def setName(_name: String): this.type = {

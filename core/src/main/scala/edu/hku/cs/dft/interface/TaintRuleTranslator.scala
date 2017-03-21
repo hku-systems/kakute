@@ -17,7 +17,8 @@ object TaintRuleTranslator {
   var tempIndex: Int = 0
 
   def translate(r: Any): Map[Int, Int] = {
-    tempTranslate = tempTranslate.empty
+    tempTranslate = Map()
+    tempIndex = 0
     translateHelper(r)
     tempTranslate
   }

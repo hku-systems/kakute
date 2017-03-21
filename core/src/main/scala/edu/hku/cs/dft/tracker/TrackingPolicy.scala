@@ -35,7 +35,7 @@ object TrackingType extends Enumeration {
   val Values, Keys, KeyValues, Optional = Value
 }
 
-class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode) {
+class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode, _add_tags_input: Boolean) {
 
   /*
   * Default Setting
@@ -44,7 +44,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode) {
     trackingMode match {
       case TrackingMode.FullTracking => false
       case TrackingMode.RuleTracking => true
-      case _ => true
+      case _ => false
     }
   }
 
@@ -59,7 +59,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode) {
     trackingMode match {
       case TrackingMode.RuleTracking => true
       case TrackingMode.FullTracking => false
-      case _ => true
+      case _ => false
     }
   }
   val add_tags_emitted: Boolean = {
@@ -69,13 +69,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode) {
       case _ => true
     }
   }
-  val add_tags_input_files: Boolean = {
-    trackingMode match {
-      case TrackingMode.RuleTracking => false
-      case TrackingMode.FullTracking => true
-      case _ => false
-    }
-  }
+  val add_tags_input_files: Boolean = _add_tags_input
   val propagation_across_machines: Boolean = {
     trackingMode match {
       case TrackingMode.RuleTracking => false

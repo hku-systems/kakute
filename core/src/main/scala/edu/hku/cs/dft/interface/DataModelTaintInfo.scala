@@ -10,7 +10,4 @@ package edu.hku.cs.dft.interface
   * A controller that control if a executor should be in tracking mode should also be added
 */
 
-class DataModelTaintInfo[T](_indicator: Boolean, _taintFunc: T => Any) {
-  val tainted: Boolean = _indicator
-  val taintFunc: T => Any = _taintFunc
-}
+case class DataModelTaintInfo[T](tainted: Boolean, taintFunc: T => Any)
