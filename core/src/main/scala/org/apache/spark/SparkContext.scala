@@ -33,6 +33,7 @@ import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.optimization.SymbolManager
 import edu.hku.cs.tools.CallLocation
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
@@ -699,7 +700,12 @@ class SparkContext(config: SparkConf) extends Logging {
    *
    * @note Return statements are NOT allowed in the given body.
    */
-  private[spark] def withScope[U](callLocation: CallLocation = null)(body: => U): U = RDDOperationScope.withScope[U](this)(body)
+  private[spark] def withScope[U](callLocation: CallLocation = null)(body: => U): U = {
+    if (callLocation != null) {
+      SymbolManager.resetScope(callLocation.location)
+    }
+    RDDOperationScope.withScope[U](this)(body)
+  }
 
   // Methods for creating RDDs
 

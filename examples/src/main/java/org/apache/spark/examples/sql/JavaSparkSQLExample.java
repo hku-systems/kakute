@@ -297,7 +297,7 @@ public class JavaSparkSQLExample {
     // $example on:programmatic_schema$
     // Create an RDD
     JavaRDD<String> peopleRDD = spark.sparkContext()
-      .textFile("examples/src/main/resources/people.txt", 1)
+      .textFile("examples/src/main/resources/people.txt", 1, null)
       .toJavaRDD();
 
     // The schema is encoded in a string
