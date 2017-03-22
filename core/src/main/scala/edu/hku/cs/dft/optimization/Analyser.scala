@@ -17,6 +17,8 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   var count: Int = 0
 
+  var dataCount: Int = 0
+
   var deps: Map[String, RuleSet] = Map()
 
   def op(): DataOperation = platformHandle.op()
@@ -24,6 +26,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
   def addModel(dataModel: DataModel, fatherModel: DataModel):this.type = {
     modelSet += dataModel
     count += 1
+    dataCount += dataModel.count
     if (dataType == null)
       dataType = dataModel.dataType()
     dataModel.deps().foreach(dp => {
@@ -49,12 +52,16 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   override def toString: String = {
     val stringBuilder = new StringBuilder
-    stringBuilder.append(s"[$variable] $dataType -> { ")
+    stringBuilder.append(s"[$variable] $dataType($dataCount) -> { ")
+
+    // Print children id
     modelSet.foreach(d => {
       stringBuilder.append(d.ID)
       stringBuilder.append(" ")
     })
     stringBuilder.append(s"}($count) $op deps: ")
+
+    // Print dependency
     deps.foreach(r => {
       stringBuilder.append(r._1 + " -> ")
       stringBuilder.append(r._2)
@@ -132,15 +139,25 @@ class Analyser {
   */
   def firstRoundEntry(): Unit = {
     var checkList: List[String] = rootData
+    var checkSet: Set[String] = Set()
     while(checkList.nonEmpty) {
       val v = checkList.last
-      if (dataSet(v).deps.isEmpty) {
+      if (!checkSet.contains(v)) {
         dataSet(v).op() match {
-          case DataOperation.Union => {
-            dataSet(v)
-          }
+          case DataOperation.Union =>
+            dataSet(v).deps.foreach(kv => {
+              dataSet(v).deps +=
+                kv._1 -> Map(RuleMaker.makeOneToOneRuleFromTypeInfo(dataSet(v).dataType).toList -> dataSet(kv._1).dataCount)
+            })
+          case _ =>
+          //TODO more rule
+        }
+        if (setMap.contains(v)) {
+          setMap(v).foreach(s => checkList = s :: checkList)
         }
       }
+      checkSet += v
+      checkList = checkList.init
     }
 
   }

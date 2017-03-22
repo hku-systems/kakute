@@ -17,6 +17,8 @@ class DataModel(frameworkHandle: PlatformHandle) {
 
   private var _name: String = ""
 
+  var count: Int = 0
+
   var ID: Long = 0
 
   var isOrigin = false

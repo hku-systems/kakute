@@ -25,15 +25,15 @@ object RuleMaker {
     indexH
   }
 
-  private def produceOneToOneMapping(int: Int): Map[Int, Int] = {
-    var r: Map[Int, Int] = Map()
+  private def produceOneToOneMapping(int: Int): Map[Int, List[Int]] = {
+    var r: Map[Int, List[Int]] = Map()
     for(i <- 1 to int) {
-      r += i -> i
+      r += i -> List(i)
     }
     r
   }
 
-  def makeOneToOneRuleFromTypeInfo(t: Any): Map[Int, Int] = {
+  def makeOneToOneRuleFromTypeInfo(t: Any): Map[Int, List[Int]] = {
     produceOneToOneMapping(typeInfoLength(t))
   }
 

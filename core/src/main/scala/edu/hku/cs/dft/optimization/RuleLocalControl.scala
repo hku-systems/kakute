@@ -62,6 +62,7 @@ class RuleLocalControl extends NettyEndpoint{
       splitCollector.ruleCollector.foreach(mm => {
         println("new " + _split + " " + mm._1 + " " + mm._2.collect())
         this.send(RuleInfered(mm._1, mm._2.collect()))
+        this.send(DataCount(mm._1, mm._2.count()))
       })
     }
     typeCollectors.foreach(t => {

@@ -41,6 +41,7 @@ class GraphDumper(fn: String) {
     }
     val analyser: Analyser = new Analyser
     analyser.entry(graphManager)
+    analyser.firstRoundEntry()
     analyser.exitPoint()
   }
 

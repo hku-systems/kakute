@@ -14,6 +14,8 @@ import edu.hku.cs.dft.optimization.RuleCollector.{Rule, RuleSet}
 class RuleCollector(id: Int) {
   private var ruleSet: RuleSet = Map()
 
+  private var _count: Int = 0
+
   def addRule(r: Rule): Unit = {
     val found = ruleSet.find(_._1 == r)
     val returnVal = if (found.isEmpty) {
@@ -22,11 +24,14 @@ class RuleCollector(id: Int) {
       r -> (found.get._2 + 1)
     }
     ruleSet += returnVal
+    _count += 1
   }
 
   def isEmpty(): Boolean = ruleSet.isEmpty
 
   def collect(): Map[Rule, Int] = ruleSet
+
+  def count(): Int = _count
 }
 
 object RuleCollector {

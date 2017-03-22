@@ -31,6 +31,9 @@ class GraphManager extends NettyEndpoint {
         addTypeData(tt.id, tt.typeString)
         null
       }
+      case c: DataCount =>
+        addCount(c.id, c.c)
+        null
       case _ => null
     }
   }
@@ -102,6 +105,11 @@ class GraphManager extends NettyEndpoint {
 
   def addTypeData(int: Int, string: Any): Unit = {
     getDatamodelOrThrow(int).set_type(string)
+  }
+
+  def addCount(int: Int, c: Int): Unit = {
+    val data = getDatamodelOrThrow(int)
+    data.count += c
   }
 
   case class DataNotFoundException(i: Int) extends Exception
