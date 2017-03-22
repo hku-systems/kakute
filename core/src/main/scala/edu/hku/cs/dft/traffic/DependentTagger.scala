@@ -9,6 +9,7 @@ import edu.hku.cs.dft.optimization.RuleMaker
 /**
   * A [[DependentTagger]] use dependent key as the hash key, and add
   * this key to all the mapper
+  * it use data count as r value in the implementation
 */
 
 class DependentTagger extends PartitionSchemeTagger{
@@ -17,29 +18,48 @@ class DependentTagger extends PartitionSchemeTagger{
 
   override def tagScheme(): Unit = {
     val checkList = this.shuffleSet
-    checkList.foreach(v => {
+    checkList.foreach(clist => {
 
       // tag from reducer to the root
-      var currentData = List(v)
-      var data = dataSet(v)
-      var currentPartitionTags = partitionTags.getOrElse(v, List())
-      currentPartitionTags = PartitionScheme(RuleMaker.typeInfoLength(data.dataType),
-        (0 to data.reduceKeyRange).toSet) :: currentPartitionTags
+      var currentDatas = List(clist)
+      var ldata = dataSet(clist)
+
+      var thisTags: Map[String, PartitionScheme] = Map()
+
+      // we use dataCount as r
+      val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(ldata.dataType),
+        (1 to ldata.reduceKeyRange).toSet, ldata.dataCount)
+      thisTags += clist -> currentScheme
+
       // tag all partition scheme to the top
-      while(currentData.nonEmpty) {
-        val v = currentData.last
-        val data = this.dataSet(v)
-        data.deps.foreach(d => {
-          val depKeys = Set()
-
-          // here, we only choose the most important key, put it into the list
-
-          currentData = d._1 :: currentData
+      while(currentDatas.nonEmpty) {
+        val currentValue = currentDatas.last
+        val currentData = this.dataSet(currentValue)
+        currentData.deps.foreach(dep => {
+          // find the dependent keyset
+          dep._2.foreach(rule => {
+            val mapDep = rule._1.toMap
+            val datar = dataSet(dep._1)
+            val reduceSet = partitionTags.getOrElse(currentValue, Set())
+            // if it is null, then it came across a problem
+            assert(reduceSet.nonEmpty)
+            // add according to the current rule
+            reduceSet.foreach(c => {
+              var depKeys: Set[Int] = Set()
+              c.hashKeySet.foreach(k => {
+                if (mapDep.contains(k)) {
+                  depKeys ++= mapDep(k).toSet
+                }
+              })
+              val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
+                depKeys, datar.dataCount)
+              thisTags += dep._1 -> currentScheme
+            })
+          })
+          currentDatas = dep._1 :: currentDatas
         })
-        currentData = currentData.init
+        currentDatas = currentDatas.init
       }
-
     })
   }
-
 }

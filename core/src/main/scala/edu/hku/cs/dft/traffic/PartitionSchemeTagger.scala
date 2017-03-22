@@ -14,13 +14,21 @@ import edu.hku.cs.dft.optimization.Analyzer
 */
 
 
-case class PartitionScheme(keyCount: Int, hashKeySet: Set[Int])
+case class PartitionScheme(keyCount: Int, hashKeySet: Set[Int], r: Int) {
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case PartitionScheme(_, hashKey, _) => hashKeySet.equals(hashKey)
+      case s: Set[Int] => hashKeySet.equals(s)
+      case _ => false
+    }
+  }
+}
 
 abstract class PartitionSchemeTagger extends Analyzer {
 
   // generated partition scheme
-  var partitionTags: Map[String, List[PartitionScheme]] = Map()
+  var partitionTags: Map[String, Set[PartitionScheme]] = Map()
 
-  def tagScheme(): Unit = _
+  def tagScheme(): Unit
 
 }

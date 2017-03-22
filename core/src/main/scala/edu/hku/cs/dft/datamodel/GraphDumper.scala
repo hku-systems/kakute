@@ -2,7 +2,7 @@ package edu.hku.cs.dft.datamodel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
-import edu.hku.cs.dft.optimization.Analyser
+import edu.hku.cs.dft.optimization.Analyzer
 
 
 /**
@@ -39,7 +39,7 @@ class GraphDumper(fn: String) {
       }
       dumpList = dumpList.init
     }
-    val analyser: Analyser = new Analyser
+    val analyser: Analyzer = new Analyzer
     analyser.entry(graphManager)
     analyser.firstRoundEntry()
     analyser.exitPoint()
