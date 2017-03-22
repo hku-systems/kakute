@@ -9,7 +9,7 @@ import edu.hku.cs.dft.tracker.DFTUtils
   * Created by jianyu on 3/16/17.
   */
 
-class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
+class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String) {
 
   var modelSet: Set[DataModel] = Set()
 
@@ -20,11 +20,11 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
   var dataCount: Int = 0
 
   /**
-    * A [[reduceKey]] is to represent the reduce key set.
+    * A [[reduceKeyRange]] is to represent the reduce key set.
     * As a reduce operation needs [K, V] pair, so the (1 - reduceKey) will be the
     * Reduce Key Set, we only need to know the range
   */
-  var reduceKey: Int = 0
+  var reduceKeyRange: Int = 0
 
   var deps: Map[String, RuleSet] = Map()
 
@@ -46,7 +46,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
     })
 
     /**
-      * fill the legacy data with empty entry
+      * fill the legacy deps with empty entry
     */
 
     dataModel.fathers().foreach(fa => {
@@ -79,26 +79,30 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 }
 
 
-class Analyser {
+class Analyzer {
 
   private val prefixRoot: String = "Root-"
 
   private var rootCurrent: Int = 1
 
   // String to String generation
-  private var setMap: Map[String, Set[String]] = Map()
+  protected var setMap: Map[String, Set[String]] = Map()
 
   // String to set of dataModel, they are the same
-  private var dataSet: Map[String, LoopReducedDataModel] = Map()
+  protected var dataSet: Map[String, LoopReducedDataModel] = Map()
 
-  private var rootData: List[String] = List()
+  protected var rootData: List[String] = List()
+
+  // set of data model that will cause shuffle of data
+  // TODO: We should move this data and the calculation of this data to the subclasses
+  protected var shuffleSet: Set[String] = Set()
 
   private var nullNum = 1
 
   private var visitedSet: Set[Int] = Set()
 
   def entry(graphManager: GraphManager): Unit = {
-    var dumpList = graphManager.rootData
+    val dumpList = graphManager.rootData
     dumpList.foreach(dump => {
       if (!DFTUtils.nameValid(dump.name())) {
         dump.setName(prefixRoot + rootCurrent)
@@ -138,20 +142,29 @@ class Analyser {
   }
 
   /**
-    * In the [[firstRoundEntry]], we will add the dependency info that may be hard or unnecessary
+    * Before [[firstRoundEntry]], it only have the basic dep info
+    * In the [[firstRoundEntry]], it will add the dependency info that may be hard or unnecessary
     * to infer
-    * TODO: Now we only consider union, but we actually may use the infomation like union to provide
+    * TODO: Now we only consider union, but we actually may use the information like union to provide
     * a higher-level information to optimize the system
     *
-    * Also, we will add the reduce key range to each reduce ops
+    * Also, it will add the reduce key range to each reduce ops
+    *
+    * We also need to find out the operations that may cause shuffle
+    * For example, reduceByKey, union, cogroup,
+    * TODO: Now we consider a null ops as map operation
+    * if there are map operations that do not have deps, we should throw a Exception
     *
   */
+
   def firstRoundEntry(): Unit = {
     var checkList: List[String] = rootData
     var checkSet: Set[String] = Set()
     while(checkList.nonEmpty) {
       val v = checkList.last
       if (!checkSet.contains(v)) {
+
+        // get the semantics dependencies
         dataSet(v).op() match {
           case DataOperation.Union =>
             dataSet(v).deps.foreach(kv => {
@@ -159,8 +172,27 @@ class Analyser {
                 kv._1 -> Map(RuleMaker.makeOneToOneRuleFromTypeInfo(dataSet(v).dataType).toList -> dataSet(kv._1).dataCount)
             })
           case _ =>
-          //TODO more rule
+          // TODO more rule
         }
+
+        // get the reduce operations
+        dataSet(v).op() match {
+          case DataOperation.Reduce | DataOperation.Union =>
+            shuffleSet += v
+            dataSet(v).reduceKeyRange = reduceKeyRange(dataSet(v).dataType)
+          case DataOperation.None => // now we consider other operation as map
+            // check if the deps exists
+            var isDep = false
+            dataSet(v).deps.foreach(ff =>
+              if (ff._2.nonEmpty) {
+                isDep = true
+              }
+            )
+            if (!isDep) throw new Exception("exists empty deps for null operations")
+          case DataOperation.Map => // do nothing
+          case _ => throw new Exception("invalid operation value")
+        }
+
         if (setMap.contains(v)) {
           setMap(v).foreach(s => checkList = s :: checkList)
         }
@@ -183,7 +215,11 @@ class Analyser {
   }
 
   /**
-    * In the [[secondRoundEntry]], we will analyse
+    * In the [[secondRoundEntry]], we will analyse the datamodel
+    * from the root node, add partition tag to the node.
+    * There may be multiple partition tag for a node,
+    * so we will need a handler to choose partition tag
+    *
   */
 
   def secondRoundEntry(): Unit = {
