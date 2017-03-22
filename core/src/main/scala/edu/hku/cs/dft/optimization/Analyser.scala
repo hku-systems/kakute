@@ -19,6 +19,13 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, variable: String) {
 
   var dataCount: Int = 0
 
+  /**
+    * A [[reduceKey]] is to represent the reduce key set.
+    * As a reduce operation needs [K, V] pair, so the (1 - reduceKey) will be the
+    * Reduce Key Set, we only need to know the range
+  */
+  var reduceKey: Int = 0
+
   var deps: Map[String, RuleSet] = Map()
 
   def op(): DataOperation = platformHandle.op()
@@ -136,6 +143,8 @@ class Analyser {
     * TODO: Now we only consider union, but we actually may use the infomation like union to provide
     * a higher-level information to optimize the system
     *
+    * Also, we will add the reduce key range to each reduce ops
+    *
   */
   def firstRoundEntry(): Unit = {
     var checkList: List[String] = rootData
@@ -159,6 +168,25 @@ class Analyser {
       checkSet += v
       checkList = checkList.init
     }
+
+  }
+
+  /**
+    * If this is a key-value pair, then it will get the key range of this key-value pair
+    * Or it will throw a Exception
+  */
+  def reduceKeyRange(kv: Any): Int = {
+    kv match {
+      case (k, _) => RuleMaker.typeInfoLength(k)
+      case _ => throw new Exception("not a key value pair")
+    }
+  }
+
+  /**
+    * In the [[secondRoundEntry]], we will analyse
+  */
+
+  def secondRoundEntry(): Unit = {
 
   }
 

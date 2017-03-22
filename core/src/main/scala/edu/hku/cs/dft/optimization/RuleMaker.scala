@@ -19,7 +19,7 @@ object RuleMaker {
     }
   }
 
-  private def typeInfoLength(t: Any): Int = {
+  def typeInfoLength(t: Any): Int = {
     indexH = 0
     typeInfoLengthHelper(t)
     indexH
