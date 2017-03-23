@@ -180,6 +180,7 @@ class Analyzer {
           case DataOperation.Reduce | DataOperation.Union =>
             shuffleSet += v
             dataSet(v).reduceKeyRange = reduceKeyRange(dataSet(v).dataType)
+          case DataOperation.CoGroup => throw new Exception("not supported")
           case DataOperation.None => // now we consider other operation as map
             // check if the deps exists
             var isDep = false
@@ -189,7 +190,7 @@ class Analyzer {
               }
             )
             if (!isDep) throw new Exception("exists empty deps for null operations")
-          case DataOperation.Map => // do nothing
+          case DataOperation.Map | DataOperation.Input => // do nothing
           case _ => throw new Exception("invalid operation value")
         }
 
