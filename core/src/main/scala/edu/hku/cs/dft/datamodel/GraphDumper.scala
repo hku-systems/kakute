@@ -3,6 +3,7 @@ package edu.hku.cs.dft.datamodel
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
 import edu.hku.cs.dft.optimization.Analyzer
+import edu.hku.cs.dft.traffic.{DependentTagger, PartitionSchemeTagger}
 
 
 /**
@@ -39,10 +40,12 @@ class GraphDumper(fn: String) {
       }
       dumpList = dumpList.init
     }
-    val analyser: Analyzer = new Analyzer
+    val analyser: PartitionSchemeTagger = new DependentTagger
     analyser.entry(graphManager)
     analyser.firstRoundEntry()
     analyser.exitPoint()
+    analyser.tagScheme()
+    analyser.printScheme()
   }
 
 }

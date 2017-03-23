@@ -60,6 +60,28 @@ class DependentTagger extends PartitionSchemeTagger{
         })
         currentDatas = currentDatas.init
       }
+
+      // combine the scheme to teh tag
+      thisTags.foreach(tag => {
+        var gotSchemes = partitionTags.getOrElse(tag._1, Set())
+        val foundTag = gotSchemes.find(_ == currentScheme)
+        val addScheme: PartitionScheme = if (foundTag.nonEmpty) {
+          PartitionScheme(tag._2.keyCount, tag._2.hashKeySet, tag._2.r + foundTag.get.r)
+        } else {
+          tag._2
+        }
+        gotSchemes += addScheme
+        partitionTags += tag._1 -> gotSchemes
+      })
+
     })
   }
+
+  def printScheme(): Unit = {
+    this.partitionTags.foreach(t => {
+      println(t._1 + " ")
+      t._2.foreach(m => println(m))
+    })
+  }
+
 }

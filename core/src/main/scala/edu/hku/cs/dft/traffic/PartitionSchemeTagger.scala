@@ -31,4 +31,6 @@ abstract class PartitionSchemeTagger extends Analyzer {
 
   def tagScheme(): Unit
 
+  def printScheme(): Unit
+
 }
