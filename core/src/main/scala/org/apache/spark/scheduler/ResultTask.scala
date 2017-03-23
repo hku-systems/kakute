@@ -87,9 +87,9 @@ private[spark] class ResultTask[T, U](
     } else 0L
 
     val result = func(context, rdd.iterator(partition, context))
-    if (DFTEnv.trackingPolicy.typeInfering) {
-      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
-    }
+//    if (DFTEnv.trackingPolicy.typeInfering) {
+//      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
+//    }
     DFTEnv.localControl.collect(partition.index)
     result
   }
