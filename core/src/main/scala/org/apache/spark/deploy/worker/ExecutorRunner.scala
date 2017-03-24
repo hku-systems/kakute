@@ -158,8 +158,14 @@ private[deploy] class ExecutorRunner(
         command.add(DFTEnv.dftEnv().serverHost)
         command.add(DefaultArgument._CONF_PORT)
         command.add(DFTEnv.dftEnv().serverPort.toString)
-        command.add(DefaultArgument._CONF_MODE)
-        command.add(DFTEnv.dftEnv().trackingMode.toStr)
+        command.add(DefaultArgument._CONF_TRACKING)
+        command.add(DFTEnv.dftEnv().trackingMode.toString)
+        command.add(DefaultArgument._CONF_SAMPLE)
+        command.add(DFTEnv.dftEnv().sampleMode.toString)
+        command.add(DefaultArgument._CONF_TYPE)
+        command.add(DFTEnv.dftEnv().trackingType.toString)
+        if (DFTEnv.dftEnv().auto_taint_input)
+          command.add(DefaultArgument._CONF_INPUT_TAINT)
       }
 
 

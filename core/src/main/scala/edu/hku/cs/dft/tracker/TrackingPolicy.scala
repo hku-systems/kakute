@@ -32,11 +32,9 @@ import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 object TrackingType extends Enumeration {
   type TrackingType = Value
-  val Values, Keys, KeyValues, Optional = Value
-
-  val KEYS: String = "key"
-  val VALUES: String = "value"
-  val KEY_VALUES: String = "key-value"
+  val Values = Value("value")
+  val Key = Value("key")
+  val KeyValues = Value("key-value")
 }
 
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,

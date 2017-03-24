@@ -14,21 +14,18 @@ import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 object TrackingMode extends Enumeration {
   type TrackingMode = Value
-  val RuleTracking, FullTracking, MixTracking = Value
-
-  val RULE_TRACKING: String = "rule"
-  val FULL_TRACKING: String = "full"
-  val MIX_TRACKING: String = "mix"
+  val RuleTracking = Value("rule")
+  val FullTracking = Value("full")
+  val MixTracking = Value("mix")
 
 }
 
 object SampleMode extends Enumeration {
   type SampleMode = Value
-  val Sample, Machine, SampleAndMachine, Off = Value
 
-  val SAMPLE: String = "sample"
-  val MACHINE: String = "machine"
-  val OFF: String = "off"
+  val Sample = Value("sample")
+  val Machine = Value("machine")
+  val Off = Value("off")
 }
 
 class DFTEnv(val argumentHandle: ArgumentHandle) {
@@ -43,27 +40,27 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
   }
   val trackingMode: TrackingMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TRACKING) match {
-      case TrackingMode.FULL_TRACKING => TrackingMode.FullTracking
-      case TrackingMode.RULE_TRACKING => TrackingMode.RuleTracking
-      case TrackingMode.MIX_TRACKING => TrackingMode.MixTracking
+      case TrackingMode.FullTracking => TrackingMode.FullTracking
+      case TrackingMode.RuleTracking => TrackingMode.RuleTracking
+      case TrackingMode.MixTracking => TrackingMode.MixTracking
       case _ => DefaultArgument.trackingMode
     }
   }
 
   val trackingType: TrackingType = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TYPE) match {
-      case TrackingType.KEYS => TrackingType.Keys
-      case TrackingType.VALUES => TrackingType.Values
-      case TrackingType.KEY_VALUES => TrackingType.KeyValues
+      case TrackingType.Key => TrackingType.Key
+      case TrackingType.Values => TrackingType.Values
+      case TrackingType.KeyValues => TrackingType.KeyValues
       case _ => TrackingType.KeyValues
     }
   }
 
   val sampleMode: SampleMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_SAMPLE) match {
-      case SampleMode.SAMPLE => SampleMode.Sample
-      case SampleMode.MACHINE => SampleMode.Machine
-      case SampleMode.OFF => SampleMode.Off
+      case SampleMode.Sample => SampleMode.Sample
+      case SampleMode.Machine => SampleMode.Machine
+      case SampleMode.Off => SampleMode.Off
       case _ => DefaultArgument.sampleMode
     }
   }
@@ -199,15 +196,17 @@ object DFTEnv {
       DFTEnv.dftEnv().trackingMode,
       DFTEnv.dftEnv().auto_taint_input)
 
-    networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
-    new Thread(new Runnable {
-      override def run():Unit = networkEnv.run()
-    }).start()
-    Thread.sleep(1000)
+    if (_dftEnv.trackingOn) {
+      networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
+      new Thread(new Runnable {
+        override def run(): Unit = networkEnv.run()
+      }).start()
+      Thread.sleep(1000)
+      localControl = new RuleLocalControl
+      networkEnv.register(localControl)
+    }
     // sleep 1s to make sure the network is on
     _dftEnv.isServer = false
-    localControl = new RuleLocalControl
-    networkEnv.register(localControl)
   }
 
   def stop_all(): Unit = {
