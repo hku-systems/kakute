@@ -22,7 +22,7 @@ object SampleMode extends Enumeration {
   val Sample, Machine, SampleAndMachine, Off = Value
 }
 
-class DFTEnv(argumentHandle: ArgumentHandle) {
+class DFTEnv(val argumentHandle: ArgumentHandle) {
   argumentHandle.init()
   val serverPort: Int = argumentHandle.parseArgs("port") match {
     case s: String => s.toInt
@@ -115,55 +115,77 @@ case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
 
 object DFTEnv {
 
-  type DFTLoggig = org.apache.spark.internal.Logging
+  type DFTLogging = org.apache.spark.internal.Logging
 
-  val dFTEnv: DFTEnv = new DFTEnv(new ConfFileHandle("/etc/dft.conf"))
+  private var _confPath: String = DefaultArgument.confFile
 
-  var trackingPolicy: TrackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType, DFTEnv.dftEnv().trackingMode, DFTEnv.dftEnv().auto_taint_input)
+  private var _dftEnv: DFTEnv = _
+
+  var trackingPolicy: TrackingPolicy = _
 
   var graphManager: GraphManager = _
 
   var localControl: RuleLocalControl = _
 
-  var phosphorRunner: PhosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
-    DFTEnv.dftEnv().phosphorEnv.phosphorJar,
-    DFTEnv.dftEnv().phosphorEnv.phosphorJava)
-
-  phosphorRunner.setTracking(true)
+  var phosphorRunner: PhosphorRunner = _
 
   var networkEnv: EndpointRegister = _
 
+  // set the conf path
+  def pathInit(path: String): Unit = _confPath = path
+
+  // init the common variables and objects
+  def commonInit(): Unit = {
+    _dftEnv = new DFTEnv(new ConfFileHandle(_confPath))
+
+  }
+
   def dftEnv(): DFTEnv = {
-    if (dFTEnv == null) throw new Exception("DFT Environment not set")
-    dFTEnv
+    if (_dftEnv == null) throw new Exception("DFT Environment not set")
+    _dftEnv
   }
 
   def init(any: Any): Unit = {
-    if (dFTEnv.isServer) {
-      networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
+    if (_dftEnv.isServer) {
+      networkEnv = new NettyServer(new EndpointDispatcher, _dftEnv)
     } else {
-      networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
+      networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
     }
   }
 
+  // TODO: we may need to check if the tracking engine could be working
+  // TODO: if that is not working, we will reject every tracking requests
+  def worker_init(): Unit = {
+    trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
+      DFTEnv.dftEnv().trackingMode,
+      DFTEnv.dftEnv().auto_taint_input)
+
+    phosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
+      DFTEnv.dftEnv().phosphorEnv.phosphorJar,
+      DFTEnv.dftEnv().phosphorEnv.phosphorJava)
+  }
+
   def server_init(any: Any): Unit = {
-    networkEnv = new NettyServer(new EndpointDispatcher, dFTEnv)
+    networkEnv = new NettyServer(new EndpointDispatcher, _dftEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
     }).start()
+
+    // sleep 1s to make sure the network is on
     Thread.sleep(1000)
-    dFTEnv.isServer = true
+    _dftEnv.isServer = true
     graphManager = new GraphManager
     networkEnv.register(graphManager)
   }
 
   def client_init(any: Any): Unit = {
-    networkEnv = new NettyClient(new EndpointDispatcher, dFTEnv)
+    networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
     }).start()
     Thread.sleep(1000)
-    dFTEnv.isServer = false
+    // sleep 1s to make sure the network is on
+    _dftEnv.isServer = false
     localControl = new RuleLocalControl
     networkEnv.register(localControl)
   }

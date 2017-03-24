@@ -21,7 +21,7 @@ import java.net.URL
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.{DFTEnv, DefaultArgument, TrackingMode}
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}
@@ -247,8 +247,33 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
     val userClassPath = new mutable.ListBuffer[URL]()
 
     var argv = args.toList
+
+    /**
+      * [[Modified]] we modify this to get the info of dft
+    */
+
+    val confHandle = DFTEnv.dftEnv().argumentHandle
     while (!argv.isEmpty) {
       argv match {
+        case (DefaultArgument._CONF_DFT) :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_DFT, "true")
+          argv = tail
+        case (DefaultArgument._CONF_TRACKING) :: value :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_TRACKING,
+            value)
+          argv = tail
+        case (DefaultArgument._CONF_SAMPLE) :: value :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_SAMPLE,
+            value)
+          argv = tail
+        case (DefaultArgument._CONF_HOST) :: value :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_HOST,
+            value)
+          argv = tail
+        case (DefaultArgument._CONF_PORT) :: value :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_PORT,
+            value)
+          argv = tail
         case ("--driver-url") :: value :: tail =>
           driverUrl = value
           argv = tail

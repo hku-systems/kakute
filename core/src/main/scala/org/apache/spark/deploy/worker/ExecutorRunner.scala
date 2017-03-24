@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets
 
 import scala.collection.JavaConverters._
 import com.google.common.io.Files
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.deploy.{ApplicationDescription, ExecutorState}
 import org.apache.spark.deploy.DeployMessages.ExecutorStateChanged
@@ -147,7 +147,7 @@ private[deploy] class ExecutorRunner(
 
       // [[Modified]]
       val phosphorRunner = DFTEnv.phosphorRunner
-      if (phosphorRunner.tracking) {
+      if (DFTEnv.dftEnv().trackingMode == TrackingMode.RuleTracking) {
         command.set(0, phosphorRunner.java())
         command.add(3, phosphorRunner.agent())
         command.add(4, phosphorRunner.bootclasspath())

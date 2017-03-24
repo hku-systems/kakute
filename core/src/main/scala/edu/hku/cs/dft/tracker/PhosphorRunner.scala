@@ -9,8 +9,6 @@ package edu.hku.cs.dft.tracker
 
 class PhosphorRunner(cacheDir: String, phospherJar: String, javaHome: String) {
 
-  private var _tracking = false
-
   private val _agent = "-javaagent:" + phospherJar +
     (if (cacheDir != null) "=cacheDir=" + cacheDir else "")
 
@@ -24,9 +22,4 @@ class PhosphorRunner(cacheDir: String, phospherJar: String, javaHome: String) {
 
   def java(): String = _javaBin
 
-  def tracking(): Boolean = _tracking
-
-  def setTracking(tracking: Boolean) {
-    _tracking = tracking
-  }
 }
