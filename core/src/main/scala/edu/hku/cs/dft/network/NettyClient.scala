@@ -67,7 +67,7 @@ class RuleEndpoint extends NettyEndpoint {
 object NettyClient{
   def main(args: Array[String]): Unit = {
     DFTEnv.init()
-    val nettyClient = new NettyClient(new EndpointDispatcher, DFTEnv.dFTEnv)
+    val nettyClient = new NettyClient(new EndpointDispatcher, DFTEnv.dftEnv())
     new Thread(new Runnable {
       override def run() {
         nettyClient.run()

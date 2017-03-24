@@ -59,7 +59,7 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 object NettyServer {
   def main(args: Array[String]): Unit = {
     DFTEnv.init()
-    val nettyServer = new NettyServer(new EndpointDispatcher, DFTEnv.dFTEnv)
+    val nettyServer = new NettyServer(new EndpointDispatcher, DFTEnv.dftEnv())
     new Thread(new Runnable {
       override def run(): Unit = {
         nettyServer.run()

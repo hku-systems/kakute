@@ -15,53 +15,61 @@ import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 object TrackingMode extends Enumeration {
   type TrackingMode = Value
   val RuleTracking, FullTracking, MixTracking = Value
+
+  val RULE_TRACKING: String = "rule"
+  val FULL_TRACKING: String = "full"
+  val MIX_TRACKING: String = "mix"
+
 }
 
 object SampleMode extends Enumeration {
   type SampleMode = Value
   val Sample, Machine, SampleAndMachine, Off = Value
+
+  val SAMPLE: String = "sample"
+  val MACHINE: String = "machine"
+  val OFF: String = "off"
 }
 
 class DFTEnv(val argumentHandle: ArgumentHandle) {
   argumentHandle.init()
-  val serverPort: Int = argumentHandle.parseArgs("port") match {
+  val serverPort: Int = argumentHandle.parseArgs(DefaultArgument.CONF_PORT) match {
     case s: String => s.toInt
     case _ => DefaultArgument.port
   }
-  val serverHost: String = argumentHandle.parseArgs("host") match {
+  val serverHost: String = argumentHandle.parseArgs(DefaultArgument.CONF_HOST) match {
     case s: String => s
     case _ => DefaultArgument.host
   }
   val trackingMode: TrackingMode = {
-    argumentHandle.parseArgs("tracking") match {
-      case "full" => TrackingMode.FullTracking
-      case "rule" => TrackingMode.RuleTracking
-      case "mix" => TrackingMode.MixTracking
+    argumentHandle.parseArgs(DefaultArgument.CONF_TRACKING) match {
+      case TrackingMode.FULL_TRACKING => TrackingMode.FullTracking
+      case TrackingMode.RULE_TRACKING => TrackingMode.RuleTracking
+      case TrackingMode.MIX_TRACKING => TrackingMode.MixTracking
       case _ => DefaultArgument.trackingMode
     }
   }
 
   val trackingType: TrackingType = {
-    argumentHandle.parseArgs("type") match {
-      case "key" => TrackingType.Keys
-      case "value" => TrackingType.Values
-      case "KeyValue" => TrackingType.KeyValues
+    argumentHandle.parseArgs(DefaultArgument.CONF_TYPE) match {
+      case TrackingType.KEYS => TrackingType.Keys
+      case TrackingType.VALUES => TrackingType.Values
+      case TrackingType.KEY_VALUES => TrackingType.KeyValues
       case _ => TrackingType.KeyValues
     }
   }
 
   val sampleMode: SampleMode = {
-    argumentHandle.parseArgs("sample") match {
-      case "sample" => SampleMode.Sample
-      case "machine" => SampleMode.Machine
-      case "sample&machine" => SampleMode.SampleAndMachine
-      case "off" => SampleMode.Off
+    argumentHandle.parseArgs(DefaultArgument.CONF_SAMPLE) match {
+      case SampleMode.SAMPLE => SampleMode.Sample
+      case SampleMode.MACHINE => SampleMode.Machine
+      case SampleMode.OFF => SampleMode.Off
       case _ => DefaultArgument.sampleMode
     }
   }
 
   val auto_taint_input: Boolean = {
-    argumentHandle.parseArgs("input_taint") match {
+    argumentHandle.parseArgs(DefaultArgument.CONF_INPUT_TAINT) match {
       case "true" => true
       case _ => false
     }
@@ -69,7 +77,7 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
 
   //use percentage sampling
   val sampleNum: Int = {
-    val stringInt = argumentHandle.parseArgs("sample_int")
+    val stringInt = argumentHandle.parseArgs(DefaultArgument.CONF_SAMPLE_INT)
     if (stringInt != null) {
       Integer.valueOf(stringInt)
     } else {
@@ -77,7 +85,7 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     }
   }
 
-  var isServer: Boolean = argumentHandle.parseArgs("mode") match {
+  var isServer: Boolean = argumentHandle.parseArgs(DefaultArgument.CONF_MODE) match {
     case "server" => true
     case "worker" => false
     case _ => false
@@ -87,6 +95,13 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     argumentHandle.parseArgs("partition_output") match {
       case s: String => s
       case _ => DefaultArgument.partitionPath
+    }
+  }
+
+  val trackingOn: Boolean = {
+    argumentHandle.parseArgs(DefaultArgument.CONF_DFT) match {
+      case "on" => true
+      case _ => false
     }
   }
 
@@ -120,6 +135,8 @@ object DFTEnv {
   private var _confPath: String = DefaultArgument.confFile
 
   private var _dftEnv: DFTEnv = _
+
+  val commandlineConf: ArgumentHandle = new CommandlineHandle
 
   var trackingPolicy: TrackingPolicy = _
 
@@ -156,10 +173,6 @@ object DFTEnv {
   // TODO: we may need to check if the tracking engine could be working
   // TODO: if that is not working, we will reject every tracking requests
   def worker_init(): Unit = {
-    trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
-      DFTEnv.dftEnv().trackingMode,
-      DFTEnv.dftEnv().auto_taint_input)
-
     phosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
       DFTEnv.dftEnv().phosphorEnv.phosphorJar,
       DFTEnv.dftEnv().phosphorEnv.phosphorJava)
@@ -179,6 +192,13 @@ object DFTEnv {
   }
 
   def client_init(any: Any): Unit = {
+
+    _dftEnv = new DFTEnv(commandlineConf)
+
+    trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
+      DFTEnv.dftEnv().trackingMode,
+      DFTEnv.dftEnv().auto_taint_input)
+
     networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()

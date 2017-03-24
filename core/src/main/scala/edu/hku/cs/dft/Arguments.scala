@@ -38,6 +38,18 @@ class SparkArgumentHandle(sparkConf: SparkConf) extends ArgumentHandle {
 }
 */
 
+class CommandlineHandle extends ArgumentHandle {
+
+  private var storage: Map[String, String] = Map()
+
+  override def init(): Boolean = true
+
+  override def parseArgs(key: String): String = storage.getOrElse(key, "")
+
+  override def setKeyValue(key: String, value: String): Unit = storage += key -> value
+
+}
+
 class ConfFileHandle(filename: String) extends ArgumentHandle with DFTEnv.DFTLogging {
 
   var keyMap: Map[String, String] = Map()
@@ -103,9 +115,12 @@ object DefaultArgument {
   val CONF_TRACKING: String = "dft-tracking"
   val CONF_SAMPLE: String = "dft-sample"
   val CONF_MODE: String = "dft-mode"
+  val CONF_TYPE: String = "dft-type"
   val CONF_PHOSPHOR_JAVA: String = "dft-phosphor-java"
   val CONF_PHOSPHOR_JAR: String = "dft-phosphor-jar"
   val CONF_PHOSPHOR_CACHE: String = "dft-phosphor-cache"
+  val CONF_INPUT_TAINT: String = "dft-input-taint"
+  val CONF_SAMPLE_INT: String = "dft-sample-int"
 
   val _CONF_DFT: String = CONF_PREFIX + CONF_DFT
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
@@ -113,10 +128,8 @@ object DefaultArgument {
   val _CONF_TRACKING: String = CONF_PREFIX + CONF_TRACKING
   val _CONF_SAMPLE: String = CONF_PREFIX + CONF_SAMPLE
   val _CONF_MODE: String = CONF_PREFIX + CONF_MODE
-  val _CONF_PHOSPHOR_JAVA: String = CONF_PREFIX + CONF_PHOSPHOR_JAVA
-  val _CONF_PHOSPHOR_JAR: String = CONF_PREFIX + CONF_PHOSPHOR_JAR
-  val _CONF_PHOSPHOR_CACHE: String = CONF_PREFIX + CONF_PHOSPHOR_CACHE
-
+  val _CONF_TYPE: String = CONF_PREFIX + CONF_TYPE
+  val _CONF_INPUT_TAINT: String = CONF_PREFIX + CONF_INPUT_TAINT
 
   val host: String = "127.0.0.1"
   val port: Int = 8787

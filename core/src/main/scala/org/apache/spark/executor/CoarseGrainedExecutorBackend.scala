@@ -252,11 +252,11 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
       * [[Modified]] we modify this to get the info of dft
     */
 
-    val confHandle = DFTEnv.dftEnv().argumentHandle
+    val confHandle = DFTEnv.commandlineConf
     while (!argv.isEmpty) {
       argv match {
         case (DefaultArgument._CONF_DFT) :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_DFT, "true")
+          confHandle.setKeyValue(DefaultArgument.CONF_DFT, "on")
           argv = tail
         case (DefaultArgument._CONF_TRACKING) :: value :: tail =>
           confHandle.setKeyValue(DefaultArgument.CONF_TRACKING,

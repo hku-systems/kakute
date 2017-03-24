@@ -33,49 +33,59 @@ import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 object TrackingType extends Enumeration {
   type TrackingType = Value
   val Values, Keys, KeyValues, Optional = Value
+
+  val KEYS: String = "key"
+  val VALUES: String = "value"
+  val KEY_VALUES: String = "key-value"
 }
 
-class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode, _add_tags_input: Boolean) {
+class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
+                     _add_tags_input: Boolean, trackingOn: Boolean = false) {
 
   /*
   * Default Setting
   * */
   val typeInfering: Boolean = {
-    trackingMode match {
+    val o = trackingMode match {
       case TrackingMode.FullTracking => false
       case TrackingMode.RuleTracking => true
       case _ => false
     }
+    o && trackingOn
   }
 
   val clear_tags_per_ops: Boolean = {
-    trackingMode match {
+    val o = trackingMode match {
       case TrackingMode.RuleTracking => true
       case TrackingMode.FullTracking => false
       case _ => false
     }
+    o && trackingOn
   }
   val add_tags_per_ops: Boolean = {
-    trackingMode match {
+    val o = trackingMode match {
       case TrackingMode.RuleTracking => true
       case TrackingMode.FullTracking => false
       case _ => false
     }
+    o && trackingOn
   }
   val add_tags_emitted: Boolean = {
-    trackingMode match {
+    val o = trackingMode match {
       case TrackingMode.RuleTracking => false //TODO
       case TrackingMode.FullTracking => true //TODO
       case _ => true
     }
+    o && trackingOn
   }
-  val add_tags_input_files: Boolean = _add_tags_input
+  val add_tags_input_files: Boolean = _add_tags_input && trackingOn
   val propagation_across_machines: Boolean = {
-    trackingMode match {
+    val o = trackingMode match {
       case TrackingMode.RuleTracking => false
       case TrackingMode.FullTracking => true
       case _ => false
     }
+    o && trackingOn
   }
   var tracking_type: TrackingType = trackType
 
