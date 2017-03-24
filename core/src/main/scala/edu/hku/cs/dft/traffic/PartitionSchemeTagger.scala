@@ -37,4 +37,6 @@ abstract class PartitionSchemeTagger extends Analyzer {
 
   def printScheme(): Unit
 
+  def serializeToFiles(): Unit = PartitionSchemes.serializeSchemes(scheme = choosenSchemes)
+
 }

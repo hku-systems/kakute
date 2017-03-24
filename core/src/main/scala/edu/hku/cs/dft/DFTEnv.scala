@@ -82,6 +82,14 @@ class DFTEnv(argumentHandle: ArgumentHandle) {
     case "worker" => false
     case _ => false
   }
+
+  val partitionSchemeOutput: String = {
+    argumentHandle.parseArgs("partition_output") match {
+      case s: String => s
+      case _ => DefaultArgument.partitionPath
+    }
+  }
+
   val phosphorEnv: PhosphorEnv = {
     var java = argumentHandle.parseArgs("phosphor_java")
     if (java == null) {

@@ -2,6 +2,8 @@ package edu.hku.cs.dft.traffic
 
 import java.io._
 
+import edu.hku.cs.dft.DFTEnv
+
 /**
   * Created by jianyu on 3/24/17.
   */
@@ -13,9 +15,12 @@ import java.io._
 
 
 object PartitionSchemes {
-  var schemes: Map[String, PartitionScheme] = Map()
 
-  val defaultPath: String = "/home/jianyu/default.scheme"
+  type PartitionSchemeCollection = Map[String, PartitionScheme]
+
+  private var schemes: Map[String, PartitionScheme] = Map()
+
+  val defaultPath: String = DFTEnv.dftEnv().partitionSchemeOutput
 
   def parseSchemes(path: String): Map[String, PartitionScheme] = {
     try {

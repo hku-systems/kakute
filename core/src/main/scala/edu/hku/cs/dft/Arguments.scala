@@ -91,4 +91,5 @@ object DefaultArgument {
   val mode: String = "server"
   // By default, 10% of the data is used when in the data sampling mode
   val sampleInt: Int = 10
+  val partitionPath: String = "default.scheme"
 }
