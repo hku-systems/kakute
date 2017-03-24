@@ -14,7 +14,9 @@ import edu.hku.cs.dft.optimization.RuleMaker
 
 class DependentTagger extends PartitionSchemeTagger{
 
-  // PartitionTags
+  var partitionTags: Map[String, Set[PartitionScheme]] = Map()
+
+  var choosenSchemes: Map[String, PartitionScheme] = Map()
 
   override def tagScheme(): Unit = {
     val emptyScheme = PartitionScheme(0, Set(), 0)
@@ -84,10 +86,24 @@ class DependentTagger extends PartitionSchemeTagger{
     })
   }
 
+  /**
+    * Here [[chooseScheme]] simply choose the smallest dependent set
+  */
+  override def chooseScheme(): Unit = {
+    this.partitionTags.foreach(sp => {
+      var scheme = sp._2.head
+      sp._2.foreach(s => {
+        if (s.hashKeySet.size < scheme.hashKeySet.size) {
+          scheme = s
+        }
+      })
+      choosenSchemes += sp._1 -> scheme
+    })
+  }
+
   def printScheme(): Unit = {
-    this.partitionTags.foreach(t => {
-      println(t._1 + " ")
-      t._2.foreach(m => println(m))
+    this.choosenSchemes.foreach(t => {
+      println(t._1 + " " + t._2)
     })
   }
 

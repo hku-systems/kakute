@@ -27,9 +27,13 @@ case class PartitionScheme(keyCount: Int, hashKeySet: Set[Int], r: Int) {
 abstract class PartitionSchemeTagger extends Analyzer {
 
   // generated partition scheme
-  var partitionTags: Map[String, Set[PartitionScheme]] = Map()
+  var partitionTags: Map[String, Set[PartitionScheme]]
+
+  var choosenSchemes: Map[String, PartitionScheme]
 
   def tagScheme(): Unit
+
+  def chooseScheme(): Unit
 
   def printScheme(): Unit
 
