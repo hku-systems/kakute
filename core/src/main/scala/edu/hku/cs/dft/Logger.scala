@@ -7,5 +7,11 @@ package edu.hku.cs.dft
 
 // do not use logger for spark
 trait Logger {
+  def logInfo(a: Any)
+}
 
+object SparkLogger {
+  def logInfo(o: Any): Unit = {
+    println(o)
+  }
 }
