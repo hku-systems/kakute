@@ -2,8 +2,8 @@ package edu.hku.cs.dft.datamodel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
-import edu.hku.cs.dft.optimization.Analyzer
 import edu.hku.cs.dft.traffic.{DependentTagger, PartitionSchemeTagger}
+
 
 
 /**

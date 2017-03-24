@@ -24,12 +24,12 @@ class DependentTagger extends PartitionSchemeTagger{
       var currentDatas = List(clist)
       var ldata = dataSet(clist)
 
-      var thisTags: Map[String, PartitionScheme] = Map()
+      var thisTags: Map[String, Set[PartitionScheme]] = Map()
 
       // we use dataCount as r
       val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(ldata.dataType),
         (1 to ldata.reduceKeyRange).toSet, ldata.dataCount)
-      thisTags += clist -> currentScheme
+      thisTags += clist -> Set(currentScheme)
 
       // tag all partition scheme to the top
       while(currentDatas.nonEmpty) {
@@ -40,7 +40,7 @@ class DependentTagger extends PartitionSchemeTagger{
           dep._2.foreach(rule => {
             val mapDep = rule._1.toMap
             val datar = dataSet(dep._1)
-            val reduceSet = partitionTags.getOrElse(currentValue, Set())
+            val reduceSet = thisTags.getOrElse(currentValue, Set())
             // if it is null, then it came across a problem
             assert(reduceSet.nonEmpty)
             // add according to the current rule
@@ -62,16 +62,18 @@ class DependentTagger extends PartitionSchemeTagger{
       }
 
       // combine the scheme to teh tag
-      thisTags.foreach(tag => {
-        var gotSchemes = partitionTags.getOrElse(tag._1, Set())
+      thisTags.foreach(tags => {
+        var gotSchemes = partitionTags.getOrElse(tags._1, Set())
         val foundTag = gotSchemes.find(_ == currentScheme)
-        val addScheme: PartitionScheme = if (foundTag.nonEmpty) {
-          PartitionScheme(tag._2.keyCount, tag._2.hashKeySet, tag._2.r + foundTag.get.r)
-        } else {
-          tag._2
-        }
-        gotSchemes += addScheme
-        partitionTags += tag._1 -> gotSchemes
+        tags._2.foreach(tag => {
+          val addScheme: PartitionScheme = if (foundTag.nonEmpty) {
+            PartitionScheme(tag.keyCount, tag.hashKeySet, tag.r + foundTag.get.r)
+          } else {
+            tag
+          }
+          gotSchemes += addScheme
+        })
+        partitionTags += tags._1 -> gotSchemes
       })
 
     })

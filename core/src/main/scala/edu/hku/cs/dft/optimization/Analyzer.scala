@@ -19,6 +19,8 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
 
   var dataCount: Int = 0
 
+  private val _op = platformHandle.op()
+
   /**
     * A [[reduceKeyRange]] is to represent the reduce key set.
     * As a reduce operation needs [K, V] pair, so the (1 - reduceKey) will be the
@@ -28,7 +30,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
 
   var deps: Map[String, RuleSet] = Map()
 
-  def op(): DataOperation = platformHandle.op()
+  def op(): DataOperation = _op
 
   def addModel(dataModel: DataModel, fatherModel: DataModel):this.type = {
     modelSet += dataModel
