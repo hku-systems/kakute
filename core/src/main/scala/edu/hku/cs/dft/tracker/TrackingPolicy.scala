@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.tracker
 
-import edu.hku.cs.dft.TrackingMode
+import edu.hku.cs.dft.{ConfEnumeration, TrackingMode}
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
@@ -30,11 +30,11 @@ import edu.hku.cs.dft.tracker.TrackingType.TrackingType
   *
 * */
 
-object TrackingType extends Enumeration {
+object TrackingType extends ConfEnumeration {
   type TrackingType = Value
-  val Values = Value("value")
-  val Key = Value("key")
-  val KeyValues = Value("key-value")
+  val Values = ConfValue("value")
+  val Key = ConfValue("key")
+  val KeyValues = ConfValue("key-value")
 }
 
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,

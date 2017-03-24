@@ -153,7 +153,6 @@ private[deploy] class ExecutorRunner(
         command.add(3, phosphorRunner.agent())
         command.add(4, phosphorRunner.bootclasspath())
         command.add(DefaultArgument._CONF_DFT)
-        command.add("on")
         command.add(DefaultArgument._CONF_HOST)
         command.add(DFTEnv.dftEnv().serverHost)
         command.add(DefaultArgument._CONF_PORT)

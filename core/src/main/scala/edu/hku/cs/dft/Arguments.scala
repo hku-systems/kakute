@@ -44,7 +44,7 @@ class CommandlineHandle extends ArgumentHandle {
 
   override def init(): Boolean = true
 
-  override def parseArgs(key: String): String = storage.getOrElse(key, "")
+  override def parseArgs(key: String): String = storage.getOrElse(key, null)
 
   override def setKeyValue(key: String, value: String): Unit = storage += key -> value
 

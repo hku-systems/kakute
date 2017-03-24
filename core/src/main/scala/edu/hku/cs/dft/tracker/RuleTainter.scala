@@ -45,7 +45,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
   }
 
   def taintOne[T](obj: T): T = {
-    if (policy.tracking_type == TrackingType.Keys) {
+    if (policy.tracking_type == TrackingType.Key) {
       obj match {
         case int: Int => Tainter.taintedInt(int, currentKeyIndex()).asInstanceOf[T]
         case long: Long => Tainter.taintedLong(long, currentKeyIndex()).asInstanceOf[T]
