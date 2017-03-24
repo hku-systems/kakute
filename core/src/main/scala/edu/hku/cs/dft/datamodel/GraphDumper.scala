@@ -44,8 +44,8 @@ class GraphDumper(fn: String) {
     analyser.entry(graphManager)
     analyser.firstRoundEntry()
     analyser.exitPoint()
-//    analyser.tagScheme()
-//    analyser.printScheme()
+    analyser.tagScheme()
+    analyser.printScheme()
   }
 
 }

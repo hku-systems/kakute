@@ -81,6 +81,14 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
 }
 
 
+/**
+  * A [[Analyzer]] is used to all the info in the graph (variableID, depedentKeySet
+  * and some other info that infers from the other semantics)
+  *
+  * TODO: Currently, the analyzer is in the App Driver, We may want to move this part
+  * TODO: to a separated model, like saving the model into the disk
+*/
+
 class Analyzer {
 
   private val prefixRoot: String = "Root-"
@@ -166,18 +174,22 @@ class Analyzer {
       val v = checkList.last
       if (!checkSet.contains(v)) {
 
-        // get the semantics dependencies
+        // set the semantics dependencies and its data count
         dataSet(v).op() match {
           case DataOperation.Union =>
             dataSet(v).deps.foreach(kv => {
               dataSet(v).deps +=
                 kv._1 -> Map(RuleMaker.makeOneToOneRuleFromTypeInfo(dataSet(v).dataType).toList -> dataSet(kv._1).dataCount)
             })
+            // set data count
+            var totalCount = 0
+            dataSet(v).deps.foreach(kv => totalCount += dataSet(kv._1).dataCount)
+            dataSet(v).dataCount = totalCount
           case _ =>
           // TODO more rule
         }
 
-        // get the reduce operations
+        // get the reduce operations and set the reduce key set
         dataSet(v).op() match {
           case DataOperation.Reduce | DataOperation.Union =>
             shuffleSet += v

@@ -17,6 +17,7 @@ class DependentTagger extends PartitionSchemeTagger{
   // PartitionTags
 
   override def tagScheme(): Unit = {
+    val emptyScheme = PartitionScheme(0, Set(), 0)
     val checkList = this.shuffleSet
     checkList.foreach(clist => {
 
@@ -51,9 +52,13 @@ class DependentTagger extends PartitionSchemeTagger{
                   depKeys ++= mapDep(k).toSet
                 }
               })
+
+              var addSet = thisTags.getOrElse(dep._1, Set())
+              val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
               val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
-                depKeys, datar.dataCount)
-              thisTags += dep._1 -> currentScheme
+                depKeys, r)
+              addSet += currentScheme
+              thisTags += dep._1 -> addSet
             })
           })
           currentDatas = dep._1 :: currentDatas
