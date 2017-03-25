@@ -90,7 +90,8 @@ private[spark] class ResultTask[T, U](
 //    if (DFTEnv.trackingPolicy.typeInfering) {
 //      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
 //    }
-    DFTEnv.localControl.collect(partition.index)
+    if (DFTEnv.trackingPolicy.add_tags_per_ops)
+      DFTEnv.localControl.collect(partition.index)
     result
   }
 

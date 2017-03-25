@@ -40,6 +40,7 @@ class GraphDumper(fn: String) {
       }
       dumpList = dumpList.init
     }
+    fileWriter.close()
     val analyser: PartitionSchemeTagger = new DependentTagger
     analyser.entry(graphManager)
     analyser.firstRoundEntry()

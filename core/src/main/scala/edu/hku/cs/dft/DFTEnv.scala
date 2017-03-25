@@ -109,15 +109,15 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
   }
 
   val phosphorEnv: PhosphorEnv = {
-    var java = argumentHandle.parseArgs("phosphor_java")
+    var java = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_JAVA)
     if (java == null) {
       java = "phosphor/bin/"
     }
-    var jar = argumentHandle.parseArgs("phosphor_jar")
+    var jar = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_JAR)
     if (jar == null) {
       jar = "phosphor/phosphor.jar"
     }
-    var cache = argumentHandle.parseArgs("phosphor_cache")
+    var cache = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_CACHE)
     if (cache == null) {
       cache = "phosphor/cache"
     }
@@ -198,7 +198,8 @@ object DFTEnv {
 
     trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
       DFTEnv.dftEnv().trackingMode,
-      DFTEnv.dftEnv().auto_taint_input)
+      DFTEnv.dftEnv().auto_taint_input,
+      DFTEnv.dftEnv().trackingOn)
 
     if (_dftEnv.trackingOn) {
       networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)

@@ -19,6 +19,7 @@ package org.apache.spark.rdd
 
 
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.optimization.RuleCollector
 import edu.hku.cs.dft.tracker.RuleTainter
 
 import scala.reflect.ClassTag
@@ -39,17 +40,19 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
     // [[Modified]]
-    val ruleCollector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
-    val typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
+    var ruleCollector: RuleCollector = null
+    var typeTainter: RuleTainter = null
 
     var parentIter =
       if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+        ruleCollector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+        typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
         firstParent[T].iterator(split, context).map(typeTainter.setTaint) // set taint before computation
       } else {
         firstParent[T].iterator(split, context)
       }
 
-    if (true) {
+    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
       f(context, split.index, parentIter).map(typeTainter.getTaintAndReturn) // get taint after computation
     } else {
       f(context, split.index, parentIter)
