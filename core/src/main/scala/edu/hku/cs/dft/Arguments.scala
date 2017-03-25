@@ -112,7 +112,8 @@ object DefaultArgument {
 
   val CONF_PREFIX = "--"
 
-  val CONF_DFT: String = "dft-on"
+  val CONF_DUMP_PATH: String = "dft-dump-graph"
+  val CONF_PARTITION_OUTPUT: String = "dft-partition-output"
   val CONF_HOST: String = "dft-host"
   val CONF_PORT: String = "dft-port"
   val CONF_TRACKING: String = "dft-tracking"
@@ -126,7 +127,6 @@ object DefaultArgument {
   val CONF_SAMPLE_INT: String = "dft-sample-int"
   val CONF_FILE: String = "dft-conf"
 
-  val _CONF_DFT: String = CONF_PREFIX + CONF_DFT
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
   val _CONF_PORT: String = CONF_PREFIX + CONF_PORT
   val _CONF_TRACKING: String = CONF_PREFIX + CONF_TRACKING
@@ -138,11 +138,12 @@ object DefaultArgument {
 
   val host: String = "127.0.0.1"
   val port: Int = 8787
-  val trackingMode: TrackingMode = TrackingMode.RuleTracking
+  val trackingMode: TrackingMode = TrackingMode.Off
   val sampleMode: SampleMode = SampleMode.Off
   val mode: String = "server"
   // By default, 10% of the data is used when in the data sampling mode
   val sampleInt: Int = 10
   val partitionPath: String = "default.scheme"
   val confFile = "/etc/dft.conf"
+  val dumpGraph = "graph.dump"
 }

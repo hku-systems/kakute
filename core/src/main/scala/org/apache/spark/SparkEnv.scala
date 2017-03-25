@@ -79,12 +79,6 @@ class SparkEnv (
 
   private[spark] def stop() {
 
-    /**
-      * [[modified]] stop the env
-    */
-    DFTEnv.stop_all()
-
-
     if (!isStopped) {
       isStopped = true
       pythonWorkers.values.foreach(_.stop())
@@ -168,11 +162,6 @@ object SparkEnv extends Logging {
     assert(conf.contains(DRIVER_HOST_ADDRESS),
       s"${DRIVER_HOST_ADDRESS.key} is not set on the driver!")
     assert(conf.contains("spark.driver.port"), "spark.driver.port is not set on the driver!")
-
-    /**
-      * [[Modified]] init the server env
-    */
-    DFTEnv.server_init(null)
 
     val bindAddress = conf.get(DRIVER_BIND_ADDRESS)
     val advertiseAddress = conf.get(DRIVER_HOST_ADDRESS)

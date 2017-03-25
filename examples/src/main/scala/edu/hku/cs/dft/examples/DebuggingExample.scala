@@ -13,6 +13,7 @@ object DebuggingExample {
     val spark = SparkSession
       .builder()
       .appName("debug example")
+      .config("spark.dft.tracking.mode", "full")
       .getOrCreate()
 
     val file = if (args.length > 0)

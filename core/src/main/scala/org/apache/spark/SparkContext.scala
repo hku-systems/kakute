@@ -79,11 +79,16 @@ class SparkContext(config: SparkConf) extends Logging {
   // [[Modified]] add a variable tracking to infer if the system will use tracking
   // TODO: do we need to change the tracking mode during execution?
   // TODO: as we the executor may need to be restarted, the may be tedious to implement
-  val tracking: Boolean = config.getBoolean("dft.tracking", false)
 
-  val trackingMode: TrackingMode = TrackingMode.withName(config.get("dft.tracking.mode", TrackingMode.RuleTracking.string))
+  val trackingMode: TrackingMode = TrackingMode.withName(config.get("spark.dft.tracking.mode", TrackingMode.Off.string))
 
-  val trackingType: TrackingType = TrackingType.withName(config.get("dft.tracking.type", TrackingType.KeyValues.string))
+  val trackingType: TrackingType = TrackingType.withName(config.get("spark.dft.tracking.type", TrackingType.KeyValues.string))
+
+  val tracking: Boolean = trackingMode != TrackingMode.Off
+
+  // [[Modified]]init the server if tracking is true
+  if (tracking && trackingMode == TrackingMode.RuleTracking)
+    DFTEnv.server_init(null)
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()
@@ -1907,6 +1912,11 @@ class SparkContext(config: SparkConf) extends Logging {
    * Shut down the SparkContext.
    */
   def stop(): Unit = {
+
+    // [[Modified]] stop
+    if (tracking && trackingMode == TrackingMode.RuleTracking)
+      DFTEnv.stop_all()
+
     if (LiveListenerBus.withinListenerThread.value) {
       throw new SparkException(
         s"Cannot stop SparkContext within listener thread of ${LiveListenerBus.name}")
@@ -2512,9 +2522,6 @@ object SparkContext extends Logging {
    * @return current `SparkContext` (or a new one if it wasn't created before the function call)
    */
   def getOrCreate(config: SparkConf): SparkContext = {
-
-    // [[Modified]]
-    DFTEnv.init(config)
 
     // Synchronize to ensure that multiple create requests don't trigger an exception
     // from assertNoOtherContextIsRunning within setActiveContext

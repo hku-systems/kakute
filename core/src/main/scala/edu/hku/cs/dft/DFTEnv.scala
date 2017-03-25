@@ -22,8 +22,7 @@ object TrackingMode extends ConfEnumeration {
   type TrackingMode = Value
   val RuleTracking = ConfValue("rule")
   val FullTracking = ConfValue("full")
-  val MixTracking = ConfValue("mix")
-
+  val Off = ConfValue("off")
 }
 
 object SampleMode extends ConfEnumeration {
@@ -36,20 +35,29 @@ object SampleMode extends ConfEnumeration {
 
 class DFTEnv(val argumentHandle: ArgumentHandle) {
   argumentHandle.init()
+
   val serverPort: Int = argumentHandle.parseArgs(DefaultArgument.CONF_PORT) match {
     case s: String => if (s.length > 0) s.toInt else DefaultArgument.port
     case _ => DefaultArgument.port
   }
+
   val serverHost: String = argumentHandle.parseArgs(DefaultArgument.CONF_HOST) match {
     case s: String => s
     case _ => DefaultArgument.host
   }
+
   val trackingMode: TrackingMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TRACKING) match {
       case TrackingMode.FullTracking.string => TrackingMode.FullTracking
       case TrackingMode.RuleTracking.string => TrackingMode.RuleTracking
-      case TrackingMode.MixTracking.string => TrackingMode.MixTracking
       case _ => DefaultArgument.trackingMode
+    }
+  }
+
+  val trackingOn: Boolean = {
+    trackingMode match {
+      case TrackingMode.FullTracking | TrackingMode.RuleTracking => true
+      case _ => false
     }
   }
 
@@ -95,16 +103,9 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
   }
 
   val partitionSchemeOutput: String = {
-    argumentHandle.parseArgs("partition_output") match {
+    argumentHandle.parseArgs(DefaultArgument.CONF_PARTITION_OUTPUT) match {
       case s: String => s
       case _ => DefaultArgument.partitionPath
-    }
-  }
-
-  val trackingOn: Boolean = {
-    argumentHandle.parseArgs(DefaultArgument.CONF_DFT) match {
-      case "on" => true
-      case _ => false
     }
   }
 
@@ -123,14 +124,20 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     }
     PhosphorEnv(java, jar, cache)
   }
-  val graphDumpPath: String = argumentHandle.parseArgs("graph_dump_path") match {
+
+  val graphDumpPath: String = argumentHandle.parseArgs(DefaultArgument.CONF_DUMP_PATH) match {
     case s: String => s
-    case _ => "phosphor/graph.dump"
+    case _ => DefaultArgument.dumpGraph
   }
+
 }
 
 case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
 
+
+// TODO: currently only one DFTEnv is supported, which means that if there are multiple context
+// TODO: then the system will be broken, but this is a wire case
+// TODO: we also need to rebind another port when failure happens
 object DFTEnv {
 
   type DFTLogging = org.apache.spark.internal.Logging
@@ -176,6 +183,7 @@ object DFTEnv {
     phosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
       DFTEnv.dftEnv().phosphorEnv.phosphorJar,
       DFTEnv.dftEnv().phosphorEnv.phosphorJava)
+    // when tracking is on, then
   }
 
   def server_init(any: Any): Unit = {
@@ -201,7 +209,7 @@ object DFTEnv {
       DFTEnv.dftEnv().auto_taint_input,
       DFTEnv.dftEnv().trackingOn)
 
-    if (_dftEnv.trackingOn) {
+    if (_dftEnv.trackingMode == TrackingMode.RuleTracking) {
       networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
       new Thread(new Runnable {
         override def run(): Unit = networkEnv.run()

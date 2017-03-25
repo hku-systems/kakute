@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets
 
 import scala.collection.JavaConverters._
 import com.google.common.io.Files
+import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import edu.hku.cs.dft.{DFTEnv, DefaultArgument, TrackingMode}
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.deploy.{ApplicationDescription, ExecutorState}
@@ -146,27 +148,35 @@ private[deploy] class ExecutorRunner(
       val command = builder.command()
 
       // [[Modified]]
+      var trackingMode: TrackingMode = DFTEnv.dftEnv().trackingMode
+      var trackingType: TrackingType = DFTEnv.dftEnv().trackingType
       appDesc.trackingAppInfo match {
-        case Some(i) => println(i)
-        case None => println("tracking is off")
+        case Some(info) =>
+          trackingMode = info.trackingMode
+          trackingType = info.trackingType
+        case None =>
+          // if the tracking mode is rule, then it is mis-configured
+          if (trackingMode == TrackingMode.RuleTracking)
+            trackingMode = TrackingMode.Off
+          println("tracking is off")
       }
-      if (DFTEnv.dftEnv().trackingOn) {
+      if (trackingMode == TrackingMode.FullTracking ||
+        trackingMode == TrackingMode.RuleTracking) {
         val phosphorRunner = DFTEnv.phosphorRunner
         command.set(0, phosphorRunner.java())
         command.add(3, phosphorRunner.agent())
         command.add(4, phosphorRunner.bootclasspath())
-        command.add(DefaultArgument._CONF_DFT)
         command.add(DefaultArgument._CONF_HOST)
         command.add(DFTEnv.dftEnv().serverHost)
         command.add(DefaultArgument._CONF_PORT)
         command.add(DFTEnv.dftEnv().serverPort.toString)
         command.add(DefaultArgument._CONF_TRACKING)
-        command.add(DFTEnv.dftEnv().trackingMode.toString)
+        command.add(trackingMode.toString)
         command.add(DefaultArgument._CONF_SAMPLE)
         command.add(DFTEnv.dftEnv().sampleMode.toString)
         command.add(DefaultArgument._CONF_TYPE)
-        command.add(DFTEnv.dftEnv().trackingType.toString)
-        if (DFTEnv.dftEnv().auto_taint_input)
+        command.add(trackingType.toString)
+        if (DFTEnv.dftEnv().auto_taint_input && trackingMode == TrackingMode.FullTracking)
           command.add(DefaultArgument._CONF_INPUT_TAINT)
       }
 

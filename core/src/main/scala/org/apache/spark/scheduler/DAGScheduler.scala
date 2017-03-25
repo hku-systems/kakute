@@ -22,7 +22,7 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.datamodel.GraphManager
 
 import scala.annotation.tailrec
@@ -1012,8 +1012,8 @@ class DAGScheduler(
       val serializedTaskMetrics = closureSerializer.serialize(stage.latestInfo.taskMetrics).array()
 
       // [[Modified]] to add rdd to our framework
-      DFTEnv.graphManager.spark_entry(stage.rdd)
-      val a = DFTEnv.graphManager
+      if (sc.trackingMode == TrackingMode.RuleTracking)
+        DFTEnv.graphManager.spark_entry(stage.rdd)
 
       stage match {
         case stage: ShuffleMapStage =>
