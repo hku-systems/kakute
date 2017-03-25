@@ -146,7 +146,10 @@ private[deploy] class ExecutorRunner(
       val command = builder.command()
 
       // [[Modified]]
-
+      appDesc.trackingAppInfo match {
+        case Some(i) => println(i)
+        case None => println("tracking is off")
+      }
       if (DFTEnv.dftEnv().trackingOn) {
         val phosphorRunner = DFTEnv.phosphorRunner
         command.set(0, phosphorRunner.java())

@@ -19,8 +19,9 @@ package org.apache.spark.deploy.worker
 
 import java.lang.management.ManagementFactory
 
-import scala.annotation.tailrec
+import edu.hku.cs.dft.{DFTEnv, DefaultArgument}
 
+import scala.annotation.tailrec
 import org.apache.spark.util.{IntParam, MemoryParam, Utils}
 import org.apache.spark.SparkConf
 
@@ -67,6 +68,9 @@ private[worker] class WorkerArguments(args: Array[String], conf: SparkConf) {
 
   @tailrec
   private def parse(args: List[String]): Unit = args match {
+    case (DefaultArgument._CONF_FILE) :: value :: tail =>
+      DFTEnv.pathInit(value)
+      parse(tail)
     case ("--ip" | "-i") :: value :: tail =>
       Utils.checkHost(value, "ip no longer supported, please use hostname " + value)
       host = value

@@ -19,8 +19,9 @@ package org.apache.spark.scheduler.cluster
 
 import java.util.concurrent.Semaphore
 
-import scala.concurrent.Future
+import edu.hku.cs.dft.TrackingAppInfo
 
+import scala.concurrent.Future
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.deploy.{ApplicationDescription, Command}
 import org.apache.spark.deploy.client.{StandaloneAppClient, StandaloneAppClientListener}
@@ -103,8 +104,10 @@ private[spark] class StandaloneSchedulerBackend(
       } else {
         None
       }
+    // [[Modified]] add tracking info
+    val trackingAppInfo = if (sc.tracking) Some(TrackingAppInfo(sc.trackingMode, sc.trackingType)) else None
     val appDesc = ApplicationDescription(sc.appName, maxCores, sc.executorMemory, command,
-      webUrl, sc.eventLogDir, sc.eventLogCodec, coresPerExecutor, initialExecutorLimit)
+      webUrl, sc.eventLogDir, sc.eventLogCodec, coresPerExecutor, initialExecutorLimit, trackingAppInfo = trackingAppInfo)
     client = new StandaloneAppClient(sc.env.rpcEnv, masters, appDesc, this, conf)
     client.start()
     launcherBackend.setState(SparkAppHandle.State.SUBMITTED)

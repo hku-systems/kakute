@@ -4,6 +4,7 @@ import java.io.FileNotFoundException
 
 import edu.hku.cs.dft.SampleMode.SampleMode
 import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import org.apache.spark.SparkConf
 
 import scala.io.Source
@@ -105,6 +106,8 @@ class CustomArgumentHandle extends ArgumentHandle {
   override def setKeyValue(key: String, value: String) = {}
 }
 
+case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType)
+
 object DefaultArgument {
 
   val CONF_PREFIX = "--"
@@ -121,6 +124,7 @@ object DefaultArgument {
   val CONF_PHOSPHOR_CACHE: String = "dft-phosphor-cache"
   val CONF_INPUT_TAINT: String = "dft-input-taint"
   val CONF_SAMPLE_INT: String = "dft-sample-int"
+  val CONF_FILE: String = "dft-conf"
 
   val _CONF_DFT: String = CONF_PREFIX + CONF_DFT
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
@@ -130,6 +134,7 @@ object DefaultArgument {
   val _CONF_MODE: String = CONF_PREFIX + CONF_MODE
   val _CONF_TYPE: String = CONF_PREFIX + CONF_TYPE
   val _CONF_INPUT_TAINT: String = CONF_PREFIX + CONF_INPUT_TAINT
+  val _CONF_FILE: String = CONF_PREFIX + CONF_FILE
 
   val host: String = "127.0.0.1"
   val port: Int = 8787

@@ -32,8 +32,11 @@ import scala.language.implicitConversions
 import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.optimization.SymbolManager
+import edu.hku.cs.dft.tracker.TrackingType
+import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import edu.hku.cs.tools.CallLocation
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
@@ -72,6 +75,15 @@ import org.apache.spark.util._
  *   this config overrides the default configs as well as system properties.
  */
 class SparkContext(config: SparkConf) extends Logging {
+
+  // [[Modified]] add a variable tracking to infer if the system will use tracking
+  // TODO: do we need to change the tracking mode during execution?
+  // TODO: as we the executor may need to be restarted, the may be tedious to implement
+  val tracking: Boolean = config.getBoolean("dft.tracking", false)
+
+  val trackingMode: TrackingMode = TrackingMode.withName(config.get("dft.tracking.mode", TrackingMode.RuleTracking.string))
+
+  val trackingType: TrackingType = TrackingType.withName(config.get("dft.tracking.type", TrackingType.KeyValues.string))
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()
