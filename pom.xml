@@ -94,6 +94,7 @@
     <module>core</module>
     <module>graphx</module>
     <module>mllib</module>
+    <module>calllocation</module>
     <module>mllib-local</module>
     <module>tools</module>
 <!--    <module>streaming</module>
