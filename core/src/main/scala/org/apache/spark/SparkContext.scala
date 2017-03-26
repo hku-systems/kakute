@@ -37,6 +37,7 @@ import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.optimization.SymbolManager
 import edu.hku.cs.dft.tracker.TrackingType
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
+import edu.hku.cs.dft.traffic.{PartitionSchemes, TrafficEnv}
 import edu.hku.cs.tools.CallLocation
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
@@ -79,6 +80,11 @@ class SparkContext(config: SparkConf) extends Logging {
   // [[Modified]] add a variable tracking to infer if the system will use tracking
   // TODO: do we need to change the tracking mode during execution?
   // TODO: as we the executor may need to be restarted, the may be tedious to implement
+
+  val trafficReduction: Boolean = config.getBoolean(TrafficEnv.CONF_TRAFFIC, false)
+
+  val trafficEnv: TrafficEnv = if (trafficReduction) new TrafficEnv(config.get("spark.dft.traffic.path", "default.scheme"))
+                                else null
 
   val trackingMode: TrackingMode = TrackingMode.withName(config.get("spark.dft.tracking.mode", TrackingMode.Off.string))
 

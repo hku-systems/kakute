@@ -11,7 +11,7 @@ object SchemesSerializationSuite {
 //    schemes += "a" -> PartitionScheme(1, Set(1, 2, 3), 1)
 //    schemes += "b" -> PartitionScheme(2, Set(2, 3, 4), 2)
 //    PartitionSchemes.serializeSchemes(scheme = schemes)
-    val inputScheme = PartitionSchemes.parseSchemes(PartitionSchemes.defaultPath)
+    val inputScheme = PartitionSchemes.parseSchemes("default.scheme")
     inputScheme.foreach(println)
 //    schemes.foreach(t => {
 //      assert(inputScheme(t._1) == t._2)

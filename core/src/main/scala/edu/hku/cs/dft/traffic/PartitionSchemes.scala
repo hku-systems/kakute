@@ -20,8 +20,6 @@ object PartitionSchemes {
 
   private var schemes: Map[String, PartitionScheme] = Map()
 
-  val defaultPath: String = DFTEnv.dftEnv().partitionSchemeOutput
-
   def parseSchemes(path: String): Map[String, PartitionScheme] = {
     try {
       val stream = new ObjectInputStream(new FileInputStream(path))
@@ -35,7 +33,7 @@ object PartitionSchemes {
 
   // serialize the current schemes or a particular scheme to file
 
-  def serializeSchemes(path: String = defaultPath, scheme: Map[String, PartitionScheme] = schemes): Unit = {
+  def serializeSchemes(path: String, scheme: Map[String, PartitionScheme] = schemes): Unit = {
     schemes = scheme
     try {
       val stream = new ObjectOutputStream(new FileOutputStream(path))

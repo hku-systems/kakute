@@ -1,5 +1,6 @@
 package edu.hku.cs.dft.traffic
 
+import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.optimization.Analyzer
 
 /**
@@ -37,6 +38,6 @@ abstract class PartitionSchemeTagger extends Analyzer {
 
   def printScheme(): Unit
 
-  def serializeToFiles(): Unit = PartitionSchemes.serializeSchemes(scheme = choosenSchemes)
-
+  def serializeToFiles(): Unit = PartitionSchemes.serializeSchemes(DFTEnv.dftEnv().partitionSchemeOutput
+    ,choosenSchemes)
 }

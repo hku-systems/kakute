@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.traffic
 
+import org.apache.spark.Partitioner
+
 /**
   * Created by jianyu on 3/24/17.
   */
@@ -18,11 +20,11 @@ class PartitionEnforcer(collection: PartitionSchemes.PartitionSchemeCollection) 
 
   var partitionerMapping: Map[String, DependentPartitioner] = Map()
 
-  def getPartitioner(num: Int, variableId: String): DependentPartitioner = {
+  def getPartitioner(num: Int, variableId: String): Option[Partitioner] = {
     val id = variableId + num
     // get the partitioner, or construct it when it is not ready
-    partitionerMapping.getOrElse(id, {
-      val scheme = partitionSchemes.getOrElse(id, null)
+    val k = partitionerMapping.getOrElse(id, {
+      val scheme = partitionSchemes.getOrElse(variableId, null)
       if (scheme != null) {
         val d = new DependentPartitioner(num ,scheme.hashKeySet)
         partitionerMapping += id -> d
@@ -31,6 +33,7 @@ class PartitionEnforcer(collection: PartitionSchemes.PartitionSchemeCollection) 
         null
       }
     })
+    Option(k)
   }
 
 
