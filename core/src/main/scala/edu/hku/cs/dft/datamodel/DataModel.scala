@@ -13,6 +13,8 @@ object DataOperation extends Enumeration {
   val Map, Reduce, Union, Sample, ZipWithIndex, CoGroup, Input, None = Value
 }
 
+case class SerializableDataModel(ID: Int)
+
 class DataModel(frameworkHandle: PlatformHandle) {
 
   private var _name: String = ""
@@ -108,5 +110,7 @@ class DataModel(frameworkHandle: PlatformHandle) {
     newBuilder.append("\n")
     newBuilder.toString()
   }
+
+  def serializableObject(): SerializableDataModel = SerializableDataModel(this.ID.toInt)
 
 }

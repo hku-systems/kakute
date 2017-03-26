@@ -45,9 +45,10 @@ class GraphDumper(fn: String) {
     analyser.entry(graphManager)
     analyser.firstRoundEntry()
     analyser.exitPoint()
-    analyser.tagScheme()
-    analyser.chooseScheme()
-    analyser.serializeToFiles()
+    DependentTagger.serializeTagger("analyzer.obj", analyser.asInstanceOf[DependentTagger])
+//    analyser.tagScheme()
+//    analyser.chooseScheme()
+//    analyser.serializeToFiles()
 //    analyser.printScheme()
   }
 

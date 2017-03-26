@@ -52,7 +52,7 @@ class SparkPlatformHandle(frameworkR: RDD[_]) extends PlatformHandle {
       case "ShuffledRDD" => DataOperation.Reduce
       case "ZippedWithIndexRDD" => DataOperation.ZipWithIndex
       case "MapPartitionsRDD" => DataOperation.Map
-      case "CoGroupRDD" => DataOperation.Reduce
+      case "CoGroupedRDD" => DataOperation.CoGroup
       case _ => DataOperation.None
     }
   }

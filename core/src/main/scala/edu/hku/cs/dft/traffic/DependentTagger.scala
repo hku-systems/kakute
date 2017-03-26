@@ -1,5 +1,8 @@
 package edu.hku.cs.dft.traffic
 
+import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+
+import edu.hku.cs.dft.datamodel.DataOperation
 import edu.hku.cs.dft.optimization.RuleMaker
 
 /**
@@ -34,37 +37,43 @@ class DependentTagger extends PartitionSchemeTagger{
         (1 to ldata.reduceKeyRange).toSet, ldata.dataCount)
       thisTags += clist -> Set(currentScheme)
 
+      var visitedSet: Set[String] = Set()
+
       // tag all partition scheme to the top
       while(currentDatas.nonEmpty) {
         val currentValue = currentDatas.last
         val currentData = this.dataSet(currentValue)
-        currentData.deps.foreach(dep => {
-          // find the dependent keyset
-          dep._2.foreach(rule => {
-            val mapDep = rule._1.toMap
-            val datar = dataSet(dep._1)
-            val reduceSet = thisTags.getOrElse(currentValue, Set())
-            // if it is null, then it came across a problem
-            assert(reduceSet.nonEmpty)
-            // add according to the current rule
-            reduceSet.foreach(c => {
-              var depKeys: Set[Int] = Set()
-              c.hashKeySet.foreach(k => {
-                if (mapDep.contains(k)) {
-                  depKeys ++= mapDep(k).toSet
-                }
-              })
+        visitedSet += currentValue
+        if (currentData.op() != DataOperation.None) {
+          currentData.deps.foreach(dep => {
+            // find the dependent keyset
+            dep._2.foreach(rule => {
+              val mapDep = rule._1.toMap
+              val datar = dataSet(dep._1)
+              val reduceSet = thisTags.getOrElse(currentValue, Set())
+              // if it is null, then it came across a problem
+              assert(reduceSet.nonEmpty)
+              // add according to the current rule
+              reduceSet.foreach(c => {
+                var depKeys: Set[Int] = Set()
+                c.hashKeySet.foreach(k => {
+                  if (mapDep.contains(k)) {
+                    depKeys ++= mapDep(k).toSet
+                  }
+                })
 
-              var addSet = thisTags.getOrElse(dep._1, Set())
-              val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
-              val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
-                depKeys, r)
-              addSet += currentScheme
-              thisTags += dep._1 -> addSet
+                var addSet = thisTags.getOrElse(dep._1, Set())
+                val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
+                val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
+                  depKeys, r)
+                addSet += currentScheme
+                thisTags += dep._1 -> addSet
+              })
             })
+            if (!visitedSet.contains(dep._1))
+              currentDatas = dep._1 :: currentDatas
           })
-          currentDatas = dep._1 :: currentDatas
-        })
+        }
         currentDatas = currentDatas.init
       }
 
@@ -107,4 +116,27 @@ class DependentTagger extends PartitionSchemeTagger{
     })
   }
 
+}
+
+object DependentTagger {
+
+  def serializeTagger(path: String, dependentTagger: DependentTagger): Unit = {
+    val oos = new ObjectOutputStream(new FileOutputStream(path))
+    oos.writeObject(dependentTagger)
+  }
+
+  def deserializeTagger(path: String): DependentTagger = {
+    val ois = new ObjectInputStream(new FileInputStream(path))
+    ois.readObject().asInstanceOf[DependentTagger]
+  }
+
+}
+
+object TaggerMain {
+  def main(args: Array[String]): Unit = {
+    val dependentTagger = DependentTagger.deserializeTagger("analyzer.obj")
+    dependentTagger.tagScheme()
+    dependentTagger.chooseScheme()
+    dependentTagger.printScheme()
+  }
 }

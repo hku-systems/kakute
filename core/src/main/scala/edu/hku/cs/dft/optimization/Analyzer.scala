@@ -1,17 +1,17 @@
 package edu.hku.cs.dft.optimization
 
 import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
-import edu.hku.cs.dft.datamodel.{DataModel, DataOperation, GraphManager, PlatformHandle}
+import edu.hku.cs.dft.datamodel._
 import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
 import edu.hku.cs.dft.tracker.DFTUtils
 
 /**
   * Created by jianyu on 3/16/17.
   */
+@SerialVersionUID(100L)
+class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String) extends Serializable{
 
-class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String) {
-
-  var modelSet: Set[DataModel] = Set()
+  var modelSet: Set[SerializableDataModel] = Set()
 
   var dataType: Any = _
 
@@ -33,7 +33,7 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
   def op(): DataOperation = _op
 
   def addModel(dataModel: DataModel, fatherModel: DataModel):this.type = {
-    modelSet += dataModel
+    modelSet += dataModel.serializableObject()
     count += 1
     dataCount += dataModel.count
     if (dataType == null)
@@ -89,7 +89,8 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
   * TODO: to a separated model, like saving the model into the disk
 */
 
-class Analyzer {
+
+class Analyzer extends Serializable{
 
   private val prefixRoot: String = "Root-"
 
@@ -185,16 +186,20 @@ class Analyzer {
             var totalCount = 0
             dataSet(v).deps.foreach(kv => totalCount += dataSet(kv._1).dataCount)
             dataSet(v).dataCount = totalCount
+          case DataOperation.CoGroup =>
+            dataSet(v).deps.foreach(kv => {
+              dataSet(v).deps +=
+                kv._1 -> Map(Map(1 -> List(1), 2 -> List(2)).toList -> dataSet(kv._1).dataCount)
+            })
           case _ =>
           // TODO more rule
         }
 
         // get the reduce operations and set the reduce key set
         dataSet(v).op() match {
-          case DataOperation.Reduce | DataOperation.Union =>
+          case DataOperation.Reduce | DataOperation.Union | DataOperation.CoGroup =>
             shuffleSet += v
             dataSet(v).reduceKeyRange = reduceKeyRange(dataSet(v).dataType)
-          case DataOperation.CoGroup => throw new Exception("not supported")
           case DataOperation.None => // now we consider other operation as map
             // check if the deps exists
             var isDep = false
@@ -203,7 +208,7 @@ class Analyzer {
                 isDep = true
               }
             )
-            if (!isDep) throw new Exception("exists empty deps for null operations")
+//            if (!isDep) throw new Exception("exists empty deps for null operations")
           case DataOperation.Map | DataOperation.Input => // do nothing
           case _ => throw new Exception("invalid operation value")
         }
