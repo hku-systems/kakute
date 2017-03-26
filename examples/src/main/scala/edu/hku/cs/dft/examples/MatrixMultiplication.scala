@@ -3,8 +3,10 @@ package edu.hku.cs.dft.examples
 /**
   * Created by jianyu on 3/21/17.
   */
-import org.apache.spark.{Partitioner,HashPartitioner}
-import org.apache.spark.{SparkContext,SparkConf}
+import org.apache.spark.{HashPartitioner, Partitioner}
+import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.io.StdIn
 
 class IndexHashPartitioner(partitions: Int) extends Partitioner {
   def numPartitions: Int = partitions
@@ -85,6 +87,7 @@ object MatrixMultiplication{
       .reduceByKey(indexPartitioner, (a, b) => a + b)
 
     result.collect()
+    StdIn.readLine()
     sc.stop()
   }
 }
