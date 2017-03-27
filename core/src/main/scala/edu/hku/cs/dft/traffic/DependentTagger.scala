@@ -43,35 +43,36 @@ class DependentTagger extends PartitionSchemeTagger{
       while(currentDatas.nonEmpty) {
         val currentValue = currentDatas.last
         val currentData = this.dataSet(currentValue)
-        visitedSet += currentValue
+//        visitedSet += currentValue
         if (currentData.op() != DataOperation.None) {
-          currentData.deps.foreach(dep => {
-            // find the dependent keyset
-            dep._2.foreach(rule => {
-              val mapDep = rule._1.toMap
-              val datar = dataSet(dep._1)
-              val reduceSet = thisTags.getOrElse(currentValue, Set())
-              // if it is null, then it came across a problem
-              assert(reduceSet.nonEmpty)
-              // add according to the current rule
-              reduceSet.foreach(c => {
-                var depKeys: Set[Int] = Set()
-                c.hashKeySet.foreach(k => {
-                  if (mapDep.contains(k)) {
-                    depKeys ++= mapDep(k).toSet
-                  }
-                })
-
-                var addSet = thisTags.getOrElse(dep._1, Set())
-                val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
-                val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
-                  depKeys, r)
-                addSet += currentScheme
-                thisTags += dep._1 -> addSet
+          val reduceSet = thisTags.getOrElse(currentValue, Set())
+          // if it is null, then it came across a problem
+          assert(reduceSet.nonEmpty)
+          reduceSet.foreach(c => {
+            currentData.deps.foreach(dep => {
+              // find the dependent keyset
+              var addSet = thisTags.getOrElse(dep._1, Set())
+              dep._2.foreach(rule => {
+                val mapDep = rule._1.toMap
+                val datar = dataSet(dep._1)
+                // add according to the current rule
+                  var depKeys: Set[Int] = Set()
+                  c.hashKeySet.foreach(k => {
+                    if (mapDep.contains(k)) {
+                      depKeys ++= mapDep(k).toSet
+                    }
+                  })
+                  val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
+                  val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
+                    depKeys, r)
+                  addSet += currentScheme
+                  thisTags += dep._1 -> addSet
               })
+              if (!visitedSet.contains(dep._1)) {
+                currentDatas = dep._1 :: currentDatas
+                visitedSet += dep._1
+              }
             })
-            if (!visitedSet.contains(dep._1))
-              currentDatas = dep._1 :: currentDatas
           })
         }
         currentDatas = currentDatas.init
