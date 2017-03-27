@@ -77,7 +77,7 @@ object AdjancentList{
         val isHead=true
       */
 
-    val conf = new SparkConf().setAppName("MatrixMultiplication")
+    val conf = new SparkConf().setAppName("AdjancentList")
     val sc = new SparkContext(conf)
 
     val input = sc.textFile(file)
@@ -103,18 +103,18 @@ object AdjancentList{
       /**(edges,(inEdges,outEdges))
         	edges/inEdges/outEdges are the edges separated by " ", e.g., "edge1 edge2 edge3"
         */
-      val inEdgesA=a._1.split(" ")
-      val inEdgesB=b._1.split(" ")
-      val inEdgeSet=new HashSet[String]()
-      for(edge <-inEdgesA) inEdgeSet+=edge
-      for(edge <-inEdgesB) inEdgeSet+=edge
+      val inEdgesA = a._1.split(" ")
+      val inEdgesB = b._1.split(" ")
+      val inEdgeSet = new HashSet[String]()
+      for(edge <- inEdgesA) inEdgeSet += edge
+      for(edge <- inEdgesB) inEdgeSet += edge
       inEdgeSet.remove("")
 
       val outEdgesA = a._2.split(" ")
       val outEdgesB = b._2.split(" ")
       val outEdgeSet = new HashSet[String]()
-      for(edge <-outEdgesA) outEdgeSet+=edge
-      for(edge <-outEdgesB) outEdgeSet+=edge
+      for(edge <- outEdgesA) outEdgeSet += edge
+      for(edge <- outEdgesB) outEdgeSet += edge
       outEdgeSet.remove("")
 
       val inBuilder = new StringBuilder()
@@ -127,21 +127,21 @@ object AdjancentList{
     // adjList.saveAsTextFile(outputPath)
 
     //extend the list until the max length is achieved.
-    for{length<-2 to maxLength}{
+    for{length <- 2 to maxLength}{
       //var length=2
       val adjList2 = adjList.flatMap(entry => {
-        val list=entry._1
-        val inEdges=entry._2._1
-        val outEdges=entry._2._2
+        val list = entry._1
+        val inEdges = entry._2._1
+        val outEdges = entry._2._2
 
         //extend the list by adding the outEdges to the tail
-        val result1 = for{outEdge <- outEdges.split(" "); if(outEdge!="")} yield {
-          (list + " " + outEdge,(inEdges,""))
+        val result1 = for{outEdge <- outEdges.split(" "); if outEdge != "" } yield {
+          (list + " " + outEdge, (inEdges, ""))
         }
 
         //exted the list by adding the inEdges to the head
-        val result2 = for{inEdge <- inEdges.split(" "); if(inEdge!="")} yield {
-          (inEdge + " " + list, ("",outEdges))
+        val result2 = for{inEdge <- inEdges.split(" "); if inEdge != "" } yield {
+          (inEdge + " " + list, ("", outEdges))
         }
 
         result1 ++ result2
@@ -152,29 +152,31 @@ object AdjancentList{
         val inEdgesA = a._1.split(" ")
         val inEdgesB = b._1.split(" ")
         val inEdgeSet = new HashSet[String]()
-        for(edge <-inEdgesA) inEdgeSet+=edge
-        for(edge <-inEdgesB) inEdgeSet+=edge
+        for(edge <- inEdgesA) inEdgeSet += edge
+        for(edge <- inEdgesB) inEdgeSet += edge
         inEdgeSet.remove("")
         inEdgeSet.remove(" ")
 
         val outEdgesA = a._2.split(" ")
         val outEdgesB = b._2.split(" ")
         val outEdgeSet = new HashSet[String]()
-        for(edge <-outEdgesA) outEdgeSet+=edge
-        for(edge <-outEdgesB) outEdgeSet+=edge
+        for(edge <- outEdgesA) outEdgeSet += edge
+        for(edge <- outEdgesB) outEdgeSet += edge
         outEdgeSet.remove("")
         outEdgeSet.remove(" ")
 
-        val inBuilder=new StringBuilder()
-        val outBuilder=new StringBuilder()
+        val inBuilder = new StringBuilder()
+        val outBuilder = new StringBuilder()
         inEdgeSet.addString(inBuilder," ")
         outEdgeSet.addString(outBuilder," ")
 
-        (inBuilder.toString,outBuilder.toString)
+        (inBuilder.toString, outBuilder.toString)
       })//end of reduceByKey
 
     }//end of for
-    adjList.count()
+
+    println("count: " + adjList.count())
+    adjList.collect().foreach(println)
     StdIn.readLine()
     sc.stop()
   }

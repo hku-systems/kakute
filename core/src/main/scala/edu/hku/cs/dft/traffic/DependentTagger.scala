@@ -39,12 +39,14 @@ class DependentTagger extends PartitionSchemeTagger{
 
       var visitedSet: Set[String] = Set()
 
+      var reduceCount = 0
+
       // tag all partition scheme to the top
       while(currentDatas.nonEmpty) {
         val currentValue = currentDatas.last
         val currentData = this.dataSet(currentValue)
 //        visitedSet += currentValue
-        if (currentData.op() != DataOperation.None) {
+        if (currentData.op() != DataOperation.None && (reduceCount == 0 || currentData.op() == DataOperation.Map)) {
           val reduceSet = thisTags.getOrElse(currentValue, Set())
           // if it is null, then it came across a problem
           assert(reduceSet.nonEmpty)
@@ -76,6 +78,7 @@ class DependentTagger extends PartitionSchemeTagger{
           })
         }
         currentDatas = currentDatas.init
+        reduceCount += 1
       }
 
       // combine the scheme to teh tag
