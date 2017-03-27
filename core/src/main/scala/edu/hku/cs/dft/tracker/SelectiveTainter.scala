@@ -20,7 +20,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
 
   private var _deps: Map[Int, Int] = Map()
 
-  private var _positionFilter: Map[Int, Any => Int] = filter
+  private var _positionFilter: Map[Int, Any => Int] = if (filter == null) Map() else filter
 
   // if there are no rule for default, just make then untainted
   private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => defaultTag)

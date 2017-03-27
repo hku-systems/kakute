@@ -46,6 +46,7 @@ import org.apache.spark.shuffle.IndexShuffleBlockResolver;
 import org.apache.spark.shuffle.ShuffleWriter;
 import org.apache.spark.storage.*;
 import org.apache.spark.util.Utils;
+import scala.collection.Map;
 
 /**
  * This class implements sort-based shuffle's hash-style shuffle fallback path. This write path
@@ -149,9 +150,11 @@ final class BypassMergeSortShuffleWriter<K, V> extends ShuffleWriter<K, V> {
       final Product2<K, V> record = records.next();
       final K key = record._1();
       if (DFTEnv.trackingPolicy().propagation_across_machines()) {
-        SelectiveTainter selectiveTainter = new SelectiveTainter(new Map<Object, Function1<Object, Object>>())
+        SelectiveTainter selectiveTainter = new SelectiveTainter(null, 0);
+        partitionWriters[partitioner.getPartition(key)].write(key, new Tuple2<Map<Object, Object>, V>(selectiveTainter.getTaintList(record), record._2()));
+      } else {
+        partitionWriters[partitioner.getPartition(key)].write(key, record._2());
       }
-      partitionWriters[partitioner.getPartition(key)].write(key, record._2());
     }
 
     for (int i = 0; i < numPartitions; i++) {
