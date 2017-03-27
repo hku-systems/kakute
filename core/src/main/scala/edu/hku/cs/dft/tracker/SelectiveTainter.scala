@@ -23,7 +23,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
   private var _positionFilter: Map[Int, Any => Int] = if (filter == null) Map() else filter
 
   // if there are no rule for default, just make then untainted
-  private val _defaultFilter: Any => Int = filter.getOrElse(0, _ => defaultTag)
+  private val _defaultFilter: Any => Int = _positionFilter.getOrElse(0, _ => defaultTag)
 
   def setTaintWithTaint[T](obj: T, filter: Map[Int, Int]): T = {
     setFilter(DFTUtils.markPositionToMap(filter))
