@@ -89,7 +89,8 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
       case v: Char => Tainter.getTaint(v)
       case v: Boolean => Tainter.getTaint(v)
       case v: Object => Tainter.getTaint(v)
-      case _ => throw new Exception("type mismatch")
+      case null => 0
+      case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
     }
     _deps += _indexDeps -> tag
     obj

@@ -94,6 +94,10 @@ private[spark] class ShuffleMapTask(
     try {
       val manager = SparkEnv.get.shuffleManager
       writer = manager.getWriter[Any, Any](dep.shuffleHandle, partitionId, context)
+      /**
+        * [[modified]] as there may be map-side combine in the Shuffle writer, we
+        * write the taint in the implementation of the writer
+      */
       writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
       val status = writer.stop(success = true).get
 

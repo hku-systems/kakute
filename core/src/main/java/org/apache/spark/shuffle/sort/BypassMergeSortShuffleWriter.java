@@ -23,10 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
-import scala.None$;
-import scala.Option;
-import scala.Product2;
-import scala.Tuple2;
+import edu.hku.cs.dft.DFTEnv;
+import edu.hku.cs.dft.tracker.SelectiveTainter;
+import scala.*;
 import scala.collection.Iterator;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -149,6 +148,9 @@ final class BypassMergeSortShuffleWriter<K, V> extends ShuffleWriter<K, V> {
     while (records.hasNext()) {
       final Product2<K, V> record = records.next();
       final K key = record._1();
+      if (DFTEnv.trackingPolicy().propagation_across_machines()) {
+        SelectiveTainter selectiveTainter = new SelectiveTainter(new Map<Object, Function1<Object, Object>>())
+      }
       partitionWriters[partitioner.getPartition(key)].write(key, record._2());
     }
 
