@@ -104,6 +104,8 @@ class DataModel(frameworkHandle: PlatformHandle) {
     newBuilder.append("] ")
     if (_deps != null) {
       _deps.foreach(dep => {
+        newBuilder.append(dep._1.ID)
+        newBuilder.append(":")
         newBuilder.append(dep._2)
       })
     }

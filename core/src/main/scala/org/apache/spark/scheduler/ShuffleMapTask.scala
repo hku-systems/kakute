@@ -100,7 +100,7 @@ private[spark] class ShuffleMapTask(
         * write the taint in the implementation of the writer
       */
       val rddIt = if (DFTEnv.trackingPolicy.add_tags_per_ops) {
-        val collector = DFTEnv.localControl.splitInstance(partition.index).collectorInstance(rdd.id)
+        val collector = DFTEnv.localControl.splitInstance(context.stageId(), partition.index).collectorInstance(rdd.id)
         val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
         rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]].map(t => tainter.getTaintAndReturn(t))
       } else {
@@ -111,7 +111,7 @@ private[spark] class ShuffleMapTask(
 
       // [[Modified]] collect and send the rule here
       if (DFTEnv.trackingPolicy.add_tags_per_ops)
-        DFTEnv.localControl.collect(partition.index)
+        DFTEnv.localControl.collect(context.stageId(), partition.index)
 
       status
     } catch {

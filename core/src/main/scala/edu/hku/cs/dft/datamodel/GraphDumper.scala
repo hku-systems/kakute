@@ -43,7 +43,7 @@ class GraphDumper(fn: String) {
     fileWriter.close()
     val analyser: PartitionSchemeTagger = new DependentTagger
     analyser.entry(graphManager)
-    analyser.firstRoundEntry()
+//    analyser.firstRoundEntry()
     analyser.exitPoint()
     DependentTagger.serializeTagger("analyzer.obj", analyser.asInstanceOf[DependentTagger])
 //    analyser.tagScheme()

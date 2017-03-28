@@ -24,7 +24,7 @@ class GraphManager extends NettyEndpoint {
     message match {
       case register: RuleRegister => RuleRegistered(true)
       case rule: RuleInfered => {
-        addTrackingRule(rule.id, rule.id, rule.ruleSet)
+        addTrackingRule(rule.id, rule.depId, rule.ruleSet)
         RuleAdded(rule.id)
       }
       case tt: DataType => {

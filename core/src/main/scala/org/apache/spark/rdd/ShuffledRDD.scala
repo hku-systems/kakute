@@ -126,7 +126,7 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
       .asInstanceOf[Iterator[(K, C)]]
     if (DFTEnv.trackingPolicy.add_tags_per_ops) {
       ShuffleDFT.ShuffleIdRDD += dep.shuffleHandle.shuffleId -> this.id
-      val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
 //      result = result.map(t => tainter.getTaintAndReturn(t))
       result = result.map(t => tainter.setTaint(t))

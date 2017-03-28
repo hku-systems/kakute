@@ -45,7 +45,7 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
 
     var parentIter =
       if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
-        ruleCollector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+        ruleCollector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).collectorInstance(this.id)
         typeTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
         firstParent[T].iterator(split, context).map(typeTainter.setTaint) // set taint before computation
       } else {

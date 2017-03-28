@@ -80,9 +80,13 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
   }
 
   val auto_taint_input: Boolean = {
-    argumentHandle.parseArgs(DefaultArgument.CONF_INPUT_TAINT) match {
-      case "true" => true
-      case _ => false
+    if (trackingMode == TrackingMode.RuleTracking) {
+      true
+    } else {
+      argumentHandle.parseArgs(DefaultArgument.CONF_INPUT_TAINT) match {
+        case "true" => true
+        case _ => false
+      }
     }
   }
 

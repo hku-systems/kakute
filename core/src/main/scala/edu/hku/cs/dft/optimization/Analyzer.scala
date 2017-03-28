@@ -177,7 +177,7 @@ class Analyzer extends Serializable{
 
         // set the semantics dependencies and its data count
         dataSet(v).op() match {
-          case DataOperation.Union =>
+/*          case DataOperation.Union =>
             dataSet(v).deps.foreach(kv => {
               dataSet(v).deps +=
                 kv._1 -> Map(RuleMaker.makeOneToOneRuleFromTypeInfo(dataSet(v).dataType).toList -> dataSet(kv._1).dataCount)
@@ -185,8 +185,10 @@ class Analyzer extends Serializable{
             // set data count
             var totalCount = 0
             dataSet(v).deps.foreach(kv => totalCount += dataSet(kv._1).dataCount)
-            dataSet(v).dataCount = totalCount
-          case DataOperation.CoGroup =>
+            dataSet(v).dataCount = totalCount*/
+            // todo: here the reduce is just reduce by key kind of reduce
+            // todo: we may need to add a full dependency
+          case DataOperation.CoGroup | DataOperation.Reduce =>
             dataSet(v).deps.foreach(kv => {
               dataSet(v).deps +=
                 kv._1 -> Map(Map(1 -> List(1), 2 -> List(2)).toList -> dataSet(kv._1).dataCount)
@@ -197,7 +199,7 @@ class Analyzer extends Serializable{
 
         // get the reduce operations and set the reduce key set
         dataSet(v).op() match {
-          case DataOperation.Reduce | DataOperation.Union | DataOperation.CoGroup =>
+          case DataOperation.Reduce | DataOperation.CoGroup =>
             shuffleSet += v
             dataSet(v).reduceKeyRange = reduceKeyRange(dataSet(v).dataType)
           case DataOperation.None => // now we consider other operation as map
@@ -209,7 +211,7 @@ class Analyzer extends Serializable{
               }
             )
 //            if (!isDep) throw new Exception("exists empty deps for null operations")
-          case DataOperation.Map | DataOperation.Input => // do nothing
+          case DataOperation.Map | DataOperation.Input | DataOperation.Union => // do nothing
           case _ => throw new Exception("invalid operation value")
         }
 

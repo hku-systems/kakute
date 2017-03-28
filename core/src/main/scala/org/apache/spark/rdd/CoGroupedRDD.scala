@@ -20,7 +20,7 @@ package org.apache.spark.rdd
 import java.io.{IOException, ObjectOutputStream}
 
 import edu.hku.cs.dft.DFTEnv
-import edu.hku.cs.dft.tracker.RuleTainter
+import edu.hku.cs.dft.tracker.{RuleTainter, SelectiveTainter}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
@@ -152,14 +152,31 @@ class CoGroupedRDD[K: ClassTag](
     }
 
     val map = createExternalMap(numRdds)
-    for ((it, depNum) <- rddIterators) {
-      map.insertAll(it.map(pair => (pair._1, new CoGroupValue(pair._2, depNum))))
+
+    /**
+      * [[modified]] as we may not be able to taint the object,
+      * we taint the content of the obj
+    */
+    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+      val selectiveTainter = new SelectiveTainter(Map(), 0)
+      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
+      for ((it, depNum) <- rddIterators) {
+        map.insertAll(it.map(pair => {
+          val tPair = selectiveTainter.setTaintWithTaint(pair, Map(1 -> 1, 2 -> 2))
+          (tPair._1, new CoGroupValue(tPair._2, depNum))
+        })
+        )
+      }
+    } else {
+      for ((it, depNum) <- rddIterators) {
+        map.insertAll(it.map(pair => (pair._1, new CoGroupValue(pair._2, depNum))))
+      }
     }
     context.taskMetrics().incMemoryBytesSpilled(map.memoryBytesSpilled)
     context.taskMetrics().incDiskBytesSpilled(map.diskBytesSpilled)
     context.taskMetrics().incPeakExecutionMemory(map.peakMemoryUsedBytes)
-    val it = if (DFTEnv.trackingPolicy.add_tags_per_ops) {
-      val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+    val it = if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
+      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
       map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => tainter.setTaint(t))
     } else {

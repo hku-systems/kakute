@@ -21,7 +21,8 @@ class DependentTagger extends PartitionSchemeTagger{
 
   var choosenSchemes: Map[String, PartitionScheme] = Map()
 
-  override def tagScheme(): Unit = {
+  @deprecated
+  def tagScheme_old(): Unit = {
     val emptyScheme = PartitionScheme(0, Set(), 0)
     val checkList = this.shuffleSet
     checkList.foreach(clist => {
@@ -99,6 +100,81 @@ class DependentTagger extends PartitionSchemeTagger{
     })
   }
 
+  override def tagScheme(): Unit = {
+    val emptyScheme = PartitionScheme(0, Set(), 0)
+    val checkList = this.shuffleSet
+    checkList.foreach(clist => {
+      var currentDatas = List(clist)
+      var ldata = dataSet(clist)
+
+      var thisTags: Map[String, Set[PartitionScheme]] = Map()
+
+      val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(ldata.dataType),
+        (1 to ldata.reduceKeyRange).toSet, ldata.dataCount)
+      thisTags += clist -> Set(currentScheme)
+
+      var visitedSet: Set[String] = Set()
+
+      var reduceCount = 0
+      while (currentDatas.nonEmpty) {
+        val currentValue = currentDatas.last
+        val currentData = this.dataSet(currentValue)
+        val reduceSet = thisTags.getOrElse(currentValue, Set())
+        assert(reduceSet.nonEmpty)
+        reduceSet.foreach(c => {
+          currentData.deps.foreach(dep => {
+            var addSet = thisTags.getOrElse(dep._1, Set())
+            dep._2.foreach(rule => {
+              // do not consider the empty rule
+              if (rule._1.nonEmpty) {
+                val mapDep = rule._1.toMap
+                val datar = dataSet(dep._1)
+                // add according to the current rule
+                var depKeys: Set[Int] = Set()
+                c.hashKeySet.foreach(k => {
+                  if (mapDep.contains(k)) {
+                    depKeys ++= mapDep(k).toSet
+                  }
+                })
+                /**
+                  * Do not consider the empty dependency now, as we think it may be
+                  * wire. Currently, it may confuses with input empty dependency,
+                  * a proper way to handle this is to add tag in input
+                */
+                val r = addSet.find(_ == depKeys).getOrElse(emptyScheme).r + datar.dataCount
+                val currentScheme = PartitionScheme(RuleMaker.typeInfoLength(dataSet(dep._1).dataType),
+                  depKeys, r)
+                addSet += currentScheme
+                thisTags += dep._1 -> addSet
+              }
+            })
+            if (!visitedSet.contains(dep._1) && dep._2.nonEmpty) {
+              currentDatas = dep._1 :: currentDatas
+              visitedSet += dep._1
+            }
+          })
+        })
+        currentDatas = currentDatas.init
+      }
+
+      // combine the scheme to teh tag
+      thisTags.foreach(tags => {
+        var gotSchemes = partitionTags.getOrElse(tags._1, Set())
+        val foundTag = gotSchemes.find(_ == currentScheme)
+        tags._2.foreach(tag => {
+          val addScheme: PartitionScheme = if (foundTag.nonEmpty) {
+            PartitionScheme(tag.keyCount, tag.hashKeySet, tag.r + foundTag.get.r)
+          } else {
+            tag
+          }
+          gotSchemes += addScheme
+        })
+        partitionTags += tags._1 -> gotSchemes
+      })
+
+    })
+  }
+
   /**
     * Here [[chooseScheme]] simply choose the smallest dependent set
   */
@@ -139,6 +215,7 @@ object DependentTagger {
 object TaggerMain {
   def main(args: Array[String]): Unit = {
     val dependentTagger = DependentTagger.deserializeTagger("analyzer.obj")
+    dependentTagger.firstRoundEntry()
     dependentTagger.tagScheme()
     dependentTagger.chooseScheme()
     dependentTagger.printScheme()
