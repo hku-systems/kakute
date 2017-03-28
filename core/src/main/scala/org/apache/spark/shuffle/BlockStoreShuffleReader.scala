@@ -92,7 +92,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
     */
     // An interruptible iterator must be used here in order to support task cancellation
     val interruptibleIter =
-      if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+      if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
         val collector = DFTEnv.localControl.splitInstance(startPartition).collectorInstance(ShuffleDFT.ShuffleIdRDD.getOrElse(handle.shuffleId, 0))
         val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
         new InterruptibleIterator[(Any, Any)](context, metricIter).map(t => tainter.setTaint(t))

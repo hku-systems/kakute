@@ -28,7 +28,7 @@ import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.interface.{DataModelTaintInfo, TaintRuleTranslator}
 import edu.hku.cs.dft.optimization.SymbolManager
-import edu.hku.cs.dft.tracker.{DFTUtils, SelectiveTainter}
+import edu.hku.cs.dft.tracker.{DFTUtils, RuleTainter, SelectiveTainter}
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
@@ -295,7 +295,10 @@ abstract class RDD[T: ClassTag](
     if (DFTEnv.trackingPolicy.typeInfering)
       r.map(t => {
         DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
-        t
+        val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+        tainter.getTaintAndReturn(t)
+//        t
      })
     else if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)

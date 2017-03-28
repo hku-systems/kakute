@@ -118,6 +118,7 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
 
     /**
       * [[Modified]] map shuffle id to rdd
+      * Set taint only when it is shuffled
     */
 
     var result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
@@ -127,7 +128,8 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
       ShuffleDFT.ShuffleIdRDD += dep.shuffleHandle.shuffleId -> this.id
       val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
       val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-      result = result.map(t => tainter.getTaintAndReturn(t))
+//      result = result.map(t => tainter.getTaintAndReturn(t))
+      result = result.map(t => tainter.setTaint(t))
     }
     result
   }
