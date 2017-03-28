@@ -19,10 +19,12 @@ package org.apache.spark.rdd
 
 import java.io.{IOException, ObjectOutputStream}
 
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.RuleTainter
+
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
-
 import org.apache.spark._
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.serializer.Serializer
@@ -156,8 +158,14 @@ class CoGroupedRDD[K: ClassTag](
     context.taskMetrics().incMemoryBytesSpilled(map.memoryBytesSpilled)
     context.taskMetrics().incDiskBytesSpilled(map.diskBytesSpilled)
     context.taskMetrics().incPeakExecutionMemory(map.peakMemoryUsedBytes)
-    new InterruptibleIterator(context,
-      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]])
+    val it = if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+      val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+      val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => tainter.setTaint(t))
+    } else {
+      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]]
+    }
+    new InterruptibleIterator(context,it)
   }
 
   private def createExternalMap(numRdds: Int)

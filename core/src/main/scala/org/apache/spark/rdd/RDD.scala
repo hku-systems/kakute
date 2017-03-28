@@ -295,10 +295,10 @@ abstract class RDD[T: ClassTag](
     if (DFTEnv.trackingPolicy.typeInfering)
       r.map(t => {
         DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
-        val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
-        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-        tainter.getTaintAndReturn(t)
-//        t
+//        val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
+//        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+//        tainter.getTaintAndReturn(t)
+        t
      })
     else if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)

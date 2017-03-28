@@ -22,6 +22,7 @@ import java.nio.ByteBuffer
 import java.util.Properties
 
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.tracker.RuleTainter
 
 import scala.language.existentials
 import org.apache.spark._
@@ -98,7 +99,14 @@ private[spark] class ShuffleMapTask(
         * [[modified]] as there may be map-side combine in the Shuffle writer, we
         * write the taint in the implementation of the writer
       */
-      writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
+      val rddIt = if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+        val collector = DFTEnv.localControl.splitInstance(partition.index).collectorInstance(rdd.id)
+        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+        rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]].map(t => tainter.getTaintAndReturn(t))
+      } else {
+        rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]]
+      }
+      writer.write(rddIt)
       val status = writer.stop(success = true).get
 
       // [[Modified]] collect and send the rule here
