@@ -25,6 +25,13 @@
      }
    }
    ```
+   
+   ```
+   # get the intecepted rt.jar
+   wget 147.8.84.190/rt.jar
+   cp rt.jar /usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/
+
+   ```
 
 
 2. build phosphor
@@ -52,16 +59,22 @@
 
    ```ini
    # dft.conf
-   host = 127.0.0.1
-   port = 8787
-   phosphor_java = /home/jianyu/phosphor/Phosphor/target/jre-inst-int
-   phosphor_jar = /home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar
-   phosphor_cache = dft-cache
-   graph_dump_path = graph.dump
+   dft-host = 127.0.0.1
+   dft-port = 8787
+   dft-phosphor-java = /home/jianyu/phosphor/Phosphor/target/jre-inst-int
+   dft-phosphor-jar = /home/jianyu/phosphor/Phosphor-0.0.3-SNAPSHOT.jar
+   dft-phosphor-cache = dft-cache
+   dft-graph-dump-path = graph.dump
    ```
 
    change the phosphor_java and phosphor_jar dir to your coresponding phosphor dir
 
 2. Start spark master and worker, then submit the task
+
+  ```
+  # submit task with tracking, need to add conf
+  submit --conf spark.dft.tracking.mode=rule .....
+
+  ```
 
 3. stop the task and see the tracking dependency in graph.dump
