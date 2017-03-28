@@ -41,11 +41,17 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
     k
   }
 
+  /**
+    * if the the positionFilter is a f: Any => Int, if Int is positive, then tag will be added,
+    * or if the tag is zero, then the tag will be clear.
+    * if the tag is less than 0, then the tag will not change
+    * TODO: Do we need this?
+  */
   def taintOne[T](obj: T): T = {
     _index += 1
     val f = _positionFilter.getOrElse(_index, _defaultFilter)
     val tag = f(obj)
-    if (tag == 0) {
+    if (tag == -1) {
       obj
     } else {
       obj match {

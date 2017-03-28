@@ -20,6 +20,7 @@ package org.apache.spark.rdd
 import java.io.{IOException, ObjectOutputStream}
 
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.interface.TaintRuleTranslator
 import edu.hku.cs.dft.tracker.{RuleTainter, SelectiveTainter}
 
 import scala.collection.mutable.ArrayBuffer
@@ -162,7 +163,7 @@ class CoGroupedRDD[K: ClassTag](
       val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       for ((it, depNum) <- rddIterators) {
         map.insertAll(it.map(pair => {
-          val tPair = selectiveTainter.setTaintWithTaint(pair, Map(1 -> 1, 2 -> 2))
+          val tPair = selectiveTainter.setTaintWithTaint(pair, TaintRuleTranslator.translate((1, 2)))
           (tPair._1, new CoGroupValue(tPair._2, depNum))
         })
         )
