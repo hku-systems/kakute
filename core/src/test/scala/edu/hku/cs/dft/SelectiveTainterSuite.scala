@@ -17,6 +17,9 @@ object SelectiveTainterSuite {
     val taint = selectiveTainter.getTaintList(k_taint)
     val kk = selectiveTainter.setTaintWithTaint(k, taint)
     val taint_after = selectiveTainter.getTaintList(kk)
+    val a = (1, (1, 2))
+    val b = (1, 1)
+    selectiveTainter.setTaintWithTupleTaint((1, (1,2)), (1, 1))
     val look = 0
   }
 }
