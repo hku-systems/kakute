@@ -45,6 +45,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
     setTupleTaintHelper(obj, taint)
   }
 
+  // TODO: Other Basic Collection of data ?
   private def taintTupleOne[T](obj: T, tag: Int): T = {
     if (tag < 0) {
       obj
@@ -68,6 +69,8 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
+        case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
+        case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case obj: Object =>
           Tainter.taintedObject(obj, tag)
           obj.asInstanceOf[T]
