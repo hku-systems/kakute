@@ -297,8 +297,8 @@ abstract class RDD[T: ClassTag](
         val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).typeCollectorInstance(this.id)
         collector.addType(t)
 //        DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
-//        val collector = DFTEnv.localControl.splitInstance(split.index).collectorInstance(this.id)
-//        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
+//        val rcollector = DFTEnv.localControl.splitInstance(context.stageId() ,split.index).collectorInstance(this.id)
+//        val tainter = new RuleTainter(DFTEnv.trackingPolicy, rcollector)
 //        tainter.getTaintAndReturn(t)
         t
      })

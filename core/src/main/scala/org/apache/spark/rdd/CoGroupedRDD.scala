@@ -160,10 +160,10 @@ class CoGroupedRDD[K: ClassTag](
     */
     if (DFTEnv.trackingPolicy.add_tags_per_ops) {
       val selectiveTainter = new SelectiveTainter(Map(), 0)
-      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
+//      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       for ((it, depNum) <- rddIterators) {
         map.insertAll(it.map(pair => {
-          val tPair = selectiveTainter.setTaintWithTaint(pair, TaintRuleTranslator.translate((1, 2)))
+          val tPair = selectiveTainter.setTaintWithTupleTaint(pair, (1, 2))
           (tPair._1, new CoGroupValue(tPair._2, depNum))
         })
         )
@@ -179,7 +179,8 @@ class CoGroupedRDD[K: ClassTag](
     val it = if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
       val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => tainter.setTaint(t))
+//      val selectiveTainter = new SelectiveTainter(Map(), 0)
+      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => tainter.getTaintAndReturn(t))
     } else {
       map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]]
     }
