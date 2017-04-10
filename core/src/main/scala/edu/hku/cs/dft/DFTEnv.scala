@@ -22,6 +22,7 @@ object TrackingMode extends ConfEnumeration {
   type TrackingMode = Value
   val RuleTracking = ConfValue("rule")
   val FullTracking = ConfValue("full")
+  val SecurityTracking = ConfValue("security")
   val Off = ConfValue("off")
 }
 
@@ -48,45 +49,29 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
 
   val trackingMode: TrackingMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TRACKING) match {
-      case TrackingMode.FullTracking.string => TrackingMode.FullTracking
-      case TrackingMode.RuleTracking.string => TrackingMode.RuleTracking
+      case s: String => TrackingMode.withName(s)
       case _ => DefaultArgument.trackingMode
     }
   }
 
   val trackingOn: Boolean = {
     trackingMode match {
-      case TrackingMode.FullTracking | TrackingMode.RuleTracking => true
-      case _ => false
+      case TrackingMode.Off => false
+      case _ => true
     }
   }
 
   val trackingType: TrackingType = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TYPE) match {
-      case TrackingType.Key.string => TrackingType.Key
-      case TrackingType.Values.string => TrackingType.Values
-      case TrackingType.KeyValues.string => TrackingType.KeyValues
+      case s: String => TrackingType.withName(s)
       case _ => TrackingType.KeyValues
     }
   }
 
   val sampleMode: SampleMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_SAMPLE) match {
-      case SampleMode.Sample.string => SampleMode.Sample
-      case SampleMode.Machine.string => SampleMode.Machine
-      case SampleMode.Off.string => SampleMode.Off
+      case s: String => SampleMode.withName(s)
       case _ => DefaultArgument.sampleMode
-    }
-  }
-
-  val auto_taint_input: Boolean = {
-    if (trackingMode == TrackingMode.RuleTracking) {
-      true
-    } else {
-      argumentHandle.parseArgs(DefaultArgument.CONF_INPUT_TAINT) match {
-        case "true" => true
-        case _ => false
-      }
     }
   }
 
@@ -162,6 +147,8 @@ object DFTEnv {
 
   var networkEnv: EndpointRegister = _
 
+  val shuffleTag: Int = 1 << 31
+
   // set the conf path
   def pathInit(path: String): Unit = _confPath = path
 
@@ -210,7 +197,6 @@ object DFTEnv {
 
     trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
       DFTEnv.dftEnv().trackingMode,
-      DFTEnv.dftEnv().auto_taint_input,
       DFTEnv.dftEnv().trackingOn)
 
     if (_dftEnv.trackingMode == TrackingMode.RuleTracking) {

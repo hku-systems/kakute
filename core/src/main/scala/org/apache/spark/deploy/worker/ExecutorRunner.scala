@@ -150,21 +150,26 @@ private[deploy] class ExecutorRunner(
       // [[Modified]]
       var trackingMode: TrackingMode = DFTEnv.dftEnv().trackingMode
       var trackingType: TrackingType = DFTEnv.dftEnv().trackingType
-      appDesc.trackingAppInfo match {
-        case Some(info) =>
-          trackingMode = info.trackingMode
-          trackingType = info.trackingType
-        case None =>
-          // if the tracking mode is rule, then it is mis-configured
-          if (trackingMode == TrackingMode.RuleTracking)
-            trackingMode = TrackingMode.Off
-          println("tracking is off")
+      // if security is on, then the driver configuration is ignored
+      if (trackingMode != TrackingMode.SecurityTracking) {
+        appDesc.trackingAppInfo match {
+          case Some(info) =>
+            trackingMode = info.trackingMode
+            trackingType = info.trackingType
+          case None =>
+            // if the tracking mode is rule, then it is mis-configured
+            if (trackingMode == TrackingMode.RuleTracking)
+              trackingMode = TrackingMode.Off
+            println("tracking is off")
+        }
       }
-      if (trackingMode == TrackingMode.FullTracking ||
-        trackingMode == TrackingMode.RuleTracking) {
+      if (trackingMode != TrackingMode.Off) {
         val phosphorRunner = DFTEnv.phosphorRunner
         command.set(0, phosphorRunner.java())
-        command.add(3, phosphorRunner.agent())
+        if (trackingMode == TrackingMode.SecurityTracking)
+          command.add(3, phosphorRunner.agent(true, DFTEnv.shuffleTag))
+        else
+          command.add(3, phosphorRunner.agent())
         command.add(4, phosphorRunner.bootclasspath())
         command.add(DefaultArgument._CONF_HOST)
         command.add(DFTEnv.dftEnv().serverHost)
@@ -176,8 +181,6 @@ private[deploy] class ExecutorRunner(
         command.add(DFTEnv.dftEnv().sampleMode.toString)
         command.add(DefaultArgument._CONF_TYPE)
         command.add(trackingType.toString)
-        if (DFTEnv.dftEnv().auto_taint_input && trackingMode == TrackingMode.FullTracking)
-          command.add(DefaultArgument._CONF_INPUT_TAINT)
       }
 
 

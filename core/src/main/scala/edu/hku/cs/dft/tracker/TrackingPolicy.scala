@@ -38,7 +38,7 @@ object TrackingType extends ConfEnumeration {
 }
 
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
-                     _add_tags_input: Boolean, trackingOn: Boolean = false) {
+                     trackingOn: Boolean = false) {
 
   /*
   * Default Setting
@@ -76,11 +76,17 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
     }
     o && trackingOn
   }
-  val add_tags_input_files: Boolean = _add_tags_input && trackingOn
+  val add_tags_input_files: Boolean = {
+    val o = trackingMode match {
+      case TrackingMode.SecurityTracking | TrackingMode.RuleTracking => true
+      case _ => false
+    }
+    o && trackingOn
+  }
   val propagation_across_machines: Boolean = {
     val o = trackingMode match {
       case TrackingMode.RuleTracking => false
-      case TrackingMode.FullTracking => true
+      case TrackingMode.FullTracking | TrackingMode.SecurityTracking => true
       case _ => false
     }
     o && trackingOn
