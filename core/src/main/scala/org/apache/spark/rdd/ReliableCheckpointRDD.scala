@@ -184,9 +184,10 @@ private[spark] object ReliableCheckpointRDD extends Logging {
     val serializeStream = serializer.serializeStream(fileOutputStream)
     Utils.tryWithSafeFinally {
       if (DFTEnv.trackingPolicy.propagation_across_machines) {
-        val selectiveTainter = new SelectiveTainter(Map(), 1)
+        val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
         serializeStream.writeAll(iterator.map(t => {
-          (t, selectiveTainter.getTaintList(t))
+          val taintList = selectiveTainter.getTaintList(t)
+          (selectiveTainter.setTaint(t), taintList)
         }))
       } else {
         serializeStream.writeAll(iterator)

@@ -69,6 +69,10 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
+        case objs: Array[Object] => objs.foreach(obj => {
+            Tainter.taintedObject(obj, tag)
+          })
+          obj
         case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case obj: Object =>
@@ -153,6 +157,12 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
+        case objs: Array[Object] => objs.foreach(obj => {
+            Tainter.taintedObject(obj, tag)
+          })
+          obj
+        case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
+        case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case obj: Object => {
           Tainter.taintedObject(obj, tag)
           obj.asInstanceOf[T]
@@ -184,6 +194,14 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
   private def taintAllHelper[T](obj: T): T = {
     obj match {
       /* Product, Scala Allow only 22 elements in a tuple */
+      case arr: Array[Product] =>
+        val markIndex = _index
+        arr.map(ar => {
+          _index = markIndex
+          taintAllHelper(ar)
+        }).copyToArray(arr)
+        _index = markIndex
+        arr.asInstanceOf[T]
       case (_1, _2) => (taintAllHelper(_1), taintAllHelper(_2)).asInstanceOf[T]
       case (_1, _2, _3) => (taintAllHelper(_1), taintAllHelper(_2), taintAllHelper(_3)).asInstanceOf[T]
       case (_1, _2, _3, _4) => (taintAllHelper(_1), taintAllHelper(_2), taintAllHelper(_3), taintAllHelper(_4)).asInstanceOf[T]

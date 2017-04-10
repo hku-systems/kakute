@@ -56,12 +56,14 @@ private[spark] trait WritablePartitionedPairCollection[K, V] {
 
       var tainter: SelectiveTainter =
       if (DFTEnv.trackingPolicy.propagation_across_machines)
-        new SelectiveTainter(Map())
+        new SelectiveTainter(Map(), DFTEnv.shuffleTag)
       else
         null
       def writeNext(writer: DiskBlockObjectWriter): Unit = {
-        if (DFTEnv.trackingPolicy.propagation_across_machines)
-          writer.write(cur._1._2, (tainter.getTaintList((cur._1._2, cur._2)), cur._2))
+        if (DFTEnv.trackingPolicy.propagation_across_machines) {
+          val taintList = tainter.getTaintList((cur._1._2, cur._2))
+          writer.write(tainter.setTaint(cur._1._2), (taintList, tainter.setTaint(cur._2)))
+        }
         else
           writer.write(cur._1._2, cur._2)
         cur = if (it.hasNext) it.next() else null

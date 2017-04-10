@@ -22,8 +22,8 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import edu.hku.cs.dft.DFTEnv
-import edu.hku.cs.dft.tracker.DFTUtils
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
+import edu.hku.cs.dft.tracker.{DFTUtils, SelectiveTainter}
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -92,7 +92,12 @@ private[spark] class ResultTask[T, U](
 //    }
     if (DFTEnv.trackingPolicy.add_tags_per_ops)
       DFTEnv.localControl.collect(context.stageId() ,partition.index)
-    result
+    if (DFTEnv.dftEnv().trackingMode == TrackingMode.SecurityTracking) {
+      val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
+      selectiveTainter.setTaint(result)
+    } else {
+      result
+    }
   }
 
   // This is only callable on the driver side.
