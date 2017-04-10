@@ -1072,6 +1072,17 @@ class SparkContext(config: SparkConf) extends Logging {
     // A Hadoop configuration can be about 10 KB, which is pretty big, so broadcast it.
     val confBroadcast = broadcast(new SerializableConfiguration(hadoopConfiguration))
     val setInputPathsFunc = (jobConf: JobConf) => FileInputFormat.setInputPaths(jobConf, path)
+    val confPath = if (path.startsWith("hdfs://") || path.startsWith("/")) {
+      path
+    } else {
+      val workingDir = new JobConf(hadoopConfiguration).getWorkingDirectory.toString.substring(5)
+      val relativePaht = if (path.startsWith(".")) {
+        path.substring(2)
+      } else {
+        path
+      }
+      workingDir + "/" + relativePaht
+    }
     new HadoopRDD(
       this,
       confBroadcast,
@@ -1079,7 +1090,7 @@ class SparkContext(config: SparkConf) extends Logging {
       inputFormatClass,
       keyClass,
       valueClass,
-      minPartitions).setName(path)
+      minPartitions).setName(path).setPath(confPath)
   }
 
   /**

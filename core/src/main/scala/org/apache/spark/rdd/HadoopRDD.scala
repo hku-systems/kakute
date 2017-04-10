@@ -17,17 +17,18 @@
 
 package org.apache.spark.rdd
 
-import java.io.IOException
+import java.io.{File, IOException}
 import java.text.SimpleDateFormat
 import java.util.{Date, Locale}
 
 import edu.hku.cs.dft.{DFTEnv, SampleMode}
 import edu.hku.cs.dft.optimization.Sampler
-import edu.hku.cs.dft.tracker.SelectiveTainter
+import edu.hku.cs.dft.tracker.{FullAutoTainter, SelectiveTainter, TextAutoTainter}
 
 import scala.collection.immutable.Map
 import scala.reflect.ClassTag
 import org.apache.hadoop.conf.{Configurable, Configuration}
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred._
 import org.apache.hadoop.mapred.lib.CombineFileSplit
 import org.apache.hadoop.mapreduce.TaskType
@@ -178,6 +179,13 @@ class HadoopRDD[K, V](
     }
   }
 
+  private var inputPath: String = _
+
+  def setPath(path: String): this.type = {
+    inputPath = path
+    this
+  }
+
   protected def getInputFormat(conf: JobConf): InputFormat[K, V] = {
     val newInputFormat = ReflectionUtils.newInstance(inputFormatClass.asInstanceOf[Class[_]], conf)
       .asInstanceOf[InputFormat[K, V]]
@@ -310,13 +318,31 @@ class HadoopRDD[K, V](
     */
     var sampler: Sampler = null
     if (DFTEnv.trackingPolicy.add_tags_input_files) {
-      val selectiveTainter = new SelectiveTainter(Map(), 1)
+      val confPath = inputPath + TextAutoTainter.DefaultConfSuffix
+      val autoTainter = if (new File(confPath).exists()) {
+        this.logInfo("use tag conf in " + confPath)
+        new TextAutoTainter(confPath)
+      }
+      else {
+        logInfo("could not find conf in " + confPath + " use full tagging instead")
+        new FullAutoTainter
+      }
       if (DFTEnv.dftEnv().sampleMode == SampleMode.Sample) {
         sampler = new Sampler(DFTEnv.dftEnv().sampleNum)
-        new InterruptibleIterator[(K, V)](context, interuptIter.filter(sampler.filterFunc).map(o => selectiveTainter.setTaint(o)))
+        new InterruptibleIterator[(K, V)](context, interuptIter.filter(sampler.filterFunc).map(o => {
+          val text = new Text
+          text.set(autoTainter.setTaint(o._2.toString))
+          (o._1, text.asInstanceOf[V])
+        }
+        ))
       }
       else
-        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => selectiveTainter.setTaint(o)))
+        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => {
+          val text = new Text
+          text.set(autoTainter.setTaint(o._2.toString))
+          (o._1, text.asInstanceOf[V])
+        }
+        ))
     } else {
       interuptIter
     }

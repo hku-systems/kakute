@@ -4,6 +4,7 @@ import java.io.File
 
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
 import edu.hku.cs.dft.tracker.{FullAutoTainter, TextAutoTainter}
+import org.apache.hadoop.io.Text
 
 /**
   * Created by jianyu on 4/10/17.
@@ -24,7 +25,9 @@ object AutoTainterTest {
     val name = taintedString.substring(0, 3)
     val age = taintedString.substring(4, 6)
     val gender = taintedString.substring(7, 9)
-    val a = age.toInt
+    val a = new Text
+    a.set(age)
+    val b = a.toString.toInt
     assert(Tainter.getTaint(age) == 2)
     assert(Tainter.getTaint(name) == 1)
     assert(Tainter.getTaint(gender) == 3)

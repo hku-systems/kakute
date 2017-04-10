@@ -113,3 +113,9 @@ class TextAutoTainter(confFile: String) extends AutoTainter {
   }
 
 }
+
+object TextAutoTainter {
+
+  val DefaultConfSuffix = ".tag"
+
+}
