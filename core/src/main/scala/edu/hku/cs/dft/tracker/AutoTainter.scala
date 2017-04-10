@@ -1,7 +1,9 @@
 package edu.hku.cs.dft.tracker
 
 import java.io.{BufferedReader, File, FileReader}
-import scala.util.control.Breaks._
+
+import edu.hku.cs.dft.tracker.Separator.Separator
+
 /**
   * Created by max on 10/4/2017.
   */
@@ -18,6 +20,19 @@ trait AutoTainter {
 
   def setTaint[T](t: T): T
 
+}
+
+class SeEnumeration extends Enumeration {
+  class SeVal(val string: String, val v: String) extends Val(string)
+  def SeValue(string: String, v: String): SeVal = new SeVal(string, v)
+}
+
+object Separator extends SeEnumeration {
+  type Separator = Value
+  val Comma = SeValue("comma", ",")
+  val Space = SeValue("space", " ")
+  val Semicolon = SeValue("semicolon", ";")
+  val Colon = SeValue("colon", ":")
 }
 
 class FullAutoTainter extends AutoTainter {
@@ -44,7 +59,7 @@ class TextAutoTainter(confFile: String) extends AutoTainter {
     * taints = 1, 2, 3, 4(seperated by comma)
   */
 
-  var seperator: String = _
+  var separator: Separator = _
 
   var columns: List[String] = _
 
@@ -52,23 +67,25 @@ class TextAutoTainter(confFile: String) extends AutoTainter {
 
   val selectiveTainter: SelectiveTainter = new SelectiveTainter(Map(), 0)
 
+  initEngine()
+
   override def initEngine(): Unit = {
     val cfReadfer = new BufferedReader(new FileReader(new File(confFile)))
-    breakable {
-      while (true) {
-        val line = cfReadfer.readLine()
-        if (line == null) break()
-        if (!line.startsWith("#")) {
-          val keyValue = line.split("=")
-          val key = keyValue(0).trim()
-          val value = keyValue(1).trim()
-          key match {
-            case "separator" => seperator = value.asInstanceOf[String]
-            case "columns" =>
-              columns = value.split(",").toList
-            case "taints" => taints = value.split(",")
-              .map(t => t.toInt).toVector
-          }
+    var loop = true
+    while (loop) {
+      val line = cfReadfer.readLine()
+      if (line == null) loop = false
+      if (loop && !line.startsWith("#")) {
+        val keyValue = line.split("=")
+        val key = keyValue(0).trim()
+        val value = keyValue(1).trim()
+        key match {
+          case "separator" => separator = Separator.withName(value)
+          case "columns" =>
+            columns = value.split(",").toList
+          case "taints" => taints = value.split(",")
+            .map(t => t.trim.toInt).toVector
+          case _ =>
         }
       }
     }
@@ -81,13 +98,16 @@ class TextAutoTainter(confFile: String) extends AutoTainter {
   override def setTaint[T](t: T): T = {
     t match {
       case s: String =>
-        val splitString = s.split(seperator)
+        val separatorVal = separator.asInstanceOf[Separator.SeVal].v
+        val splitString = s.split(separatorVal)
         val stringBuilder = new StringBuilder
         for(ss: (String, Int) <- splitString.zipWithIndex) {
-          selectiveTainter.setFilter(Map[Int, Any => Int](0 -> ((_: Any) => ss._2)))
-          stringBuilder.append(selectiveTainter.setTaint(ss + seperator))
+          selectiveTainter.setFilter(Map[Int, Any => Int](0 -> ((_: Any) => taints(ss._2))))
+          val taintedString = selectiveTainter.setTaint(ss._1)
+          stringBuilder.append(taintedString)
+          stringBuilder.append(separatorVal)
         }
-        splitString.toString.asInstanceOf[T]
+        stringBuilder.toString().asInstanceOf[T]
       case _ => throw new IllegalArgumentException("only string is supported")
     }
   }
