@@ -38,7 +38,7 @@
       <artifactId>phosphor</artifactId>
       <version>0.0.3</version>
       <scope>system</scope>
-      <systemPath>/home/jianyu/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
+      <systemPath>/Users/max/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
