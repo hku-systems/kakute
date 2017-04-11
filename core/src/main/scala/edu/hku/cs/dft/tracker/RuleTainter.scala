@@ -44,6 +44,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
     returnCurrent
   }
 
+  @deprecated
   def taintOne[T](obj: T): T = {
     if (policy.tracking_type == TrackingType.Key) {
       obj match {
@@ -94,6 +95,8 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
         case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, currentValueIndex()).asInstanceOf[T]
         case char: Array[Char] => Tainter.taintedCharArray(char, currentValueIndex()).asInstanceOf[T]
         case byte: Array[Byte] => Tainter.taintedByteArray(byte, currentValueIndex()).asInstanceOf[T]
+        case objs: Array[Object] => objs.foreach(t => Tainter.taintedObject(t, currentValueIndex()))
+          obj
         case obj: Object =>
           Tainter.taintedObject(obj, currentValueIndex())
           obj.asInstanceOf[T]
@@ -104,6 +107,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
     }
   }
 
+  @deprecated
   private def taintAllHelper[T](obj: T): T = {
     obj match {
       /* Product, Scala Allow only 22 elements in a tuple */
