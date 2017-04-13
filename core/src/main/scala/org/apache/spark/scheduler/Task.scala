@@ -21,9 +21,11 @@ import java.io.{DataInputStream, DataOutputStream}
 import java.nio.ByteBuffer
 import java.util.Properties
 
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
+import edu.hku.cs.dft.debug.DebugTracer
+
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
-
 import org.apache.spark._
 import org.apache.spark.executor.TaskMetrics
 import org.apache.spark.internal.config.APP_CALLER_CONTEXT
@@ -120,6 +122,10 @@ private[spark] abstract class Task[T](
           case t: Throwable =>
             e.addSuppressed(t)
         }
+
+        if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug)
+          System.err.println("trace back to error obj " + DebugTracer.backTrace())
+
         throw e
     } finally {
       // Call the task completion callbacks.

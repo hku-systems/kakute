@@ -86,7 +86,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
   val propagation_across_machines: Boolean = {
     val o = trackingMode match {
       case TrackingMode.RuleTracking => false
-      case TrackingMode.FullTracking | TrackingMode.SecurityTracking => true
+      case TrackingMode.FullTracking | TrackingMode.SecurityTracking | TrackingMode.Debug => true
       case _ => false
     }
     o && trackingOn

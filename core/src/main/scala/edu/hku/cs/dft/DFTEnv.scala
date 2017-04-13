@@ -23,6 +23,7 @@ object TrackingMode extends ConfEnumeration {
   val RuleTracking = ConfValue("rule")
   val FullTracking = ConfValue("full")
   val SecurityTracking = ConfValue("security")
+  val Debug = ConfValue("debug")
   val Off = ConfValue("off")
 }
 

@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
+import edu.hku.cs.dft.debug.DebugTracer
 import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.tracker.{DFTUtils, SelectiveTainter}
 import org.apache.spark._
@@ -85,6 +86,10 @@ private[spark] class ResultTask[T, U](
     _executorDeserializeCpuTime = if (threadMXBean.isCurrentThreadCpuTimeSupported) {
       threadMXBean.getCurrentThreadCpuTime - deserializeStartCpuTime
     } else 0L
+
+    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+      DebugTracer.newStorage(this.stageId, this.partition.index)
+    }
 
     val result = func(context, rdd.iterator(partition, context))
 //    if (DFTEnv.trackingPolicy.typeInfering) {
