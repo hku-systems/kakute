@@ -94,8 +94,8 @@ class SparkContext(config: SparkConf) extends Logging {
   val tracking: Boolean = trackingMode != TrackingMode.Off
 
   // [[Modified]]init the server if tracking is true
-  if (tracking && trackingMode == TrackingMode.RuleTracking)
-    DFTEnv.server_init(null)
+  if (tracking && (trackingMode == TrackingMode.RuleTracking || trackingMode == TrackingMode.Debug))
+    DFTEnv.server_init(trackingMode)
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()
@@ -1932,7 +1932,7 @@ class SparkContext(config: SparkConf) extends Logging {
   def stop(): Unit = {
 
     // [[Modified]] stop
-    if (tracking && trackingMode == TrackingMode.RuleTracking)
+    if (tracking && (trackingMode == TrackingMode.RuleTracking || trackingMode == TrackingMode.Debug))
       DFTEnv.stop_all()
 
     if (LiveListenerBus.withinListenerThread.value) {
@@ -2331,7 +2331,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
   private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
     ClosureCleaner.clean(f, checkSerializable)
-    if (true) {
+    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
       if (f.isInstanceOf[_ => _]) {
         println("-------------------with debug")
         withDebugF(f.asInstanceOf[ _ => _ ]).asInstanceOf[F]

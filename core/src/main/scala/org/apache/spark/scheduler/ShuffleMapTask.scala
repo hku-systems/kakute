@@ -115,7 +115,7 @@ private[spark] class ShuffleMapTask(
       val status = writer.stop(success = true).get
 
       // [[Modified]] collect and send the rule here
-      if (DFTEnv.trackingPolicy.add_tags_per_ops)
+      if (DFTEnv.trackingPolicy.localSubmodule)
         DFTEnv.localControl.collect(context.stageId(), partition.index)
 
       status

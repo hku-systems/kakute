@@ -46,7 +46,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
   val typeInfering: Boolean = {
     val o = trackingMode match {
       case TrackingMode.FullTracking => false
-      case TrackingMode.RuleTracking => true
+      case TrackingMode.RuleTracking | TrackingMode.Debug => true
       case _ => false
     }
     o && trackingOn
@@ -91,6 +91,23 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
     }
     o && trackingOn
   }
+
+  val localSubmodule: Boolean = {
+    val o = trackingMode match {
+      case TrackingMode.RuleTracking | TrackingMode.Debug => true
+      case _ => false
+    }
+    o && trackingOn
+  }
+
+  val collectPerOp: Boolean = {
+    val o = trackingMode match {
+      case TrackingMode.Debug => true
+      case _ => false
+    }
+    o && trackingOn
+  }
+
   var tracking_type: TrackingType = trackType
 
 }

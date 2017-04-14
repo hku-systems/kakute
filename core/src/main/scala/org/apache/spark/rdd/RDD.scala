@@ -292,17 +292,30 @@ abstract class RDD[T: ClassTag](
     } else {
       computeOrReadCheckpoint(split, context)
     }
-    if (DFTEnv.trackingPolicy.typeInfering)
+    val typeInfered = if (DFTEnv.trackingPolicy.typeInfering) {
+      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).typeCollectorInstance(this.id)
       r.map(t => {
-        val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).typeCollectorInstance(this.id)
         collector.addType(t)
-//        DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
-//        val rcollector = DFTEnv.localControl.splitInstance(context.stageId() ,split.index).collectorInstance(this.id)
-//        val tainter = new RuleTainter(DFTEnv.trackingPolicy, rcollector)
-//        tainter.getTaintAndReturn(t)
+        //        DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
+        //        val rcollector = DFTEnv.localControl.splitInstance(context.stageId() ,split.index).collectorInstance(this.id)
+        //        val tainter = new RuleTainter(DFTEnv.trackingPolicy, rcollector)
+        //        tainter.getTaintAndReturn(t)
         t
-     })
-    else if (this.taintInfo != null && this.taintInfo.tainted) {
+      })
+    } else {
+      r
+    }
+
+    val collectPer = if (DFTEnv.trackingPolicy.collectPerOp) {
+      val ruleCollector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).collectorInstance(this.id)
+      val ruleTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
+      typeInfered.map(ruleTainter.getTaintAndReturn)
+    } else {
+      typeInfered
+    }
+
+    // this part is independent, we will not add taint and collect taint at the same time
+    if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)
       r.map(t => {
         selectiveTainter.setTaintWithTaint(t, TaintRuleTranslator.translate(taintInfo.taintFunc(t)))

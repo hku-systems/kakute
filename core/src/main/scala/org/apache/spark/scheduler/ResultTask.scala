@@ -95,7 +95,7 @@ private[spark] class ResultTask[T, U](
 //    if (DFTEnv.trackingPolicy.typeInfering) {
 //      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
 //    }
-    if (DFTEnv.trackingPolicy.add_tags_per_ops)
+    if (DFTEnv.trackingPolicy.localSubmodule)
       DFTEnv.localControl.collect(context.stageId() ,partition.index)
     if (DFTEnv.dftEnv().trackingMode == TrackingMode.SecurityTracking) {
       val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)

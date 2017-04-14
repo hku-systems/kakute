@@ -48,7 +48,7 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     case _ => DefaultArgument.host
   }
 
-  val trackingMode: TrackingMode = {
+  var trackingMode: TrackingMode = {
     argumentHandle.parseArgs(DefaultArgument.CONF_TRACKING) match {
       case s: String => TrackingMode.withName(s)
       case _ => DefaultArgument.trackingMode
@@ -180,6 +180,7 @@ object DFTEnv {
 
   def server_init(any: Any): Unit = {
     _dftEnv = new DFTEnv(new ConfFileHandle(_confPath))
+    _dftEnv.trackingMode = any.asInstanceOf[TrackingMode]
     networkEnv = new NettyServer(new EndpointDispatcher, _dftEnv)
     new Thread(new Runnable {
       override def run():Unit = networkEnv.run()
@@ -200,7 +201,7 @@ object DFTEnv {
       DFTEnv.dftEnv().trackingMode,
       DFTEnv.dftEnv().trackingOn)
 
-    if (_dftEnv.trackingMode == TrackingMode.RuleTracking) {
+    if (trackingPolicy.localSubmodule) {
       networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
       new Thread(new Runnable {
         override def run(): Unit = networkEnv.run()
