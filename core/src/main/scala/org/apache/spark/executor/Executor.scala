@@ -25,10 +25,12 @@ import java.util.Properties
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import javax.annotation.concurrent.GuardedBy
 
+import edu.hku.cs.dft.debug.DebugTracer
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ArrayBuffer, HashMap, Map}
 import scala.util.control.NonFatal
-
 import org.apache.spark._
 import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.internal.Logging
@@ -427,6 +429,10 @@ private[spark] class Executor(
           // If anything goes wrong (or this was a fatal exception), we will delegate to
           // the default uncaught exception handler, which will terminate the Executor.
           logError(s"Exception in $taskName (TID $taskId)", t)
+
+          if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+            logError("Trace back to Object " + DebugTracer.backTrace())
+          }
 
           // Collect latest accumulator values to report back to the driver
           val accums: Seq[AccumulatorV2[_, _]] =

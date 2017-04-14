@@ -123,10 +123,8 @@ private[spark] abstract class Task[T](
             e.addSuppressed(t)
         }
 
-        if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug)
-          System.err.println("trace back to error obj " + DebugTracer.backTrace())
-
         throw e
+
     } finally {
       // Call the task completion callbacks.
       context.markTaskCompleted()

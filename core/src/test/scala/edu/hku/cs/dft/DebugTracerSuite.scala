@@ -44,5 +44,8 @@ object DebugTracerSuite {
     } catch {
       case _: Exception => System.err.println(DebugTracer.backTrace())
     }
+
+    System.out.println(DebugTracer.dumpObj(List(1,2,3,4).toIterator))
+
   }
 }

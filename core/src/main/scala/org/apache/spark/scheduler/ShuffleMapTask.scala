@@ -21,7 +21,8 @@ import java.lang.management.ManagementFactory
 import java.nio.ByteBuffer
 import java.util.Properties
 
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.debug.DebugTracer
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.tracker.RuleTainter
 
 import scala.language.existentials
@@ -90,6 +91,10 @@ private[spark] class ShuffleMapTask(
     _executorDeserializeCpuTime = if (threadMXBean.isCurrentThreadCpuTimeSupported) {
       threadMXBean.getCurrentThreadCpuTime - deserializeStartCpuTime
     } else 0L
+
+    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+      DebugTracer.newStorage(this.stageId, this.partition.index)
+    }
 
     var writer: ShuffleWriter[Any, Any] = null
     try {

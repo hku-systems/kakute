@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.debug
 
+import edu.hku.cs.dft.tracker.SelectiveTainter
+
 /**
   * Created by jianyu on 4/13/17.
   */
@@ -15,7 +17,7 @@ object DebugTracer {
   }
 
   def getInstance(): DebugStorage = {
-    threadLocalStorage.get()
+    if (threadLocalStorage == null) new DebugStorage(0, 0) else threadLocalStorage.get()
   }
 
   def trace[T](o: T): T = {
@@ -24,6 +26,46 @@ object DebugTracer {
     o
   }
 
-  def backTrace(): Any = getInstance().pop()
+  def backTrace(): Any = {
+    val traceObj = getInstance().pop()
+    val selectiveTainter = new SelectiveTainter(Map(), 0)
+    val traceTaint = selectiveTainter.getTaintList(selectiveTainter.getTupleTaint(traceObj))
+    val dump = dumpObj(traceObj)
+    s"Object $dump\n Taint $traceTaint"
+  }
+
+  def dumpObj[T](o: T): Any = {
+    o match {
+      case (_1, _2) => (dumpObj(_1), dumpObj(_2))
+      case (_1, _2, _3) => (dumpObj(_1), dumpObj(_2), dumpObj(_3))
+      case arr: Array[_] => arr.map(dumpObj).toList
+      case it: Iterable[_] => "{iterable -> " + it.map(dumpObj).toList + "}"
+      case it: Iterator[_] => "{iterator -> " + it.map(dumpObj).toList + "}"
+      case Int|Long|Short|Float|Double|Boolean|Char|Byte => o
+      case _: java.lang.Integer | _:java.lang.Long | _:java.lang.Short | _:java.lang.Float | _:java.lang.Double | _:java.lang.Boolean => o
+      case _: java.lang.Character | _: java.lang.Byte | _: String => o
+      case it: Object => dumpFields(it)
+      case _ => o
+    }
+  }
+
+  def dumpFields[T](o: T): Any = {
+    val c = o.getClass
+    val fields = c.getDeclaredFields
+    val stringBuilder = new StringBuilder
+    stringBuilder.append("{")
+    for(f <- fields) {
+      f.setAccessible(true)
+      try {
+        val value = f.get(o)
+        val key = f.getName
+        stringBuilder.append(s"field: $key -> value: $value,")
+      } catch {
+        case _: Exception =>
+      }
+    }
+    stringBuilder.append("}")
+    stringBuilder.toString()
+  }
 
 }

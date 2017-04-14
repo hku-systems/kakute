@@ -12,7 +12,7 @@ object APIExample {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
-      .appName("debug example")
+      .appName("API example")
       .config("spark.dft.tracking.mode", "full")
       .getOrCreate()
 

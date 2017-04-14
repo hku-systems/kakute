@@ -124,6 +124,35 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
     k
   }
 
+  def getTupleTaint[T](obj: T): Any = {
+    obj match {
+      case (_1, _2) => (getTupleTaint(_1), getTupleTaint(_2))
+      case (_1, _2, _3) => (getTupleTaint(_1), getTupleTaint(_2), getTupleTaint(_3))
+      case _ => getTupleTaintOne(obj)
+    }
+  }
+
+  def getTupleTaintOne[T](obj: T): Any = {
+    val tag = obj match {
+      case v: Int => Tainter.getTaint(v)
+      case v: Short => Tainter.getTaint(v)
+      case v: Long => Tainter.getTaint(v)
+      case v: Double => Tainter.getTaint(v)
+      case v: Float => Tainter.getTaint(v)
+      case v: Byte => Tainter.getTaint(v)
+      case v: Char => Tainter.getTaint(v)
+      case v: Boolean => Tainter.getTaint(v)
+        // we should show the taint of the all object
+        // also array should be consider
+      case v: Iterable[_] => v.map(getTupleTaint).toList
+      case v: Iterator[_] => v.map(getTupleTaint).toList
+      case v: Array[_] => v.map(getTupleTaint).toList
+      case v: Object => Tainter.getTaint(v)
+      case null => null
+      case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
+    }
+  }
+
   /**
     * if the the positionFilter is a f: Any => Int, if Int is positive, then tag will be added,
     * or if the tag is zero, then the tag will be clear.

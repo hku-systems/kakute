@@ -33,6 +33,7 @@ import scala.reflect.{ClassTag, classTag}
 import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
 import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.debug.DebugTracer
 import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.optimization.SymbolManager
 import edu.hku.cs.dft.tracker.TrackingType
@@ -2320,9 +2321,26 @@ class SparkContext(config: SparkConf) extends Logging {
    *   serializable
    * @return the cleaned closure
    */
+
+  def withDebugF[U, V](f: U => V): U => V = {
+    (in: U) => {
+      DebugTracer.trace(in)
+      f(in)
+    }
+  }
+
   private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
     ClosureCleaner.clean(f, checkSerializable)
-    f
+    if (true) {
+      if (f.isInstanceOf[_ => _]) {
+        println("-------------------with debug")
+        withDebugF(f.asInstanceOf[ _ => _ ]).asInstanceOf[F]
+      } else {
+        f
+      }
+    } else {
+      f
+    }
   }
 
   /**
