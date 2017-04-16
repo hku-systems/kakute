@@ -1,5 +1,6 @@
 package edu.hku.cs.dft.tracker
 
+import breeze.linalg.DenseVector
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
 import edu.columbia.cs.psl.phosphor.struct.{LazyArrayIntTags, TaintedPrimitiveWithIntTag, TaintedWithIntTag}
 import edu.hku.cs.dft.optimization.RuleCollector
@@ -132,6 +133,13 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
       case (_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20) => (taintAllHelper(_1), taintAllHelper(_2), taintAllHelper(_3), taintAllHelper(_4), taintAllHelper(_5), taintAllHelper(_6), taintAllHelper(_7), taintAllHelper(_8), taintAllHelper(_9), taintAllHelper(_10), taintAllHelper(_11), taintAllHelper(_12), taintAllHelper(_13), taintAllHelper(_14), taintAllHelper(_15), taintAllHelper(_16), taintAllHelper(_17), taintAllHelper(_18), taintAllHelper(_19), taintAllHelper(_20)).asInstanceOf[T]
       case (_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21) => (taintAllHelper(_1), taintAllHelper(_2), taintAllHelper(_3), taintAllHelper(_4), taintAllHelper(_5), taintAllHelper(_6), taintAllHelper(_7), taintAllHelper(_8), taintAllHelper(_9), taintAllHelper(_10), taintAllHelper(_11), taintAllHelper(_12), taintAllHelper(_13), taintAllHelper(_14), taintAllHelper(_15), taintAllHelper(_16), taintAllHelper(_17), taintAllHelper(_18), taintAllHelper(_19), taintAllHelper(_20), taintAllHelper(_21)).asInstanceOf[T]
       case (_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22) => (taintAllHelper(_1), taintAllHelper(_2), taintAllHelper(_3), taintAllHelper(_4), taintAllHelper(_5), taintAllHelper(_6), taintAllHelper(_7), taintAllHelper(_8), taintAllHelper(_9), taintAllHelper(_10), taintAllHelper(_11), taintAllHelper(_12), taintAllHelper(_13), taintAllHelper(_14), taintAllHelper(_15), taintAllHelper(_16), taintAllHelper(_17), taintAllHelper(_18), taintAllHelper(_19), taintAllHelper(_20), taintAllHelper(_21), taintAllHelper(_22)).asInstanceOf[T]
+      case arr: Array[_] =>
+        arr.map(taintAllHelper).copyToArray(arr)
+        arr.asInstanceOf[T]
+      case it: Iterator[_] => it.map(taintAllHelper).asInstanceOf[T]
+      case it: Iterable[_] => it.map(taintAllHelper).asInstanceOf[T]
+        // only support basic type
+      case dv: DenseVector[Any]  => dv.map(taintOne).asInstanceOf[T]
       case _ => taintOne(obj)
     }
   }

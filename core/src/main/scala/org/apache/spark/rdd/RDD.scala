@@ -626,7 +626,7 @@ abstract class RDD[T: ClassTag](
         } else {
           val fraction = SamplingUtils.computeFractionForSampleSize(num, initialCount,
             withReplacement)
-          var samples = this.sample(withReplacement, fraction, rand.nextInt()).collect()
+          var samples = this.sample(withReplacement, fraction, rand.nextInt())(null).collect()
 
           // If the first sample didn't turn out large enough, keep trying to take samples;
           // this shouldn't happen often because we use a big multiplier for the initial size

@@ -35,6 +35,7 @@ object TrackingType extends ConfEnumeration {
   val Values = ConfValue("value")
   val Key = ConfValue("key")
   val KeyValues = ConfValue("key-value")
+  val KeyValuesArray = ConfValue("key-value-array")
 }
 
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
