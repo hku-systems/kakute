@@ -94,8 +94,7 @@ class SparkContext(config: SparkConf) extends Logging {
   val tracking: Boolean = trackingMode != TrackingMode.Off
 
   // [[Modified]]init the server if tracking is true
-  if (tracking && (trackingMode == TrackingMode.RuleTracking || trackingMode == TrackingMode.Debug))
-    DFTEnv.server_init(trackingMode)
+  DFTEnv.server_init(trackingMode)
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()

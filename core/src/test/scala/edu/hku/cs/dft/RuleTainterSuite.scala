@@ -1,6 +1,6 @@
 package edu.hku.cs.dft
 
-import breeze.linalg.DenseVector
+//import breeze.linalg.DenseVector
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.tracker.{RuleTainter, TrackingPolicy, TrackingType}
 

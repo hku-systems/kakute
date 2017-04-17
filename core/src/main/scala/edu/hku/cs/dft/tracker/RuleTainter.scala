@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.tracker
 
-import breeze.linalg.DenseVector
+//import breeze.linalg.DenseVector
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
 import edu.columbia.cs.psl.phosphor.struct.{LazyArrayIntTags, TaintedPrimitiveWithIntTag, TaintedWithIntTag}
 import edu.hku.cs.dft.optimization.RuleCollector
@@ -139,7 +139,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
       case it: Iterator[_] => it.map(taintAllHelper).asInstanceOf[T]
       case it: Iterable[_] => it.map(taintAllHelper).asInstanceOf[T]
         // only support basic type
-      case dv: DenseVector[Any]  => dv.map(taintOne).asInstanceOf[T]
+//      case dv: DenseVector[Any]  => dv.map(taintOne).asInstanceOf[T]
       case _ => taintOne(obj)
     }
   }

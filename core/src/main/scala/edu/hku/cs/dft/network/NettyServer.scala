@@ -77,7 +77,7 @@ object NettyServer {
 
       //      UninstTainter.fixStreamObject(in)
       in match {
-        case t: TestClass => println(t.a.length)
+//        case t: TestClass => println(t.a.length)
         case a: Array[Int] => println(a.length)
         case _ => println("other")
       }

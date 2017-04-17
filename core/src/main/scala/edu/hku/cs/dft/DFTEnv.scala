@@ -179,6 +179,21 @@ object DFTEnv {
   }
 
   def server_init(any: Any): Unit = {
+    val start = any match {
+      case t: TrackingMode => t match {
+        case TrackingMode.Debug => true
+        case TrackingMode.RuleTracking => true
+        case _ => false
+      }
+      case _ => false
+    }
+
+    if (!start) {
+      _dftEnv = new DFTEnv(new CommandlineHandle)
+      _dftEnv.trackingMode = any.asInstanceOf[TrackingMode]
+      return
+    }
+
     _dftEnv = new DFTEnv(new ConfFileHandle(_confPath))
     _dftEnv.trackingMode = any.asInstanceOf[TrackingMode]
     networkEnv = new NettyServer(new EndpointDispatcher, _dftEnv)
