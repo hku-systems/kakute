@@ -36,7 +36,8 @@ import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.debug.DebugTracer
 import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import edu.hku.cs.dft.optimization.SymbolManager
-import edu.hku.cs.dft.tracker.TrackingType
+import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
+import edu.hku.cs.dft.tracker.{TrackingTaint, TrackingType}
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import edu.hku.cs.dft.traffic.{PartitionSchemes, TrafficEnv}
 import edu.hku.cs.tools.CallLocation
@@ -90,6 +91,8 @@ class SparkContext(config: SparkConf) extends Logging {
   val trackingMode: TrackingMode = TrackingMode.withName(config.get("spark.dft.tracking.mode", TrackingMode.Off.string))
 
   val trackingType: TrackingType = TrackingType.withName(config.get("spark.dft.tracking.type", TrackingType.KeyValues.string))
+
+  val trackingTaint: TrackingTaint = TrackingTaint.withName(config.get("spark.dft.tracking.taint", TrackingTaint.IntTaint.string))
 
   val tracking: Boolean = trackingMode != TrackingMode.Off
 

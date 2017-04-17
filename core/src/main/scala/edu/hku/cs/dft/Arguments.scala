@@ -4,6 +4,8 @@ import java.io.FileNotFoundException
 
 import edu.hku.cs.dft.SampleMode.SampleMode
 import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.TrackingTaint
+import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import org.apache.spark.SparkConf
 
@@ -106,7 +108,7 @@ class CustomArgumentHandle extends ArgumentHandle {
   override def setKeyValue(key: String, value: String) = {}
 }
 
-case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType)
+case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType, trackingTaint: TrackingTaint)
 
 object DefaultArgument {
 
@@ -126,6 +128,7 @@ object DefaultArgument {
   val CONF_INPUT_TAINT: String = "dft-input-taint"
   val CONF_SAMPLE_INT: String = "dft-sample-int"
   val CONF_FILE: String = "dft-conf"
+  val CONF_TAINT: String = "dft-taint"
 
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
   val _CONF_PORT: String = CONF_PREFIX + CONF_PORT
@@ -135,6 +138,7 @@ object DefaultArgument {
   val _CONF_TYPE: String = CONF_PREFIX + CONF_TYPE
   val _CONF_INPUT_TAINT: String = CONF_PREFIX + CONF_INPUT_TAINT
   val _CONF_FILE: String = CONF_PREFIX + CONF_FILE
+  val _CONF_TAINT: String = CONF_PREFIX + CONF_TAINT
 
   val host: String = "127.0.0.1"
   val port: Int = 8787
@@ -146,4 +150,5 @@ object DefaultArgument {
   val partitionPath: String = "default.scheme"
   val confFile = "/etc/dft.conf"
   val dumpGraph = "graph.dump"
+  val trackingTaint: TrackingTaint = TrackingTaint.IntTaint
 }

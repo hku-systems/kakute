@@ -5,7 +5,8 @@ import edu.hku.cs.dft.SampleMode.SampleMode
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
 import edu.hku.cs.dft.optimization.RuleLocalControl
-import edu.hku.cs.dft.tracker.{PhosphorRunner, TrackingPolicy, TrackingType}
+import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
+import edu.hku.cs.dft.tracker.{PhosphorRunner, TrackingPolicy, TrackingTaint, TrackingType}
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 /**
@@ -120,6 +121,11 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     case _ => DefaultArgument.dumpGraph
   }
 
+  val trackingTaint: TrackingTaint = argumentHandle.parseArgs(DefaultArgument.CONF_TAINT) match {
+    case s: String => TrackingTaint.withName(s)
+    case _ => DefaultArgument.trackingTaint
+  }
+
 }
 
 case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
@@ -174,7 +180,8 @@ object DFTEnv {
     _dftEnv = new DFTEnv(new ConfFileHandle(_confPath))
     phosphorRunner = new PhosphorRunner(DFTEnv.dftEnv().phosphorEnv.cache,
       DFTEnv.dftEnv().phosphorEnv.phosphorJar,
-      DFTEnv.dftEnv().phosphorEnv.phosphorJava)
+      DFTEnv.dftEnv().phosphorEnv.phosphorJava,
+      DFTEnv.dftEnv().trackingTaint)
     // when tracking is on, then
   }
 
@@ -214,7 +221,8 @@ object DFTEnv {
 
     trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
       DFTEnv.dftEnv().trackingMode,
-      DFTEnv.dftEnv().trackingOn)
+      DFTEnv.dftEnv().trackingOn,
+      DFTEnv.dftEnv().trackingTaint)
 
     if (trackingPolicy.localSubmodule) {
       networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
