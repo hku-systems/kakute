@@ -322,7 +322,7 @@ abstract class RDD[T: ClassTag](
       })
     }
     else
-      r
+      collectPer
   }
 
   /**

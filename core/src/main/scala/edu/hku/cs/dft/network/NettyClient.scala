@@ -72,6 +72,10 @@ class TestClass extends Serializable {
   private val m = 2
   val a: Array[Int] = new Array[Int](3)
   def add(): Int = r + m
+  class InClass extends Serializable {
+    val arr: Array[_] = new Array[Int](3)
+  }
+  val inClass: InClass = new InClass
 }
 
 object NettyClient{
