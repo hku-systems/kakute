@@ -93,36 +93,27 @@ object AdjancentList{
       val edges = entry.split(",")
       val inEdge = edges(0)
       val outEdge = edges(1)
-      val buffer = new ListBuffer[(String,(String,String))]()
-      buffer += ((inEdge,("",outEdge)))
-      buffer += ((outEdge,(inEdge,"")))
+      val buffer = new ListBuffer[(List[String],(List[String],List[String]))]()
+      buffer += ((List[String](inEdge), (List[String](), List[String](outEdge))))
+      buffer += ((List[String](outEdge), (List[String](inEdge), List[String]())))
       buffer.toList
     })
 
-    var adjList = adjNode.reduceByKey(indexPartitioner,(a,b) =>{
-      /**(edges,(inEdges,outEdges))
-        	edges/inEdges/outEdges are the edges separated by " ", e.g., "edge1 edge2 edge3"
-        */
-      val inEdgesA = a._1.split(" ")
-      val inEdgesB = b._1.split(" ")
-      val inEdgeSet = new HashSet[String]()
-      for(edge <- inEdgesA) inEdgeSet += edge
-      for(edge <- inEdgesB) inEdgeSet += edge
-      inEdgeSet.remove("")
+    var adjList = adjNode.reduceByKey((a, b) => {
+      val inEdgesA = a._1
+      val inEdgesB = b._1
+      var inEdgeSet = Set[String]()
+      inEdgesA.foreach(edge => inEdgeSet += edge)
+      inEdgesB.foreach(edge => inEdgeSet += edge)
+      // null???
 
-      val outEdgesA = a._2.split(" ")
-      val outEdgesB = b._2.split(" ")
-      val outEdgeSet = new HashSet[String]()
-      for(edge <- outEdgesA) outEdgeSet += edge
-      for(edge <- outEdgesB) outEdgeSet += edge
-      outEdgeSet.remove("")
+      val outEdgesA = a._2
+      val outEdgesB = b._2
+      var outEdgeSet = Set[String]()
+      outEdgesA.foreach(edge => outEdgeSet += edge)
+      outEdgesB.foreach(edge => outEdgeSet += edge)
 
-      val inBuilder = new StringBuilder()
-      val outBuilder = new StringBuilder()
-      inEdgeSet.addString(inBuilder," ")
-      outEdgeSet.addString(outBuilder," ")
-
-      (inBuilder.toString, outBuilder.toString)
+      (inEdgeSet.toList, outEdgeSet.toList)
     })
     // adjList.saveAsTextFile(outputPath)
 
@@ -135,48 +126,38 @@ object AdjancentList{
         val outEdges = entry._2._2
 
         //extend the list by adding the outEdges to the tail
-        val result1 = for{outEdge <- outEdges.split(" "); if outEdge != "" } yield {
-          (list + " " + outEdge, (inEdges, ""))
-        }
+        val resultA = outEdges.map(outEdge => {
+          (list :+ outEdge, (inEdges, List[String]()))
+        })
 
-        //exted the list by adding the inEdges to the head
-        val result2 = for{inEdge <- inEdges.split(" "); if inEdge != "" } yield {
-          (inEdge + " " + list, ("", outEdges))
-        }
+        val resultB = inEdges.map(inEdge => {
+          (inEdge :: list, (List[String](), outEdges))
+        })
 
-        result1 ++ result2
+        resultA ++ resultB
       })
 
-      adjList = adjList2.reduceByKey(indexPartitioner,(a,b) => {
+      adjList = adjList2.reduceByKey((a, b) => {
+        val inEdgesA = a._1
+        val inEdgesB = b._1
+        var inEdgeSet = Set[String]()
 
-        val inEdgesA = a._1.split(" ")
-        val inEdgesB = b._1.split(" ")
-        val inEdgeSet = new HashSet[String]()
-        for(edge <- inEdgesA) inEdgeSet += edge
-        for(edge <- inEdgesB) inEdgeSet += edge
-        inEdgeSet.remove("")
-        inEdgeSet.remove(" ")
+        inEdgesA.foreach(edge => inEdgeSet += edge)
+        inEdgesB.foreach(edge => inEdgeSet += edge)
 
-        val outEdgesA = a._2.split(" ")
-        val outEdgesB = b._2.split(" ")
-        val outEdgeSet = new HashSet[String]()
-        for(edge <- outEdgesA) outEdgeSet += edge
-        for(edge <- outEdgesB) outEdgeSet += edge
-        outEdgeSet.remove("")
-        outEdgeSet.remove(" ")
+        val outEdgesA = a._2
+        val outEdgesB = b._2
+        var outEdgeSet = Set[String]()
+        outEdgesA.foreach(edge => outEdgeSet += edge)
+        outEdgesB.foreach(edge => outEdgeSet += edge)
 
-        val inBuilder = new StringBuilder()
-        val outBuilder = new StringBuilder()
-        inEdgeSet.addString(inBuilder," ")
-        outEdgeSet.addString(outBuilder," ")
-
-        (inBuilder.toString, outBuilder.toString)
-      })//end of reduceByKey
+        (inEdgeSet.toList, outEdgeSet.toList)
+      })
 
     }//end of for
 
     println("count: " + adjList.count())
-    adjList.collect().foreach(println)
+//    adjList.collect().foreach(println)
     StdIn.readLine()
     sc.stop()
   }
