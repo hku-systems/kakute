@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.tracker
 
-//import breeze.linalg.DenseVector
+import breeze.linalg.DenseVector
 import edu.columbia.cs.psl.phosphor.runtime.Tainter
 import edu.columbia.cs.psl.phosphor.struct.{LazyArrayIntTags, TaintedPrimitiveWithIntTag, TaintedWithIntTag}
 import edu.hku.cs.dft.optimization.RuleCollector
@@ -45,7 +45,6 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
     returnCurrent
   }
 
-  @deprecated
   def taintOne[T](obj: T): T = {
     if (policy.tracking_type == TrackingType.Key) {
       obj match {
@@ -108,7 +107,6 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
     }
   }
 
-  @deprecated
   private def taintAllHelper[T](obj: T): T = {
     obj match {
       /* Product, Scala Allow only 22 elements in a tuple */
@@ -139,7 +137,16 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
       case it: Iterator[_] => it.map(taintAllHelper).asInstanceOf[T]
       case it: Iterable[_] => it.map(taintAllHelper).asInstanceOf[T]
         // only support basic type
-//      case dv: DenseVector[Any]  => dv.map(taintOne).asInstanceOf[T]
+      case dv: DenseVector[_]  =>
+        val newD = dv.data match {
+          case arr: Array[Int] => new DenseVector(arr.map(taintOne), dv.offset, dv.stride, dv.length)
+          case arr: Array[Short] => new DenseVector(arr.map(taintOne), dv.offset, dv.stride, dv.length)
+          case arr: Array[Long] => new DenseVector(arr.map(taintOne), dv.offset, dv.stride, dv.length)
+          case arr: Array[Double] => new DenseVector(arr.map(taintOne), dv.offset, dv.stride, dv.length)
+          case arr: Array[Long] => new DenseVector(arr.map(taintOne), dv.offset, dv.stride, dv.length)
+          case _ => throw new IllegalArgumentException("do not support other denseVector")
+        }
+        newD.asInstanceOf[T]
       case _ => taintOne(obj)
     }
   }
@@ -200,6 +207,12 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
         var taint = 0
         v.foreach(ar => {
           taint |= Tainter.getTaint(ar)
+        })
+        deps = (currentIndex(), DFTUtils.decomposeTaint(taint)) :: deps
+      case dv: DenseVector[_] =>
+        var taint = 0
+        dv.foreach(d => {
+          taint |= Tainter.getTaint(d)
         })
         deps = (currentIndex(), DFTUtils.decomposeTaint(taint)) :: deps
       case v: Int => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
