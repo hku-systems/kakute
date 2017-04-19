@@ -164,7 +164,44 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
   /* Clear all taint in the object, using taintAll may be fine????? */
   private def getTaintHelper[T](obj: T): T = {
     obj match {
-      case product: Product => product.productIterator.foreach(getTaintHelper)
+      case (_1, _2) =>
+        getTaintHelper(_1)
+        getTaintHelper(_2)
+      case (_1, _2, _3) =>
+        getTaintHelper(_1)
+        getTaintHelper(_2)
+        getTaintHelper(_3)
+      case (_1, _2, _3, _4) =>
+        getTaintHelper(_1)
+        getTaintHelper(_2)
+        getTaintHelper(_3)
+        getTaintHelper(_4)
+      case _ => getTaintOne(obj)
+    }
+    obj
+  }
+
+  private def getTaintOne[T](obj: T): T = {
+    obj match {
+        //todo consider object arr
+      case v: Array[_] =>
+        var taint = 0
+        v.foreach(ar => {
+          taint |= Tainter.getTaint(ar)
+        })
+        deps = (currentIndex(), DFTUtils.decomposeTaint(taint)) :: deps
+      case v: Iterator[_] =>
+        var taint = 0
+        v.foreach(ar => {
+          taint |= Tainter.getTaint(ar)
+        })
+        deps = (currentIndex(), DFTUtils.decomposeTaint(taint)) :: deps
+      case v: Iterable[_] =>
+        var taint = 0
+        v.foreach(ar => {
+          taint |= Tainter.getTaint(ar)
+        })
+        deps = (currentIndex(), DFTUtils.decomposeTaint(taint)) :: deps
       case v: Int => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Short => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Long => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
@@ -174,7 +211,6 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
       case v: Char => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Boolean => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
       case v: Object => deps = (currentIndex(), DFTUtils.decomposeTaint(Tainter.getTaint(v))) :: deps
-      case _ =>
     }
     obj
   }
