@@ -87,7 +87,7 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
         serializerManager.getSerializer(implicitly[ClassTag[K]], implicitly[ClassTag[V]])
       }
     }
-    List(new ShuffleDependency(prev, part, serializer, keyOrdering, aggregator, mapSideCombine))
+    List(new ShuffleDependency(prev, partitioner.get, serializer, keyOrdering, aggregator, mapSideCombine))
   }
 
   override val partitioner: Option[Partitioner] = {
