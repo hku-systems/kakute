@@ -28,6 +28,7 @@ class DependentPartitioner(val partitions: Int, val hashKeySet:Set[Int]) extends
         valueSet ++= s._1
         currentIndex = s._2
       })
+        // add other iterable element here
       case _ =>
         if (hashKeySet.contains(currentIndex))
           valueSet = obj :: valueSet
@@ -45,6 +46,28 @@ class DependentPartitioner(val partitions: Int, val hashKeySet:Set[Int]) extends
   override def getPartition(key: Any): Int = {
     // construct the mapping index -> value
     nonNegativeMod(keyAt(key, 1)._1.hashCode(), numPartitions)
+  }
+
+}
+
+/**
+  * This [[OptimizedDependentPartitioner]] will take the type info of the data,
+  * then it could use pattern matching to generate partition more efficiently
+  * TODO leave for future work
+*/
+class OptimizedDependentPartitioner(val partitions: Int,
+                                    val hashKeySet: Set[Int],
+                                    val typeInfo: Any) extends HashPartitioner(partitions){
+
+  override def getPartition(key: Any): Int = {
+    0
+  }
+
+  override def equals(other: Any): Boolean = {
+    other match {
+      case d: OptimizedDependentPartitioner => (partitions == d.partitions) && hashKeySet == d.hashKeySet
+      case _ => false
+    }
   }
 
 }

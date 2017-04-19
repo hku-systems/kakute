@@ -120,6 +120,11 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     case _ => DefaultArgument.dumpGraph
   }
 
+  val generateScheme: Boolean = argumentHandle.parseArgs(DefaultArgument.CONF_SCHEME) match {
+    case "true" => true
+    case _ => false
+  }
+
 }
 
 case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)

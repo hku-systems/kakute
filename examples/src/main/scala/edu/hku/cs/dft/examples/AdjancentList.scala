@@ -5,7 +5,6 @@ package edu.hku.cs.dft.examples
   */
 import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.{SparkConf, SparkContext}
-import java.util.StringTokenizer
 
 import scala.collection.mutable.{HashSet, ListBuffer}
 import scala.io.StdIn
@@ -23,17 +22,17 @@ class ListHashPartitioner(partitions: Int,isHead: Boolean) extends Partitioner {
   //partition based only on the first entry
   def getPartition(key: Any): Int = key match {
     case null => 0
-    case s:String =>
-      val ss=s.split(" ")
+    case s:List[String] =>
+      val ss = s
       if(head){
-        val s1=ss(0)
+        val s1 = ss.head
         nonNegativeMod(s1.hashCode, numPartitions)
       }else{
-        val length=ss.length
-        val s1=ss(length-1)
+        val length = ss.length
+        val s1 = ss.last
         nonNegativeMod(s1.hashCode, numPartitions)
       }
-    //case _ => 0
+    case _ => key.hashCode()
   }
 
   override def equals(other: Any): Boolean = other match {
@@ -68,6 +67,12 @@ object AdjancentList{
       true
     }
 
+    val indexHashPartitioner =
+      if (isPartitioned)
+        new ListHashPartitioner(16, false)
+      else
+        new HashPartitioner(16)
+
     /**
     val file="/edges100.txt"
         val maxLength=5
@@ -99,7 +104,7 @@ object AdjancentList{
       buffer.toList
     })
 
-    var adjList = adjNode.reduceByKey((a, b) => {
+    var adjList = adjNode.reduceByKey(indexHashPartitioner ,(a, b) => {
       val inEdgesA = a._1
       val inEdgesB = b._1
       var inEdgeSet = Set[String]()
@@ -137,7 +142,7 @@ object AdjancentList{
         resultA ++ resultB
       })
 
-      adjList = adjList2.reduceByKey((a, b) => {
+      adjList = adjList2.reduceByKey(indexHashPartitioner, (a, b) => {
         val inEdgesA = a._1
         val inEdgesB = b._1
         var inEdgeSet = Set[String]()
