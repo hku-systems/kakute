@@ -37,7 +37,7 @@ object Separator extends SeEnumeration {
 
 class FullAutoTainter extends AutoTainter {
 
-  private val autoTaint = 1 << 2
+  private val autoTaint = 1 << 0
 
   private val selectiveTainter: SelectiveTainter =
     new SelectiveTainter(Map(), autoTaint)

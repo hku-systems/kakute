@@ -38,6 +38,6 @@ abstract class PartitionSchemeTagger extends Analyzer {
 
   def printScheme(): Unit
 
-  def serializeToFiles(): Unit = PartitionSchemes.serializeSchemes(DFTEnv.dftEnv().partitionSchemeOutput
+  def serializeToFiles(fileNmae: String): Unit = PartitionSchemes.serializeSchemes(fileNmae
     ,choosenSchemes)
 }

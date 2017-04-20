@@ -2,6 +2,7 @@ package edu.hku.cs.dft.datamodel
 
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
+import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.traffic.{DependentTagger, PartitionScheme, PartitionSchemeTagger, PartitionSchemes}
 
 
@@ -46,10 +47,13 @@ class GraphDumper(fn: String) {
 //    analyser.firstRoundEntry()
     analyser.exitPoint()
     DependentTagger.serializeTagger("analyzer.obj", analyser.asInstanceOf[DependentTagger])
-//    analyser.tagScheme()
-//    analyser.chooseScheme()
-//    analyser.serializeToFiles()
-//    analyser.printScheme()
+    if (DFTEnv.dftEnv().generateScheme) {
+      analyser.firstRoundEntry()
+      analyser.tagScheme()
+      analyser.chooseScheme()
+      analyser.printScheme()
+      analyser.serializeToFiles(DFTEnv.dftEnv().partitionSchemeOutput)
+    }
   }
 
 }

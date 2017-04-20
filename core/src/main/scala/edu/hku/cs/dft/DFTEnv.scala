@@ -121,9 +121,15 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     case _ => DefaultArgument.dumpGraph
   }
 
+
   val trackingTaint: TrackingTaint = argumentHandle.parseArgs(DefaultArgument.CONF_TAINT) match {
     case s: String => TrackingTaint.withName(s)
     case _ => DefaultArgument.trackingTaint
+  }
+  
+  val generateScheme: Boolean = argumentHandle.parseArgs(DefaultArgument.CONF_SCHEME) match {
+    case "true" => true
+    case _ => false
   }
 
 }

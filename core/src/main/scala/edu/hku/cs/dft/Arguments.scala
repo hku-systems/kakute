@@ -129,6 +129,8 @@ object DefaultArgument {
   val CONF_SAMPLE_INT: String = "dft-sample-int"
   val CONF_FILE: String = "dft-conf"
   val CONF_TAINT: String = "dft-taint"
+  val CONF_SCHEME: String = "dft-scheme"
+
 
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
   val _CONF_PORT: String = CONF_PREFIX + CONF_PORT
