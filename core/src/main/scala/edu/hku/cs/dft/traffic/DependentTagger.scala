@@ -219,5 +219,6 @@ object TaggerMain {
     dependentTagger.tagScheme()
     dependentTagger.chooseScheme()
     dependentTagger.printScheme()
+    dependentTagger.serializeToFiles("default.scheme")
   }
 }

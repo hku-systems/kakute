@@ -87,20 +87,26 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
         serializerManager.getSerializer(implicitly[ClassTag[K]], implicitly[ClassTag[V]])
       }
     }
-    List(new ShuffleDependency(prev, part, serializer, keyOrdering, aggregator, mapSideCombine))
+    List(new ShuffleDependency(prev, partitioner.get, serializer, keyOrdering, aggregator, mapSideCombine))
   }
 
-  override val partitioner: Option[Partitioner] = if (context.trafficReduction){
-//    context.trafficEnv.partitionEnforcer.partitionerMapping.getOrElse(this.name, Some(part))
-    val found = context.trafficEnv.partitionEnforcer.getPartitioner(this.part.numPartitions, this.variableId)
-    found match {
-      case Some(f) =>
-        println("use profiling partitioner")
-        Some(f)
-      case None => Some(part)
+  override val partitioner: Option[Partitioner] = {
+
+    if (context.trafficReduction) {
+      //    context.trafficEnv.partitionEnforcer.partitionerMapping.getOrElse(this.name, Some(part))
+      val found = context.trafficEnv.partitionEnforcer.getPartitioner(this.part.numPartitions, this.variableId)
+      found match {
+        case Some(f) =>
+          println("use profiling partitioner")
+          Some(f)
+        case None => Some(part)
+          println("could not find partitioner for " + this.variableId)
+          null
+      }
+    } else {
+      Some(part)
     }
-  } else {
-    Some(part)
+
   }
 
   override def getPartitions: Array[Partition] = {
