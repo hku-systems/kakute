@@ -318,7 +318,7 @@ abstract class RDD[T: ClassTag](
     if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)
       r.map(t => {
-        selectiveTainter.setTaintWithTaint(t, TaintRuleTranslator.translate(taintInfo.taintFunc(t)))
+        selectiveTainter.setTaintWithTupleTaint(t, taintInfo.taintFunc(t))
       })
     }
     else

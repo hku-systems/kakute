@@ -77,7 +77,8 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
 
   private def setTupleTaintHelper[T, M](obj: T, taint: M): T = {
     if (getBaseClass(obj) != getBaseClass(taint)) {
-      if (!taint.isInstanceOf[Int] || !taint.isInstanceOf[Integer]) throw new Exception("type not match")
+      // Can be any obj
+      // if (!taint.isInstanceOf[Int] || !taint.isInstanceOf[Integer]) throw new Exception("type not match")
       val tag = taint
       obj match {
         case (_1, _2) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag)).asInstanceOf[T]
