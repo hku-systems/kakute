@@ -308,6 +308,13 @@
         <version>${chill.version}</version>
       </dependency>
       <dependency>
+        <groupId>edu.columbia.cs</groupId>
+        <artifactId>phosphor</artifactId>
+        <version>0.0.3</version>
+        <scope>system</scope>
+        <systemPath>/home/jianyu/phosphor/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
+      </dependency>
+      <dependency>
         <groupId>com.twitter</groupId>
         <artifactId>chill-java</artifactId>
         <version>${chill.version}</version>
@@ -2309,6 +2316,7 @@
             </goals>
             <configuration>
               <includeScope>runtime</includeScope>
+              <includeScope>system</includeScope>
               <outputDirectory>${jars.target.dir}</outputDirectory>
             </configuration>
           </execution>
