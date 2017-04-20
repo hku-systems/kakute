@@ -32,7 +32,12 @@ object ProvenanceExample {
     val result = taintedCount.reduceByKey(_ + _)
     val result_taint = result.collectWithTaint()
     result_taint.foreach(r => {
-      println(r._1 + " " + r._2.toList)
+      println(r._1 + ":")
+      r._2.foreach(t => {
+        print(t._1 + ": ")
+        t._2.foreach(m => print(" " + m))
+        println()
+      })
     })
 
     spark.stop()
