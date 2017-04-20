@@ -1,7 +1,4 @@
 package edu.hku.cs.dft.tracker
-import edu.columbia.cs.psl.phosphor.runtime.Tainter
-
-import scala.reflect.ClassTag
 
 /**
   * Created by jianyu on 3/7/17.
@@ -14,25 +11,27 @@ import scala.reflect.ClassTag
   * So 0 -> default_func
 */
 
-class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extends BaseTainter{
+class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extends BaseTainter{
 
   private var _index = 0
 
   private var _indexDeps = 0
 
-  private var _deps: Map[Int, Int] = Map()
+  private var _deps: Map[Int, CombinedTaint[_]] = Map()
 
-  private var _positionFilter: Map[Int, Any => Int] = if (filter == null) Map() else filter
+  private var _positionFilter: Map[Int, Any => Any] = if (filter == null) Map() else filter
+
+  private val tainter = if (TainterHandle.trackingTaint == TrackingTaint.ObjTaint) new ObjectTainter else new IntTainter
 
   // if there are no rule for default, just make then untainted
-  def defaultFilter: Any => Int = _positionFilter.getOrElse(0, _ => defaultTag)
+  def defaultFilter: Any => Any = _positionFilter.getOrElse(0, _ => defaultTag)
 
-  def setTaintWithTaint[T](obj: T, filter: Map[Int, Int]): T = {
+  def setTaintWithTaint[T](obj: T, filter: Map[Int, Any]): T = {
     setFilter(DFTUtils.markPositionToMap(filter))
     setTaint(obj)
   }
 
-  def setFilter(filter: Map[Int, Any => Int]): SelectiveTainter = {
+  def setFilter(filter: Map[Int, Any => Any]): SelectiveTainter = {
     _positionFilter = filter
     this
   }
@@ -46,39 +45,26 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
   }
 
   // TODO: Other Basic Collection of data ?
-  private def taintTupleOne[T](obj: T, tag: Int): T = {
-    if (tag < 0) {
+  private def taintTupleOne[T](obj: T, tag: Any): T = {
+    // TODO check if tag is bypassed
+    if (tag == -1) {
       obj
     } else {
-      obj match {
-        case int: Int => Tainter.taintedInt(int, tag).asInstanceOf[T]
-        case long: Long => Tainter.taintedLong(long, tag).asInstanceOf[T]
-        case short: Short => Tainter.taintedShort(short, tag).asInstanceOf[T]
-        case float: Float => Tainter.taintedFloat(float, tag).asInstanceOf[T]
-        case double: Double => Tainter.taintedDouble(double, tag).asInstanceOf[T]
-        case bool: Boolean => Tainter.taintedBoolean(bool, tag).asInstanceOf[T]
-        case char: Char => Tainter.taintedChar(char, tag).asInstanceOf[T]
-        case byte: Byte => Tainter.taintedByte(byte, tag).asInstanceOf[T]
-
-        // Array and Object
-        case int: Array[Int] => Tainter.taintedIntArray(int, tag).asInstanceOf[T]
-        case long: Array[Long] => Tainter.taintedLongArray(long, tag).asInstanceOf[T]
-        case short: Array[Short] => Tainter.taintedShortArray(short, tag).asInstanceOf[T]
-        case float: Array[Float] => Tainter.taintedFloatArray(float, tag).asInstanceOf[T]
-        case double: Array[Double] => Tainter.taintedDoubleArray(double, tag).asInstanceOf[T]
-        case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
-        case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
-        case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
-        case objs: Array[Object] => objs.foreach(obj => {
-            Tainter.taintedObject(obj, tag)
-          })
-          obj
+      val r = obj match {
+        case v: Int => tainter.setTaint(v, tag)
+        case v: Long => tainter.setTaint(v, tag)
+        case v: Double => tainter.setTaint(v, tag)
+        case v: Float => tainter.setTaint(v, tag)
+        case v: Short => tainter.setTaint(v, tag)
+        case v: Boolean => tainter.setTaint(v, tag)
+        case v: Byte => tainter.setTaint(v, tag)
+        case v: Char => tainter.setTaint(v, tag)
+        case arr: Array[_] => tainter.setTaint(arr, tag)
         case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
-        case obj: Object =>
-          Tainter.taintedObject(obj, tag)
-          obj.asInstanceOf[T]
+        case ob: Object => tainter.setTaint(ob, tag)
       }
+      r.asInstanceOf[T]
     }
   }
 
@@ -92,7 +78,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
   private def setTupleTaintHelper[T, M](obj: T, taint: M): T = {
     if (getBaseClass(obj) != getBaseClass(taint)) {
       if (!taint.isInstanceOf[Int] || !taint.isInstanceOf[Integer]) throw new Exception("type not match")
-      val tag = taint.asInstanceOf[Int]
+      val tag = taint
       obj match {
         case (_1, _2) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag)).asInstanceOf[T]
         case (_1, _2, _3) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag), setTupleTaintHelper(_3, tag)).asInstanceOf[T]
@@ -111,7 +97,6 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
           setTupleTaintHelper(_3, taint.asInstanceOf[(_, _, _, _)]._3),
           setTupleTaintHelper(_4, taint.asInstanceOf[(_, _, _, _)]._4)).asInstanceOf[T]
         case _ =>
-          if (!taint.isInstanceOf[Int]) throw new Exception("no int taint")
           taintTupleOne(obj, taint.asInstanceOf[Int])
       }
     }
@@ -134,20 +119,20 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
 
   def getTupleTaintOne[T](obj: T): Any = {
     val tag = obj match {
-      case v: Int => Tainter.getTaint(v)
-      case v: Short => Tainter.getTaint(v)
-      case v: Long => Tainter.getTaint(v)
-      case v: Double => Tainter.getTaint(v)
-      case v: Float => Tainter.getTaint(v)
-      case v: Byte => Tainter.getTaint(v)
-      case v: Char => Tainter.getTaint(v)
-      case v: Boolean => Tainter.getTaint(v)
+      case v: Int => tainter.getTaint(v)
+      case v: Long => tainter.getTaint(v)
+      case v: Double => tainter.getTaint(v)
+      case v: Float => tainter.getTaint(v)
+      case v: Short => tainter.getTaint(v)
+      case v: Boolean => tainter.getTaint(v)
+      case v: Byte => tainter.getTaint(v)
+      case v: Char => tainter.getTaint(v)
         // we should show the taint of the all object
         // also array should be consider
-      case v: Iterable[_] => v.map(getTupleTaint).toList
-      case v: Iterator[_] => v.map(getTupleTaint).toList
+      case v: Iterable[_] => v.map(getTupleTaintOne).toList
+      case v: Iterator[_] => v.map(getTupleTaintOne).toList
       case v: Array[_] => v.map(getTupleTaint).toList
-      case v: Object => Tainter.getTaint(v)
+      case v: Object => tainter.getTaint(v)
       case null => null
       case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
     }
@@ -166,54 +151,38 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
     if (tag == -1) {
       obj
     } else {
-      obj match {
+      val r = obj match {
         // Primitive
-        case int: Int => Tainter.taintedInt(int, tag).asInstanceOf[T]
-        case long: Long => Tainter.taintedLong(long, tag).asInstanceOf[T]
-        case short: Short => Tainter.taintedShort(short, tag).asInstanceOf[T]
-        case float: Float => Tainter.taintedFloat(float, tag).asInstanceOf[T]
-        case double: Double => Tainter.taintedDouble(double, tag).asInstanceOf[T]
-        case bool: Boolean => Tainter.taintedBoolean(bool, tag).asInstanceOf[T]
-        case char: Char => Tainter.taintedChar(char, tag).asInstanceOf[T]
-        case byte: Byte => Tainter.taintedByte(byte, tag).asInstanceOf[T]
-
-        // Array and Object
-        case int: Array[Int] => Tainter.taintedIntArray(int, tag).asInstanceOf[T]
-        case long: Array[Long] => Tainter.taintedLongArray(long, tag).asInstanceOf[T]
-        case short: Array[Short] => Tainter.taintedShortArray(short, tag).asInstanceOf[T]
-        case float: Array[Float] => Tainter.taintedFloatArray(float, tag).asInstanceOf[T]
-        case double: Array[Double] => Tainter.taintedDoubleArray(double, tag).asInstanceOf[T]
-        case bool: Array[Boolean] => Tainter.taintedBooleanArray(bool, tag).asInstanceOf[T]
-        case char: Array[Char] => Tainter.taintedCharArray(char, tag).asInstanceOf[T]
-        case byte: Array[Byte] => Tainter.taintedByteArray(byte, tag).asInstanceOf[T]
-        case objs: Array[Object] => objs.foreach(obj => {
-            Tainter.taintedObject(obj, tag)
-          })
-          obj
+        case v: Int => tainter.setTaint(v, tag)
+        case v: Long => tainter.setTaint(v, tag)
+        case v: Double => tainter.setTaint(v, tag)
+        case v: Float => tainter.setTaint(v, tag)
+        case v: Short => tainter.setTaint(v, tag)
+        case v: Boolean => tainter.setTaint(v, tag)
+        case v: Byte => tainter.setTaint(v, tag)
+        case v: Char => tainter.setTaint(v, tag)
+        case arr: Array[_] => tainter.setTaint(arr, tag)
         case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
         case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
-        case obj: Object => {
-          Tainter.taintedObject(obj, tag)
-          obj.asInstanceOf[T]
-        }
+        case ob: Object => tainter.setTaint(ob, tag)
         case _ => obj
       }
+      r.asInstanceOf[T]
     }
   }
 
   def getOne[T](obj: T): T = {
     _indexDeps += 1
     val tag = obj match {
-      case v: Int => Tainter.getTaint(v)
-      case v: Short => Tainter.getTaint(v)
-      case v: Long => Tainter.getTaint(v)
-      case v: Double => Tainter.getTaint(v)
-      case v: Float => Tainter.getTaint(v)
-      case v: Byte => Tainter.getTaint(v)
-      case v: Char => Tainter.getTaint(v)
-      case v: Boolean => Tainter.getTaint(v)
-      case v: Object => Tainter.getTaint(v)
-      case null => 0
+      case v: Int => tainter.getTaint(v)
+      case v: Long => tainter.getTaint(v)
+      case v: Double => tainter.getTaint(v)
+      case v: Float => tainter.getTaint(v)
+      case v: Short => tainter.getTaint(v)
+      case v: Boolean => tainter.getTaint(v)
+      case v: Byte => tainter.getTaint(v)
+      case v: Char => tainter.getTaint(v)
+      case ob: Object => tainter.getTaint(ob)
       case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
     }
     _deps += _indexDeps -> tag
@@ -256,7 +225,7 @@ class SelectiveTainter(filter: Map[Int, Any => Int], defaultTag: Int = 0) extend
     }
   }
 
-  override def getTaintList(obj: Any): Map[Int, Int] = {
+  override def getTaintList(obj: Any): Map[Int, CombinedTaint[_]] = {
     _indexDeps = 0
     _deps = Map()
     getTaintHelper(obj)

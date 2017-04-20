@@ -228,7 +228,7 @@ class RuleTainter(trackingPolicy: TrackingPolicy, ruleCollector: RuleCollector) 
     obj
   }
 
-  override def getTaintList(obj: Any): Map[Int, Int] = {
+  override def getTaintList(obj: Any): Map[Int, CombinedTaint[_]] = {
     throw new TaintException("Not implemented")
   }
 }

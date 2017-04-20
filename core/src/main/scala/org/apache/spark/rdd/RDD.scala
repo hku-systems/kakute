@@ -28,7 +28,7 @@ import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.interface.{DataModelTaintInfo, TaintRuleTranslator}
 import edu.hku.cs.dft.optimization.SymbolManager
-import edu.hku.cs.dft.tracker.{DFTUtils, RuleTainter, SelectiveTainter}
+import edu.hku.cs.dft.tracker.{CombinedTaint, DFTUtils, RuleTainter, SelectiveTainter}
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
@@ -1009,13 +1009,13 @@ abstract class RDD[T: ClassTag](
     * Each record will be encoded as (DATA, TAG)
   */
 
-  def zipWithTaint(): RDD[(T, scala.Predef.Map[Int, Int])] = withScope() {
+  def zipWithTaint(): RDD[(T, scala.Predef.Map[Int, CombinedTaint[_]])] = withScope() {
     new WithTaintRDD[T](this)
   }
 
-  def collectWithTaint(): Array[(T, Map[Int, Int])] = withScope() {
+  def collectWithTaint(): Array[(T, Map[Int, CombinedTaint[_]])] = withScope() {
     val taintedResult = zipWithTaint()
-    val results = sc.runJob(taintedResult, (iter: Iterator[(T, Map[Int, Int])]) => iter.toArray)
+    val results = sc.runJob(taintedResult, (iter: Iterator[(T, Map[Int, CombinedTaint[_]])]) => iter.toArray)
     Array.concat(results: _*)
   }
 

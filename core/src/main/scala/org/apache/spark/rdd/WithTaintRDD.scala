@@ -1,6 +1,6 @@
 package org.apache.spark.rdd
 
-import edu.hku.cs.dft.tracker.SelectiveTainter
+import edu.hku.cs.dft.tracker.{CombinedTaint, SelectiveTainter}
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
@@ -11,12 +11,12 @@ import scala.reflect.ClassTag
   */
 
 class WithTaintRDD[T: ClassTag](
-  val prev: RDD[T]) extends RDD[(T, Map[Int, Int])](prev){
+  val prev: RDD[T]) extends RDD[(T, Map[Int, CombinedTaint[_]])](prev){
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to compute a given partition.
     */
-  override def compute(split: Partition, context: TaskContext): Iterator[(T, Map[Int, Int])] = {
+  override def compute(split: Partition, context: TaskContext): Iterator[(T, Map[Int, CombinedTaint[_]])] = {
     val selectiveTainter: SelectiveTainter = new SelectiveTainter(Map(), 0)
     firstParent[T].iterator(split, context).map(d => {
       (d, selectiveTainter.getTaintList(d))

@@ -1,9 +1,7 @@
 package edu.hku.cs.dft.tracker
 
-import java.util
-
 import edu.columbia.cs.psl.phosphor.runtime.{MultiTainter, Taint, Tainter}
-import edu.columbia.cs.psl.phosphor.struct.LinkedList
+import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 
 /**
   * Created by jianyu on 4/17/17.
@@ -25,7 +23,7 @@ class CombinedTaint[T](taint: T) extends Iterable[Any] with Serializable{
         var rs: List[Int] = List()
         for (j <- 0 to 31) {
           if ((ta & (1 << j)) != 0) {
-            rs = j :: rs
+            rs = (1 << j) :: rs
           }
         }
         rs.toIterator
@@ -49,6 +47,22 @@ class CombinedTaint[T](taint: T) extends Iterable[Any] with Serializable{
         rs.toIterator
       case _ =>
         None.toIterator
+    }
+  }
+
+  override def equals(obj: scala.Any): Boolean = {
+    tt match {
+      case int: Int =>
+        obj match {
+          case taint: Int => taint == int
+          case _ => false
+        }
+      case t: Taint[_] =>
+        obj match {
+          case taint: Taint[_] => taint.lbl == t.lbl
+          case _ => false
+        }
+      case _ => false
     }
   }
 }
@@ -100,24 +114,27 @@ class ObjectTainter extends TainterHandle {
   }
 
   private def setObjTaint[T](anyRef: T, taint: Taint[_]): T = {
-
-    val r = anyRef match {
-      case int: Int => MultiTainter.taintedInt(int, taint)
-      case short: Short => MultiTainter.taintedShort(short, taint)
-      case long: Long => MultiTainter.taintedLong(long, taint)
-      case double: Double => MultiTainter.taintedDouble(double, taint)
-      case float: Float => MultiTainter.taintedFloat(float, taint)
-      case char: Char => MultiTainter.taintedChar(char, taint)
-      case byte: Byte => MultiTainter.taintedByte(byte, taint)
-      case boolean: Boolean => MultiTainter.taintedBoolean(boolean, taint)
-      case arr: Array[_] => throw new IllegalArgumentException("could not set taint to arr")
-      case null => null
-      case obj =>
-        MultiTainter.taintedObject(obj, taint)
-        obj
-      case _ => throw new IllegalArgumentException("type mismatch")
+    if (taint == null)
+      anyRef
+    else {
+      val r = anyRef match {
+        case int: Int => MultiTainter.taintedInt(int, taint)
+        case short: Short => MultiTainter.taintedShort(short, taint)
+        case long: Long => MultiTainter.taintedLong(long, taint)
+        case double: Double => MultiTainter.taintedDouble(double, taint)
+        case float: Float => MultiTainter.taintedFloat(float, taint)
+        case char: Char => MultiTainter.taintedChar(char, taint)
+        case byte: Byte => MultiTainter.taintedByte(byte, taint)
+        case boolean: Boolean => MultiTainter.taintedBoolean(boolean, taint)
+        case arr: Array[_] => throw new IllegalArgumentException("could not set taint to arr")
+        case null => null
+        case obj =>
+          MultiTainter.taintedObject(obj, taint)
+          obj
+        case _ => throw new IllegalArgumentException("type mismatch")
+      }
+      r.asInstanceOf[T]
     }
-    r.asInstanceOf[T]
   }
 
   override def setTaint[T](anyRef: T, taint: Any): T = {
@@ -145,7 +162,7 @@ class IntTainter extends TainterHandle {
 
   private def setIntTaint[T](anyRef: Any, int: Int): T = {
     val r = anyRef match {
-      case int: Int => Tainter.taintedInt(int, int)
+      case in: Int => Tainter.taintedInt(in, int)
       case short: Short => Tainter.taintedShort(short, int)
       case long: Long => Tainter.taintedLong(long, int)
       case double: Double => Tainter.taintedDouble(double, int)
@@ -185,4 +202,14 @@ class IntTainter extends TainterHandle {
       new CombinedTaint[Int](Tainter.getTaint(any))
     }
   }
+}
+
+object TainterHandle {
+
+  def trackingTaint: TrackingTaint =
+    if (edu.columbia.cs.psl.phosphor.Configuration.MULTI_TAINTING)
+      TrackingTaint.ObjTaint
+    else
+      TrackingTaint.IntTaint
+
 }
