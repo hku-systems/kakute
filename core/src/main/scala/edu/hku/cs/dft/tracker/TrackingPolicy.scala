@@ -2,6 +2,7 @@ package edu.hku.cs.dft.tracker
 
 import edu.hku.cs.dft.{ConfEnumeration, TrackingMode}
 import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 
@@ -38,8 +39,16 @@ object TrackingType extends ConfEnumeration {
   val KeyValuesArray = ConfValue("key-value-array")
 }
 
+object TrackingTaint extends ConfEnumeration {
+  type TrackingTaint = Value
+  val IntTaint = ConfValue("int")
+  val ObjTaint = ConfValue("obj")
+  val ObjImplicitTaint = ConfValue("obj-implicit")
+}
+
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
-                     trackingOn: Boolean = false) {
+                     trackingOn: Boolean = false,
+                     taint: TrackingTaint = TrackingTaint.IntTaint) {
 
   /*
   * Default Setting
@@ -110,5 +119,7 @@ class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
   }
 
   var tracking_type: TrackingType = trackType
+
+  val trackingTaint: TrackingTaint = taint
 
 }
