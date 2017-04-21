@@ -1009,13 +1009,13 @@ abstract class RDD[T: ClassTag](
     * Each record will be encoded as (DATA, TAG)
   */
 
-  def zipWithTaint(): RDD[(T, scala.Predef.Map[Int, CombinedTaint[_]])] = withScope() {
+  def zipWithTaint(): RDD[(T, Any)] = withScope() {
     new WithTaintRDD[T](this)
   }
 
-  def collectWithTaint(): Array[(T, Map[Int, CombinedTaint[_]])] = withScope() {
+  def collectWithTaint(): Array[(T, Any)] = withScope() {
     val taintedResult = zipWithTaint()
-    val results = sc.runJob(taintedResult, (iter: Iterator[(T, Map[Int, CombinedTaint[_]])]) => iter.toArray)
+    val results = sc.runJob(taintedResult, (iter: Iterator[(T, Any)]) => iter.toArray)
     Array.concat(results: _*)
   }
 

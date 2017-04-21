@@ -34,12 +34,7 @@ object ProvenanceExample {
     val word_count = taintedWords.reduceByKey(_ + _)
     val result_taint = word_count.collectWithTaint()
     result_taint.foreach(r => {
-      println(r._1 + ":")
-      r._2.foreach(t => {
-        print(t._1 + ": ")
-        t._2.foreach(m => print(" " + m))
-        println()
-      })
+      println(r._1 + ":" + r._2)
     })
 
     spark.stop()
