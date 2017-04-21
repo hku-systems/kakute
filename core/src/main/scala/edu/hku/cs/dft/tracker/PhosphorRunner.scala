@@ -14,17 +14,21 @@ import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 
 class PhosphorRunner(cacheDir: String, phospherJar: String, targetHome: String, var trackingTaint: TrackingTaint) {
 
-  if (cacheDir != null) {
-    val f = new File(cacheDir)
-    if (!f.exists) {
-      f.mkdir()
+  private def checkAndCreateCacheDir() {
+    if (cacheDir != null) {
+      val f = new File(cacheDir)
+      if (!f.exists) {
+        f.mkdir()
+      }
     }
   }
 
   private val _agent = "-javaagent:" + phospherJar
 
-  private def cache(): String = if (cacheDir != null) "=cacheDir=" + cacheDir + (if (trackingTaint == TrackingTaint.ObjTaint) "/obj" else "/int") + "," else ""
-
+  private def cache(): String = {
+    checkAndCreateCacheDir()
+    if (cacheDir != null) "=cacheDir=" + cacheDir + (if (trackingTaint == TrackingTaint.ObjTaint) "/obj" else "/int") + "," else ""
+  }
   private val _bootclasspath = "-Xbootclasspath/a:" + phospherJar
 
   private val _ignore = "checkTaint=true"
