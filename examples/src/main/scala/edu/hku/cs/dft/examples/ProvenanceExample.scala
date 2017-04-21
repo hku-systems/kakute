@@ -7,6 +7,9 @@ import org.apache.spark.sql.SparkSession
   */
 object ProvenanceExample {
   case class Tracer(objId: Int, key: Int)
+
+  var counter: Int = 0
+
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
@@ -22,15 +25,14 @@ object ProvenanceExample {
     val text = spark.read.textFile(file).rdd
     val lines = text.flatMap(t => t.split("\\s+"))
     val words = lines.map(word => (word, 1))
-    val wordCount = words.reduceByKey(_ + _)
-    var counter = 0
-    val taintedCount = wordCount.taint(t => {
+    val taintedWords = words.taint(t => {
       counter += 1
-      (Tracer(counter, 1), Tracer(counter, 1))
+      val c = counter
+      (Tracer(c, 1), Tracer(c, 2))
     })
 
-    val result = taintedCount.reduceByKey(_ + _)
-    val result_taint = result.collectWithTaint()
+    val word_count = taintedWords.reduceByKey(_ + _)
+    val result_taint = word_count.collectWithTaint()
     result_taint.foreach(r => {
       println(r._1 + ":")
       r._2.foreach(t => {

@@ -2316,7 +2316,6 @@
             </goals>
             <configuration>
               <includeScope>runtime</includeScope>
-              <includeScope>system</includeScope>
               <outputDirectory>${jars.target.dir}</outputDirectory>
             </configuration>
           </execution>

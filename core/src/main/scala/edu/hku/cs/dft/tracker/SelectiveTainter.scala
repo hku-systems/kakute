@@ -98,7 +98,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
           setTupleTaintHelper(_3, taint.asInstanceOf[(_, _, _, _)]._3),
           setTupleTaintHelper(_4, taint.asInstanceOf[(_, _, _, _)]._4)).asInstanceOf[T]
         case _ =>
-          taintTupleOne(obj, taint.asInstanceOf[Int])
+          taintTupleOne(obj, taint)
       }
     }
 
@@ -119,7 +119,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
   }
 
   def getTupleTaintOne[T](obj: T): Any = {
-    val tag = obj match {
+    obj match {
       case v: Int => tainter.getTaint(v)
       case v: Long => tainter.getTaint(v)
       case v: Double => tainter.getTaint(v)

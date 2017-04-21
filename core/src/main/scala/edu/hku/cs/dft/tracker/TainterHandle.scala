@@ -29,19 +29,16 @@ class CombinedTaint[T](taint: T) extends Iterable[Any] with Serializable{
         rs.toIterator
       case taint: Taint[_] =>
         val linkedList = taint.getDependencies
-        var rs: List[Int] = List()
+        var rs: List[Any] = List()
 
-        taint.lbl match {
-          case int: Int => rs = int :: rs
-          case _ =>
+        if (taint.lbl != null) {
+          rs = taint.lbl :: rs
         }
 
         var head = linkedList.getFirst
         while (head != null) {
-          head.entry match {
-            case int: Int => rs = int :: rs
-            case _ =>
-          }
+          if (head.entry != null)
+            rs = head.entry :: rs
           head = head.next
         }
         rs.toIterator
