@@ -1551,9 +1551,8 @@ abstract class RDD[T: ClassTag](
     * this RDD after computation
     * @return the RDD itself
   */
-  def taint(f: T => Any): this.type = {
-    this.taintInfo = new DataModelTaintInfo[T](true, f)
-    this
+  def taint(f: T => Any): RDD[T] = withScope() {
+    new TaintedRDD(this, f)
   }
 
 
