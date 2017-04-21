@@ -140,7 +140,7 @@ class ObjectTainter extends TainterHandle {
       case ct: CombinedTaint[_] =>
         setObjTaint(anyRef, ct.getTaint.asInstanceOf[Taint[_]])
       case obj: Object => setObjTaint(anyRef, obj)
-      case _ => throw new IllegalArgumentException("illegal tag")
+      case _ => anyRef
     }
 
   }
