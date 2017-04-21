@@ -1,6 +1,6 @@
 package org.apache.spark.rdd
 
-import edu.hku.cs.dft.tracker.SelectiveTainter
+import edu.hku.cs.dft.tracker.{SelectiveTainter, TupleTainter}
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
@@ -15,9 +15,8 @@ class TaintedRDD[T: ClassTag](
     * Implemented by subclasses to compute a given partition.
     */
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    val selectiveTainter = new SelectiveTainter(Map(), 0)
     firstParent[T].iterator(split, context).map(d => {
-      selectiveTainter.setTaintWithTupleTaint(d, f(d))
+      TupleTainter.setTaint(d, f(d))
     })
   }
 

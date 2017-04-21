@@ -28,7 +28,7 @@ import com.clearspring.analytics.stream.cardinality.HyperLogLogPlus
 import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.interface.{DataModelTaintInfo, TaintRuleTranslator}
 import edu.hku.cs.dft.optimization.SymbolManager
-import edu.hku.cs.dft.tracker.{CombinedTaint, DFTUtils, RuleTainter, SelectiveTainter}
+import edu.hku.cs.dft.tracker._
 import edu.hku.cs.tools.CallLocation
 import org.apache.hadoop.io.{BytesWritable, NullWritable, Text}
 import org.apache.hadoop.io.compress.CompressionCodec
@@ -318,7 +318,7 @@ abstract class RDD[T: ClassTag](
     if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)
       r.map(t => {
-        selectiveTainter.setTaintWithTupleTaint(t, taintInfo.taintFunc(t))
+        TupleTainter.setTaint(t, taintInfo.taintFunc(t))
       })
     }
     else

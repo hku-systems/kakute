@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.debug
 
-import edu.hku.cs.dft.tracker.SelectiveTainter
+import edu.hku.cs.dft.tracker.{SelectiveTainter, TupleTainter}
 
 /**
   * Created by jianyu on 4/13/17.
@@ -28,8 +28,7 @@ object DebugTracer {
 
   def backTrace(): Any = {
     val traceObj = getInstance().pop()
-    val selectiveTainter = new SelectiveTainter(Map(), 0)
-    val traceTaint = selectiveTainter.getTaintList(selectiveTainter.getTupleTaint(traceObj))
+    val traceTaint = TupleTainter.getTaint(traceObj)
     val dump = dumpObj(traceObj)
     s"Object $dump\n Taint $traceTaint"
   }

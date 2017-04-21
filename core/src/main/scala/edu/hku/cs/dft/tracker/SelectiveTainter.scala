@@ -36,107 +36,10 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
     this
   }
 
-  /**
-   * [[setTaintWithTupleTaint]] is a more flexible api to add taint, the tuple shuld be as the same
-    * structure as the data: if obj is tuple2, then taint should be tuple2
-  */
-  def setTaintWithTupleTaint[T, M](obj: T, taint: M): T = {
-    setTupleTaintHelper(obj, taint)
-  }
-
-  // TODO: Other Basic Collection of data ?
-  private def taintTupleOne[T](obj: T, tag: Any): T = {
-    // TODO check if tag is bypassed
-    if (tag == -1) {
-      obj
-    } else {
-      val r = obj match {
-        case v: Int => tainter.setTaint(v, tag)
-        case v: Long => tainter.setTaint(v, tag)
-        case v: Double => tainter.setTaint(v, tag)
-        case v: Float => tainter.setTaint(v, tag)
-        case v: Short => tainter.setTaint(v, tag)
-        case v: Boolean => tainter.setTaint(v, tag)
-        case v: Byte => tainter.setTaint(v, tag)
-        case v: Char => tainter.setTaint(v, tag)
-        case arr: Array[_] => tainter.setTaint(arr, tag)
-        case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
-        case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
-        case ob: Object => tainter.setTaint(ob, tag)
-      }
-      r.asInstanceOf[T]
-    }
-  }
-
-  private def getBaseClass(obj: Any): (Boolean, Int) = {
-    obj match {
-      case p: Product => (true, p.productArity)
-      case _ => (false, 0)
-    }
-  }
-
-  private def setTupleTaintHelper[T, M](obj: T, taint: M): T = {
-    if (getBaseClass(obj) != getBaseClass(taint)) {
-      // Can be any obj
-      // if (!taint.isInstanceOf[Int] || !taint.isInstanceOf[Integer]) throw new Exception("type not match")
-      val tag = taint
-      obj match {
-        case (_1, _2) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag)).asInstanceOf[T]
-        case (_1, _2, _3) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag), setTupleTaintHelper(_3, tag)).asInstanceOf[T]
-        case (_1, _2, _3, _4) => (setTupleTaintHelper(_1, tag), setTupleTaintHelper(_2, tag), setTupleTaintHelper(_3, tag), setTupleTaintHelper(_4, tag)).asInstanceOf[T]
-        case _ => taintTupleOne(obj, tag)
-      }
-    } else {
-      obj match {
-        case (_1, _2) => (setTupleTaintHelper(_1, taint.asInstanceOf[(_, _)]._1),
-          setTupleTaintHelper(_2, taint.asInstanceOf[(_, _)]._2)).asInstanceOf[T]
-        case (_1, _2, _3) => (setTupleTaintHelper(_1, taint.asInstanceOf[(_, _, _)]._1),
-          setTupleTaintHelper(_2, taint.asInstanceOf[(_, _, _)]._2),
-          setTupleTaintHelper(_3, taint.asInstanceOf[(_, _, _)]._3)).asInstanceOf[T]
-        case (_1, _2, _3, _4) => (setTupleTaintHelper(_1, taint.asInstanceOf[(_, _, _, _)]._1),
-          setTupleTaintHelper(_2, taint.asInstanceOf[(_, _, _, _)]._2),
-          setTupleTaintHelper(_3, taint.asInstanceOf[(_, _, _, _)]._3),
-          setTupleTaintHelper(_4, taint.asInstanceOf[(_, _, _, _)]._4)).asInstanceOf[T]
-        case _ =>
-          taintTupleOne(obj, taint)
-      }
-    }
-
-  }
-
   override def setTaint[T](obj: T): T = {
     _index = 0
     val k = taintAllHelper(obj)
     k
-  }
-
-  def getTupleTaint[T](obj: T): Any = {
-    obj match {
-      case (_1, _2) => (getTupleTaint(_1), getTupleTaint(_2))
-      case (_1, _2, _3) => (getTupleTaint(_1), getTupleTaint(_2), getTupleTaint(_3))
-      case _ => getTupleTaintOne(obj)
-    }
-  }
-
-  def getTupleTaintOne[T](obj: T): Any = {
-    obj match {
-      case v: Int => tainter.getTaint(v)
-      case v: Long => tainter.getTaint(v)
-      case v: Double => tainter.getTaint(v)
-      case v: Float => tainter.getTaint(v)
-      case v: Short => tainter.getTaint(v)
-      case v: Boolean => tainter.getTaint(v)
-      case v: Byte => tainter.getTaint(v)
-      case v: Char => tainter.getTaint(v)
-        // we should show the taint of the all object
-        // also array should be consider
-      case v: Iterable[_] => v.map(getTupleTaintOne).toList
-      case v: Iterator[_] => v.map(getTupleTaintOne).toList
-      case v: Array[_] => v.map(getTupleTaint).toList
-      case v: Object => tainter.getTaint(v)
-      case null => null
-      case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
-    }
   }
 
   /**
@@ -163,8 +66,8 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
         case v: Byte => tainter.setTaint(v, tag)
         case v: Char => tainter.setTaint(v, tag)
         case arr: Array[_] => tainter.setTaint(arr, tag)
-        case it: Iterator[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
-        case it: Iterable[Any] => it.map(t => taintTupleOne(t, tag)).asInstanceOf[T]
+        case it: Iterator[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
+        case it: Iterable[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
         case ob: Object => tainter.setTaint(ob, tag)
         case _ => obj
       }
@@ -174,18 +77,8 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
 
   def getOne[T](obj: T): T = {
     _indexDeps += 1
-    val tag = obj match {
-      case v: Int => tainter.getTaint(v)
-      case v: Long => tainter.getTaint(v)
-      case v: Double => tainter.getTaint(v)
-      case v: Float => tainter.getTaint(v)
-      case v: Short => tainter.getTaint(v)
-      case v: Boolean => tainter.getTaint(v)
-      case v: Byte => tainter.getTaint(v)
-      case v: Char => tainter.getTaint(v)
-      case ob: Object => tainter.getTaint(ob)
-      case _ => throw new Exception("type mismatch type " + obj.getClass.getSimpleName)
-    }
+    //todo: if there is array??
+    val tag = tainter.getTaint(obj)
     _deps += _indexDeps -> tag
     obj
   }

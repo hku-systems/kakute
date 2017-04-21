@@ -21,7 +21,7 @@ import java.io.{IOException, ObjectOutputStream}
 
 import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.interface.TaintRuleTranslator
-import edu.hku.cs.dft.tracker.{RuleTainter, SelectiveTainter}
+import edu.hku.cs.dft.tracker.{RuleTainter, SelectiveTainter, TupleTainter}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
@@ -159,11 +159,10 @@ class CoGroupedRDD[K: ClassTag](
       * we taint the content of the obj
     */
     if (DFTEnv.trackingPolicy.add_tags_per_ops) {
-      val selectiveTainter = new SelectiveTainter(Map(), 0)
 //      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       for ((it, depNum) <- rddIterators) {
         map.insertAll(it.map(pair => {
-          val tPair = selectiveTainter.setTaintWithTupleTaint(pair, (1, 2))
+          val tPair = TupleTainter.setTaint(pair, (1, 2))
           (tPair._1, new CoGroupValue(tPair._2, depNum))
         })
         )
