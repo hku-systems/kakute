@@ -15,7 +15,7 @@ abstract class BaseTainter {
   val TAINT_START_VALUE : Int = 0x4fffffff + 1
 
   def setTaint[T](obj: T): T
-  def getTaintList(obj: Any): Map[Int, Int]
+  def getTaintList(obj: Any): Map[Int, CombinedTaint[_]]
   def getTaintAndReturn[T](obj: T): T
 
 }

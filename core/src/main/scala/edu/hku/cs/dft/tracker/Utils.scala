@@ -58,7 +58,7 @@ object DFTUtils {
     seq
   }
 
-  def markPositionToMap(filter: Map[Int, Int]): Map[Int, Any => Int] = {
+  def markPositionToMap(filter: Map[Int, Any]): Map[Int, Any => Any] = {
     filter.map(pair => {
       (pair._1, (_: Any) => pair._2)
     })

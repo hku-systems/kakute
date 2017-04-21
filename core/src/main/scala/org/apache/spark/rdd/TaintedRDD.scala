@@ -1,24 +1,22 @@
 package org.apache.spark.rdd
 
-import edu.hku.cs.dft.tracker.{CombinedTaint, SelectiveTainter, TupleTainter}
+import edu.hku.cs.dft.tracker.{SelectiveTainter, TupleTainter}
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
 
 /**
-  * A [[WithTaintRDD]] has the data along with tag in corresponding position
-  * But the problem is how to design the tag ???
+  * Created by jianyu on 4/21/17.
   */
-
-class WithTaintRDD[T: ClassTag](
-  val prev: RDD[T]) extends RDD[(T, Any)](prev){
+class TaintedRDD[T: ClassTag](
+  val prev: RDD[T], f: T => Any) extends RDD[T](prev){
   /**
     * :: DeveloperApi ::
     * Implemented by subclasses to compute a given partition.
     */
-  override def compute(split: Partition, context: TaskContext): Iterator[(T, Any)] = {
+  override def compute(split: Partition, context: TaskContext): Iterator[T] = {
     firstParent[T].iterator(split, context).map(d => {
-      (d, TupleTainter.getTaint(d))
+      TupleTainter.setTaint(d, f(d))
     })
   }
 
