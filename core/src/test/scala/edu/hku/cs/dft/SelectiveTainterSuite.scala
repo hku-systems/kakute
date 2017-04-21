@@ -29,6 +29,11 @@ object SelectiveTainterSuite {
 //    assert(selectiveTainter.getTaintList(tupleTainted) == Map(1 -> 1, 2-> 2, 3 -> 2))
 
     val g = List(1, 2, 3, 4).toIterator
+
+    // test for array
+    val taintedList = selectiveTainter.setTaintWithTaint((1, List(1, 2)), Map(1 -> 1, 2 -> 2))
+    val taint_list = selectiveTainter.getTaintList(taintedList)
+    val retaintedList = selectiveTainter.setTaintWithTaint((1, List(1, 2)), taint_list)
     val look = 0
   }
 }

@@ -152,7 +152,7 @@ final class BypassMergeSortShuffleWriter<K, V> extends ShuffleWriter<K, V> {
       final K key = record._1();
       if (DFTEnv.trackingPolicy().propagation_across_machines()) {
         SelectiveTainter selectiveTainter = new SelectiveTainter(null, DFTEnv.shuffleTag());
-        Map<Object, CombinedTaint<?>> taintList = selectiveTainter.getTaintList(record);
+        Map<Object, Object> taintList = selectiveTainter.getTaintList(record);
         partitionWriters[partitioner.getPartition(key)].write(selectiveTainter.setTaint(key),
                 new Tuple2<>(taintList, selectiveTainter.setTaint(record._2())));
       } else {

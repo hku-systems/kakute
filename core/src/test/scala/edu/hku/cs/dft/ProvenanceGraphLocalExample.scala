@@ -15,8 +15,12 @@ object ProvenanceGraphLocalExample {
     val edges = Array((1, 2), (1, 3), (1, 4), (2, 1), (3, 1), (4, 1))
     val nodes = edges.flatMap(edge => edge.productIterator).distinct.map(k => k.asInstanceOf[Int])
 
-    val c = 0
-    val tainted_edge = edges.map(s => TupleTainter.setTaint(s, (Tracer(c, 1), Tracer(c, 2))))
+    var c = 0
+    val tainted_edge = edges.map(s => {
+      c = c + 1
+      TupleTainter.setTaint(s, (Tracer(c, 1), Tracer(c, 2)))
+    }
+    )
 
     // Init the node with its own id
     var label_node: Map[Int, Int] = nodes.map(t => (t, t)).toMap
@@ -34,5 +38,6 @@ object ProvenanceGraphLocalExample {
         min
       })
     }
+    label_node.foreach(l => println(l + ":"+TupleTainter.getTaint(l._1) + " " + TupleTainter.getTaint(l._2)))
   }
 }

@@ -17,7 +17,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
 
   private var _indexDeps = 0
 
-  private var _deps: Map[Int, CombinedTaint[_]] = Map()
+  private var _deps: Map[Int, Any] = Map()
 
   private var _positionFilter: Map[Int, Any => Any] = if (filter == null) Map() else filter
 
@@ -55,21 +55,31 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
     if (tag == -1) {
       obj
     } else {
-      val r = obj match {
-        // Primitive
-        case v: Int => tainter.setTaint(v, tag)
-        case v: Long => tainter.setTaint(v, tag)
-        case v: Double => tainter.setTaint(v, tag)
-        case v: Float => tainter.setTaint(v, tag)
-        case v: Short => tainter.setTaint(v, tag)
-        case v: Boolean => tainter.setTaint(v, tag)
-        case v: Byte => tainter.setTaint(v, tag)
-        case v: Char => tainter.setTaint(v, tag)
-        case arr: Array[_] => tainter.setTaint(arr, tag)
-        case it: Iterator[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
-        case it: Iterable[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
-        case ob: Object => tainter.setTaint(ob, tag)
-        case _ => obj
+      val r = tag match {
+        case arrTaint: ArrayTaintWrapper =>
+        obj match {
+          case it: Iterable[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
+          case it: Iterator[_] => it.zip(arrTaint.array.iterator).map(t => tainter.setTaint(t._1, t._2))
+          case it: Array[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
+          case _ => throw new IllegalArgumentException("arr taint w ill-arr obj")
+        }
+        case _ =>
+        obj match {
+          // Primitive
+          case v: Int => tainter.setTaint(v, tag)
+          case v: Long => tainter.setTaint(v, tag)
+          case v: Double => tainter.setTaint(v, tag)
+          case v: Float => tainter.setTaint(v, tag)
+          case v: Short => tainter.setTaint(v, tag)
+          case v: Boolean => tainter.setTaint(v, tag)
+          case v: Byte => tainter.setTaint(v, tag)
+          case v: Char => tainter.setTaint(v, tag)
+          case arr: Array[_] => tainter.setTaint(arr, tag)
+          case it: Iterator[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
+          case it: Iterable[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
+          case ob: Object => tainter.setTaint(ob, tag)
+          case _ => obj
+        }
       }
       r.asInstanceOf[T]
     }
@@ -77,8 +87,14 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
 
   def getOne[T](obj: T): T = {
     _indexDeps += 1
-    //todo: if there is array??
-    val tag = tainter.getTaint(obj)
+    // Todo: if compression will be needed ?
+    val tag = obj match {
+      case it: Iterable[_] => ArrayTaintWrapper(it.map(tainter.getTaint).toArray)
+      case it: Iterator[_] => ArrayTaintWrapper(it.map(tainter.getTaint).toArray)
+      case arr: Array[_] => ArrayTaintWrapper(arr.map(tainter.getTaint))
+      case _ => tainter.getTaint(obj)
+    }
+    tainter.getTaint(obj)
     _deps += _indexDeps -> tag
     obj
   }
@@ -119,7 +135,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
     }
   }
 
-  override def getTaintList(obj: Any): Map[Int, CombinedTaint[_]] = {
+  override def getTaintList(obj: Any): Map[Int, Any] = {
     _indexDeps = 0
     _deps = Map()
     getTaintHelper(obj)
@@ -128,7 +144,12 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
 
   def getTaintHelper[T](obj: T): T = {
     obj match {
-      case product: Product => product.productIterator.foreach(getTaintHelper)
+      case t: (_, _) => t.productIterator.foreach(getTaintHelper)
+      case t: (_, _, _) => t.productIterator.foreach(getTaintHelper)
+      case t: (_, _, _, _) => t.productIterator.foreach(getTaintHelper)
+      case t: (_, _, _, _, _) => t.productIterator.foreach(getTaintHelper)
+      case t: (_, _, _, _, _, _, _) => t.productIterator.foreach(getTaintHelper)
+//      case product: Product => product.productIterator.foreach(getTaintHelper)
       case _ => getOne(obj)
     }
     obj
