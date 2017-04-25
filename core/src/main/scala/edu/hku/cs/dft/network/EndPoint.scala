@@ -62,3 +62,5 @@ case class RuleAdded(id: Int) extends Message
 case class DataType(id: Int, typeString: Any) extends Message
 
 case class DataCount(id: Int, c: Int) extends Message
+
+case class DebugInformation(record: Any, ta: Any, func: _ => _) extends Message

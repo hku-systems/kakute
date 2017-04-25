@@ -10,11 +10,14 @@ class DebugStorage(val stageId: Int, val partitionId: Int) {
 
   private var latest: Any = _
 
-  def push[T](o: T): Unit = {
+  private var func: _ => _ = _
+
+  def push[T, U](o: T, f: T => U): Unit = {
     latest = o
+    func = f
   }
 
-  def pop(): Any = latest
+  def pop(): (Any, _ => _) = (latest, func)
 
 }
 

@@ -53,11 +53,9 @@ object UDFErrorExample {
         }
       })
       word_map
-    })
+    }).collect()
 
-      .collect()
     sc.stop()
-
   }
 
 }

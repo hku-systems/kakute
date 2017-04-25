@@ -314,6 +314,7 @@ abstract class RDD[T: ClassTag](
       typeInfered
     }
 
+    // @Depressed this part have been remove, replaced by a rdd implementation,to be deleted
     // this part is independent, we will not add taint and collect taint at the same time
     if (this.taintInfo != null && this.taintInfo.tainted) {
       val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)

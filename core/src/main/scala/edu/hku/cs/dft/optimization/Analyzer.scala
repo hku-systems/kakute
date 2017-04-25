@@ -38,6 +38,11 @@ class LoopReducedDataModel(platformHandle: PlatformHandle, val variable: String)
     dataCount += dataModel.count
     if (dataType == null)
       dataType = dataModel.dataType()
+
+    // TODO: for debuging app, we do not need dependency, but the taint info
+    if (fatherModel == null) {
+      return this
+    }
     dataModel.deps().foreach(dp => {
       val dpName = if (dp._1.name() == dataModel.name()) fatherModel.name() else dp._1.name()
       if (deps.contains(dpName)) {

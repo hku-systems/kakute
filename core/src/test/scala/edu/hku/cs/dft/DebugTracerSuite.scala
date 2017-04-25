@@ -11,7 +11,7 @@ class DebugIterator[T](iterator: Iterator[T]) extends Iterator[T] {
 
   override def next(): T = {
     val nx = iterator.next()
-    DebugTracer.trace(nx)
+    DebugTracer.trace(nx, null)
     nx
   }
 }

@@ -39,6 +39,7 @@ class PhosphorRunner(cacheDir: String, phospherJar: String, targetHome: String, 
 
   def agent(checkTaint: Boolean = false, ignoreTaintAll: Int = 0): String = _agent + cache() +
     (if (checkTaint) _ignore + "," + _ignoreInt + ignoreTaintAll else "")
+//  + "withSelectiveInst=/tmp/a"
 
   def bootclasspath(): String = _bootclasspath
 

@@ -3,7 +3,7 @@ package edu.hku.cs.dft.network
 import java.io.ObjectOutputStream
 import java.net.{InetAddress, Socket}
 
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
@@ -52,7 +52,6 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
 }
 
-/*
 class RuleEndpoint extends NettyEndpoint {
   val id: String = "Rule"
 
@@ -64,8 +63,11 @@ class RuleEndpoint extends NettyEndpoint {
       case _ => null
     }
   }
+
+  override def onRegister(): Unit = {
+
+  }
 }
-*/
 
 class TestClass extends Serializable {
   private val r = 1
@@ -80,21 +82,22 @@ class TestClass extends Serializable {
 
 object NettyClient{
   def main(args: Array[String]): Unit = {
-/*    DFTEnv.init()
+    DFTEnv.client_init(TrackingMode.Debug)
     val nettyClient = new NettyClient(new EndpointDispatcher, DFTEnv.dftEnv())
     new Thread(new Runnable {
       override def run() {
         nettyClient.run()
       }
     }).start()
-    Thread.sleep(1000)*/
+    Thread.sleep(1000)
 
-    val client = new Socket(InetAddress.getByName("localhost"), 9999)
-    val out = new ObjectOutputStream(client.getOutputStream)
-    out.writeObject(new TestClass)
+//    val client = new Socket(InetAddress.getByName("localhost"), 9999)
+//    val out = new ObjectOutputStream(client.getOutputStream)
+//    out.writeObject(DebugInfo(1, 2, 3))
 
-    //    val rule = new RuleEndpoint
-//    nettyClient.register(rule)
-//    rule.send(onStart(1, "aa", 1.5))
+    val rule = new RuleEndpoint
+    nettyClient.register(rule)
+    rule.send(DebugInformation(1, 2, null))
+    rule.send(DebugInformation(1, 2, null))
   }
 }

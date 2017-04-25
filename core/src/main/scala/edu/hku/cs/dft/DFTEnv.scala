@@ -3,7 +3,8 @@ package edu.hku.cs.dft
 import edu.hku.cs.dft.datamodel.{GraphDumper, GraphManager}
 import edu.hku.cs.dft.SampleMode.SampleMode
 import edu.hku.cs.dft.TrackingMode.TrackingMode
-import edu.hku.cs.dft.network.{EndpointDispatcher, EndpointRegister, NettyClient, NettyServer}
+import edu.hku.cs.dft.debug.DebugReplay
+import edu.hku.cs.dft.network._
 import edu.hku.cs.dft.optimization.RuleLocalControl
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.{PhosphorRunner, TrackingPolicy, TrackingTaint, TrackingType}
@@ -243,9 +244,12 @@ object DFTEnv {
     _dftEnv.isServer = false
   }
 
-  def stop_all(): Unit = {
+  def stop_all(trackingMode: TrackingMode): Unit = {
     networkEnv.stop()
     if (DFTEnv.dftEnv().isServer) {
+      if (trackingMode == TrackingMode.Debug && graphManager.debugInfo != null) {
+        graphManager.debugInfo.writeToFile(DebugReplay.debugTraceFile)
+      }
       val graphDumper = new GraphDumper(DFTEnv.dftEnv().graphDumpPath)
       graphDumper.open()
       graphDumper.dumpGraph(graphManager)

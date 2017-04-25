@@ -170,11 +170,13 @@ private[deploy] class ExecutorRunner(
         val phosphorRunner = DFTEnv.phosphorRunner
         phosphorRunner.setTrackingTaint(trackingTaint)
         command.set(0, phosphorRunner.java())
+//        command.set(2, "/home/jianyu/spark/conf/:/home/jianyu/spark/assembly/target/scala-2.11/jars_inst/*")
         if (trackingMode == TrackingMode.SecurityTracking)
           command.add(3, phosphorRunner.agent(true, DFTEnv.shuffleTag))
         else
           command.add(3, phosphorRunner.agent())
         command.add(4, phosphorRunner.bootclasspath())
+        command.add(4, "-noverify")
         command.add(DefaultArgument._CONF_HOST)
         command.add(DFTEnv.dftEnv().serverHost)
         command.add(DefaultArgument._CONF_PORT)

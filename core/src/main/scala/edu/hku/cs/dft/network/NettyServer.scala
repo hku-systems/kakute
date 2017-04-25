@@ -3,7 +3,7 @@ package edu.hku.cs.dft.network
 import java.io.ObjectInputStream
 import java.net.ServerSocket
 
-import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
@@ -61,15 +61,15 @@ class NettyServer(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
 
 object NettyServer {
   def main(args: Array[String]): Unit = {
-/*    DFTEnv.init()
-    val nettyServer = new NettyServer(new EndpointDispatcher, DFTEnv.dftEnv())
-    new Thread(new Runnable {
-      override def run(): Unit = {
-        nettyServer.run()
-      }
-    }).start()*/
+    DFTEnv.server_init(TrackingMode.Debug)
+//    val nettyServer = new NettyServer(new EndpointDispatcher, DFTEnv.dftEnv())
+//    new Thread(new Runnable {
+//      override def run(): Unit = {
+//        nettyServer.run()
+//      }
+//    }).start()
 
-    val server = new ServerSocket(9999)
+/*    val server = new ServerSocket(9999)
     while (true) {
       val s = server.accept()
       val inS = new ObjectInputStream(s.getInputStream)
@@ -81,7 +81,7 @@ object NettyServer {
         case a: Array[Int] => println(a.length)
         case _ => println("other")
       }
-    }
+    }*/
 
 //    nettyServer.register(new RuleEndpoint)
   }

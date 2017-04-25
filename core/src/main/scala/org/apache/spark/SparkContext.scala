@@ -1935,7 +1935,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
     // [[Modified]] stop
     if (tracking && (trackingMode == TrackingMode.RuleTracking || trackingMode == TrackingMode.Debug))
-      DFTEnv.stop_all()
+      DFTEnv.stop_all(trackingMode)
 
     if (LiveListenerBus.withinListenerThread.value) {
       throw new SparkException(
@@ -2326,7 +2326,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
   def withDebugF[U, V](f: U => V): U => V = {
     (in: U) => {
-      DebugTracer.trace(in)
+      DebugTracer.trace(in, f)
       f(in)
     }
   }

@@ -1,5 +1,6 @@
 package edu.hku.cs.dft.datamodel
 
+import edu.hku.cs.dft.debug.DebugReplay
 import edu.hku.cs.dft.network._
 import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
 import org.apache.spark.rdd.RDD
@@ -34,6 +35,9 @@ class GraphManager extends NettyEndpoint {
       case c: DataCount =>
         addCount(c.id, c.c)
         null
+      case debug: DebugInformation =>
+        debugInfo.pushResult(debug.record, debug.ta, debug.func)
+        null
       case _ => null
     }
   }
@@ -46,6 +50,7 @@ class GraphManager extends NettyEndpoint {
 
   var rootData: List[DataModel] = List()
 
+  val debugInfo = new DebugReplay
 
   private var _currentId: Long = 0
 

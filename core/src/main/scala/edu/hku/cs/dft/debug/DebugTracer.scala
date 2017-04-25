@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.debug
 
+import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.network.DebugInformation
 import edu.hku.cs.dft.tracker.{SelectiveTainter, TupleTainter}
 
 /**
@@ -20,15 +22,18 @@ object DebugTracer {
     if (threadLocalStorage == null) new DebugStorage(0, 0) else threadLocalStorage.get()
   }
 
-  def trace[T](o: T): T = {
+  def trace[T, U](o: T, f: T => U): T = {
     val debugStorage = getInstance()
-    debugStorage.push(o)
+    debugStorage.push(o, f)
     o
   }
 
   def backTrace(): Any = {
     val traceObj = getInstance().pop()
     val traceTaint = TupleTainter.getTaint(traceObj)
+    DFTEnv.localControl.send(DebugInformation(traceObj._1, traceTaint, traceObj._2))
+    // wait for the message to be sent
+    Thread.sleep(1000)
     val dump = dumpObj(traceObj)
     s"Object $dump\n Taint $traceTaint"
   }
