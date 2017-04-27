@@ -38,22 +38,17 @@ object UDFErrorExample {
     })
 
     passage.map(t => {
-      var input_passage = t
-      var word_map = Map[String, Int]()
-      if (t.endsWith("\n\n")) {
-        input_passage = ""
+      val input = if (t.endsWith("\n\n"))
+        "}"
+      else
+        t
+      val r = scala.util.parsing.json.JSON.parseRaw(input)
+      if (r.isEmpty) {
+        throw new IllegalStateException()
+      } else {
+        r
       }
-      val string_array = input_passage.split(" ")
-
-      string_array.foreach(t => {
-        if (word_map.contains(t)) {
-          word_map += (t -> (word_map(t) + 1))
-        } else {
-          word_map += (t -> 1)
-        }
-      })
-      word_map
-    }).collect()
+    }).collect().foreach(println)
 
     sc.stop()
   }

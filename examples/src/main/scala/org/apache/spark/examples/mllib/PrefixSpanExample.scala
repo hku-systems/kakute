@@ -46,7 +46,8 @@ object PrefixSpanExample {
           ", " + freqSequence.freq)
     }
     // $example off$
-
+    readLine()
+    readLine()
     sc.stop()
   }
 }
