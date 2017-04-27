@@ -37,6 +37,7 @@ object UDFErrorExample {
       full_string.toString()
     })
 
+    passage.collect().foreach(println)
     passage.map(t => {
       val input = if (t.endsWith("\n\n"))
         "}"
