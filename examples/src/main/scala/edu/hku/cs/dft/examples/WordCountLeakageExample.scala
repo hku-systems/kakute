@@ -33,7 +33,7 @@ object WordCountLeakageExample {
     val conf = new SparkConf().setAppName("wordCountApp")
     val sc = new SparkContext(conf)
 
-    val text =  sc.textFile(input)
+    val text =  sc.textFile(input, 40)
     val words = text.flatMap(line => line.split(" "))
     println(words.collect().mkString(", "))
     val wc = words.map(mm).reduceByKey{case (x, y) => x + y}
