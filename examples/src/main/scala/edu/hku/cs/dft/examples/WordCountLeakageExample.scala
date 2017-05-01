@@ -35,7 +35,6 @@ object WordCountLeakageExample {
 
     val text =  sc.textFile(input, 40)
     val words = text.flatMap(line => line.split(" "))
-    println(words.collect().mkString(", "))
     val wc = words.map(mm).reduceByKey{case (x, y) => x + y}
     //save to .txt file locally
     /*wc.saveAsTextFile(output)*/
