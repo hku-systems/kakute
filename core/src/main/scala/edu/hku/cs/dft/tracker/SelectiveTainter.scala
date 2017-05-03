@@ -94,7 +94,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
       case arr: Array[_] => ArrayTaintWrapper(arr.map(tainter.getTaint))
       case _ => tainter.getTaint(obj)
     }
-    tainter.getTaint(obj)
+//    tainter.getTaint(obj)
     _deps += _indexDeps -> tag
     obj
   }

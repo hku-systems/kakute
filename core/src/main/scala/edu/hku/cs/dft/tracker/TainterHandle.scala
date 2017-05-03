@@ -149,7 +149,19 @@ class ObjectTainter extends TainterHandle {
     if (any == null)
       new CombinedTaint(null)
     else {
-      val t = MultiTainter.getTaint(any)
+      val t = any match {
+        case s: String =>
+          val tt = MultiTainter.getTaint(s)
+          if (tt == null) {
+            if (s.length > 0)
+              MultiTainter.getTaint(s.charAt(0))
+            else
+              null
+          } else {
+            tt
+          }
+        case _ => MultiTainter.getTaint(any)
+      }
       new CombinedTaint(t)
     }
   }
