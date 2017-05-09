@@ -51,8 +51,12 @@ object MedicalSort {
     })
 
     if (trace)
-      result.collectWithTaint()
+      result.collectWithTaint().foreach(println)
     else
-      result.collect()
+      result.collect().foreach(println)
+
+    readLine()
+
+    spark.stop()
   }
 }

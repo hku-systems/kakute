@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.examples
 
-import edu.hku.cs.dft.examples.ProvenanceGraphExample.Tracer
+import edu.hku.cs.dft.examples.provenance.ProvenanceGraphExample.Tracer
 import org.apache.spark.HashPartitioner
 import org.apache.spark.sql.SparkSession
 
