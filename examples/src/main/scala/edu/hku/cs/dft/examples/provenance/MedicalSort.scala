@@ -8,16 +8,19 @@ import org.apache.spark.sql.SparkSession
 object MedicalSort {
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession
-      .builder()
-      .appName("medical sort")
-      .config("spark.dft.tracking.mode", "full")
-      .getOrCreate()
 
     val trace = if (args.length > 0 && args(0).equals("true")) {
       true
     } else
       false
+
+    val session = SparkSession
+      .builder()
+      .appName("medical sort")
+    if (trace)
+      session.config("spark.dft.tracking.mode", "full")
+
+    val spark = session.getOrCreate()
 
     var records = spark.sparkContext.parallelize(Seq(
       ("A", 20, "cancer"),
