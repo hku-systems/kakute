@@ -27,7 +27,14 @@ class PhosphorRunner(cacheDir: String, phospherJar: String, targetHome: String, 
 
   private def cache(): String = {
     checkAndCreateCacheDir()
-    if (cacheDir != null) "=cacheDir=" + cacheDir + (if (trackingTaint == TrackingTaint.ObjTaint) "/obj" else "/int") + "," else ""
+    if (cacheDir != null) "=cacheDir=" + cacheDir + (
+      trackingTaint match {
+        case TrackingTaint.ObjTaint => "/obj"
+        case TrackingTaint.IntTaint => "/int"
+        case TrackingTaint.SelectiveIntTaint => "/int-selective"
+        case TrackingTaint.SelectiveObjTaint => "/obj-selective"
+        case _ => "/int"
+      }) + "," else ""
   }
   private val _bootclasspath = "-Xbootclasspath/a:" + phospherJar
 
@@ -35,11 +42,23 @@ class PhosphorRunner(cacheDir: String, phospherJar: String, targetHome: String, 
 
   private val _ignoreInt = "checkTaintIgnoreAll="
 
-  def jreInst(): String = if (trackingTaint == TrackingTaint.IntTaint) "jre-inst-int" else "jre-inst-obj"
+  def jreInst(): String = trackingTaint match {
+    case TrackingTaint.IntTaint => "jre-inst-int"
+    case TrackingTaint.ObjTaint => "jre-inst-obj"
+    case TrackingTaint.SelectiveIntTaint => "jre-inst-int-selective"
+    case TrackingTaint.SelectiveObjTaint => "jre-inst-obj-selective"
+    case _ => "jre-inst-int"
+  }
 
   def agent(checkTaint: Boolean = false, ignoreTaintAll: Int = 0): String = _agent + cache() +
-    (if (checkTaint) _ignore + "," + _ignoreInt + ignoreTaintAll else "")
-//  + "withSelectiveInst=/tmp/a"
+    (if (checkTaint) _ignore + "," + _ignoreInt + ignoreTaintAll else "") + selective()
+
+  def selective(): String = trackingTaint match {
+    case TrackingTaint.SelectiveObjTaint => "withSelectiveInst=/tmp/a"
+    case TrackingTaint.SelectiveIntTaint => "withSelectiveInst=/tmp/a"
+    case _ => ""
+  }
+
 
   def bootclasspath(): String = _bootclasspath
 

@@ -3,6 +3,8 @@ package edu.hku.cs.dft.examples
 /**
   * Created by jianyu on 3/21/17.
   */
+import java.io.{File, FileInputStream, ObjectInputStream}
+
 import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -55,7 +57,7 @@ object MatrixMultiplication{
     val conf = new SparkConf().setAppName("MatrixMultiplication")
     val sc = new SparkContext(conf)
 
-    val arrA = sc.textFile(inputA)
+    val arrA = sc.textFile(inputA, 40)
     val arrB = sc.textFile(inputB)
 
     val arrM = arrA.flatMap(entry => {

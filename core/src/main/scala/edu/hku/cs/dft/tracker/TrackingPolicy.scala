@@ -43,6 +43,8 @@ object TrackingTaint extends ConfEnumeration {
   type TrackingTaint = Value
   val IntTaint = ConfValue("int")
   val ObjTaint = ConfValue("obj")
+  val SelectiveIntTaint = ConfValue("int-selective")
+  val SelectiveObjTaint = ConfValue("obj-selective")
   val ObjImplicitTaint = ConfValue("obj-implicit")
 }
 
