@@ -24,7 +24,7 @@ object MedicalSort {
 
     var records = spark.sparkContext.parallelize(Seq(
       ("A", 20, "cancer"),
-      ("B", 40, "brain cancer"),
+      ("B", 45, "brain cancer"),
       ("C", 25, "heart disease"),
       ("D", 50, "klsdf")), 4)
 
@@ -35,12 +35,12 @@ object MedicalSort {
 
     val sortedRecord = records.map(t => {
       val sort =
-        if (t._2 > 15)
-          1
+        if (t._2 > 60)
+          3
         else if (t._2 > 40)
           2
-        else if (t._2 > 60)
-          3
+        else if (t._2 > 15)
+          1
         else
           0
       (sort, t)
