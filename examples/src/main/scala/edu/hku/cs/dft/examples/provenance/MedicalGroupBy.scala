@@ -4,16 +4,15 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 
 /**
-  * Created by max on 9/5/2017.
+  * Created by jianyu on 5/10/17.
   */
 
-// Sort in a group
+// Random sample of a group
 
-object MedicalSort {
-
+object MedicalGroupBy {
   def main(args: Array[String]): Unit = {
 
-    val trace = if (args.length > 0 && args(0).equals("true")) {
+    val trace = if (args.length > 1 && args(1).equals("true")) {
       true
     } else
       false
@@ -32,26 +31,38 @@ object MedicalSort {
         //id clin illd temp country age cprot hit
         (arr(0), arr(3), arr(6).toInt, arr(11).toDouble, arr(14), arr(15).toInt, arr(16), arr(17))
       })
-      .map{
-        case (id, clinm, illd, temp, country, age, cprot, hit) => (id, country, temp)
-      }
 
     if (trace)
       records = records.zipWithUniqueId().taint(m => {
-        ((-1, m._2, -1), -1)
+        ((m._2, -1, -1), -1)
       }).map(_._1)
 
     val sortedRecord = records.map(t => {
-      (t._2, t)
+      val sort =
+        if (t._6 > 60)
+          4
+        else if (t._6 > 40)
+          3
+        else if (t._6 > 25)
+          2
+        else if (t._6 > 14)
+          1
+        else
+          0
+      (sort, t)
     })
 
     val result = sortedRecord.groupByKey().flatMapValues(t => {
-      val g = t.toArray.sortBy(_._3)
-      if (g.length < 10) {
-        g
-      } else {
-        g.slice(0, 10)
-      }
+      // age type, id
+      var k: List[String] = List()
+      val count = 0
+      val limit = 50
+      t.foreach(m => {
+        if (count < limit) {
+          k = m._1 :: k
+        }
+      })
+      k
     })
 
     sortedRecord.mapValues(t => 1).reduceByKey(_ + _).collect().foreach(m => println(m._1 + " " + m._2))

@@ -43,9 +43,9 @@ object TwitterLineage {
     val top_words = file1.map(t => {
       val words = t._2.flatMap(_.trim.split(" "))
       val sorted_arr = words.map(t => (t, if (t.length > 0) (t.charAt(0).toInt | 1) & 1 else 1))
-        .groupBy(_._1).map(l => (l._1, l._2.map(_._2).reduce(_ + _)))
+        .groupBy(_._1).map(l => (l._1, l._2.map(_._2).sum))
         .toArray
-//        .sortBy(_._2)
+        .sortBy(_._2)
       (t._1, sorted_arr)
     })
 

@@ -170,6 +170,11 @@ object MovieLensALS {
 
     println(s"Test RMSE = $rmse.")
 
+//    model.save(sc, "alsmodel")
+    model.userFeatures.saveAsObjectFile("als/userf")
+    model.productFeatures.saveAsObjectFile("als/prof")
+    test.saveAsObjectFile("als/test")
+
     sc.stop()
   }
 
