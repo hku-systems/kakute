@@ -62,7 +62,7 @@ private[spark] trait WritablePartitionedPairCollection[K, V] {
       def writeNext(writer: DiskBlockObjectWriter): Unit = {
         if (DFTEnv.trackingPolicy.propagation_across_machines) {
           val taintList = tainter.getTaintList((cur._1._2, cur._2))
-          writer.write(tainter.setTaint(cur._1._2), (taintList, tainter.setTaint(cur._2)))
+          writer.write(cur._1._2, (taintList, cur._2))
         }
         else
           writer.write(cur._1._2, cur._2)
