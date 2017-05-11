@@ -40,6 +40,7 @@ object SparkTC {
     // Because join() joins on keys, the edges are stored in reversed order.
     val edges = tc.map(x => (x._2, x._1))
 
+    tc.map(m => (m._1, 1)).reduceByKey(_ + _).collect().foreach(println)
     var total_run = 0
 
     // This join is iterated until a fixed point is reached.
@@ -55,8 +56,8 @@ object SparkTC {
     } while (nextCount != oldCount && total_run < 1)
 
     if (trace)
-      tc.zipWithTaint().foreach(println)
-
+      tc.collectWithTaint().foreach(println)
+    readLine()
     println("TC has " + tc.count() + " edges.")
     spark.stop()
   }

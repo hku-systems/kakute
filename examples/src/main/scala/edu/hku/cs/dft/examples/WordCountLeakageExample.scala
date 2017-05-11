@@ -37,7 +37,9 @@ object WordCountLeakageExample {
     val words = text.flatMap(line => line.split(" "))
     val wc = words.map(mm).reduceByKey{case (x, y) => x + y}
     //save to .txt file locally
-    /*wc.saveAsTextFile(output)*/
+    val output = "wiki_out"
+    wc.saveAsTextFile(output)
+
     readLine()
     sc.stop()
   }

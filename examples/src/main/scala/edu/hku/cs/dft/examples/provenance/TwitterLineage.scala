@@ -52,7 +52,13 @@ object TwitterLineage {
     val time_group = top_words.flatMapValues(t => t)
 
     if (trace)
-      time_group.collectWithTaint().foreach(println)
+      time_group.zipWithTaint().map{
+        case ((time, (word, count)), taint_tuple) =>
+          val taint_arr = taint_tuple.asInstanceOf[(_, _)]._2
+            .asInstanceOf[(_, _)]._2
+            .asInstanceOf[CombinedTaint[_]].iterator.toArray
+          (time, word, count, taint_arr.length)
+      }.collect().foreach(println)
     else
       time_group.collect().foreach(println)
 
