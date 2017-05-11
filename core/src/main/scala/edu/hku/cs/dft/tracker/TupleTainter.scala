@@ -39,7 +39,7 @@ object TupleTainter {
   // TODO: Other Basic Collection of data ?
   private def setOne[T](obj: T, tag: Any): T = {
     // TODO check if tag is bypassed
-    if (tag == -1) {
+    if (tag == -1 || tag == null) {
       obj
     } else {
       val r = obj match {
