@@ -10,7 +10,7 @@ import edu.hku.cs.dft.tracker.{CombinedTaint, IntTainter, ObjectTainter, Tainter
   */
 object TainterHandleSuite {
   def main(args: Array[String]): Unit = {
-    val tainterHandle: TainterHandle = new IntTainter
+    val tainterHandle: TainterHandle = new ObjectTainter
     val taintedOne = tainterHandle.setTaint(1, 1)
     val taintedTwo = tainterHandle.setTaint(2, 2)
     val taintedThree = taintedOne + taintedTwo
