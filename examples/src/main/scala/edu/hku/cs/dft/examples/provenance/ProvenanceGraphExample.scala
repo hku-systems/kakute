@@ -20,10 +20,7 @@ object ProvenanceGraphExample {
 
     val iteration = args(2).toInt
 
-    val trace = if (args.length > 2)
-      true
-    else
-      false
+    val trace = args(3).toBoolean
 
     val text = spark.read.textFile(file).rdd
     var edges = text.map(t => {
