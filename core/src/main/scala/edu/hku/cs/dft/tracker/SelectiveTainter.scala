@@ -11,7 +11,7 @@ package edu.hku.cs.dft.tracker
   * So 0 -> default_func
 */
 
-class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extends BaseTainter{
+class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) extends BaseTainter{
 
   private var _index = 0
 
@@ -95,7 +95,13 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = 0) extend
       case _ => tainter.getTaint(obj)
     }
 //    tainter.getTaint(obj)
-    _deps += _indexDeps -> tag
+
+    // ignore the one with empty tag
+    tag match {
+      case c: CombinedTaint[_] => if (c.NonNull()) _deps += _indexDeps -> c
+      case null =>
+      case _ => _indexDeps -> tag
+    }
     obj
   }
 

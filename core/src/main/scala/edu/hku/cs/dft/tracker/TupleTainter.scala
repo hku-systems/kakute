@@ -65,6 +65,9 @@ object TupleTainter {
       // Can be any obj
       // if (!taint.isInstanceOf[Int] || !taint.isInstanceOf[Integer]) throw new Exception("type not match")
       val tag = taint
+      if (tag == -1 || tag == null) {
+        return obj
+      }
       obj match {
         case (_1, _2) => (setTaint(_1, tag), setTaint(_2, tag)).asInstanceOf[T]
         case (_1, _2, _3) => (setTaint(_1, tag), setTaint(_2, tag), setTaint(_3, tag)).asInstanceOf[T]

@@ -60,7 +60,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
 
     // Create a key/value iterator for each stream
     val selectiveTainter = if (DFTEnv.trackingPolicy.propagation_across_machines)
-      new SelectiveTainter(Map(), 0)
+      new SelectiveTainter(Map())
     else
       null
     val recordIter = wrappedStreams.flatMap { case (blockId, wrappedStream) =>

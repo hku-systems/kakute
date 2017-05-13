@@ -3,6 +3,8 @@ package edu.hku.cs.dft.tracker
 import edu.columbia.cs.psl.phosphor.runtime.{MultiTainter, Taint, Tainter}
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 
+import scala.collection.mutable.HashMap
+
 /**
   * Created by jianyu on 4/17/17.
   */
@@ -52,6 +54,9 @@ class CombinedTaint[T](taint: T) extends Iterable[Any] with Serializable{
       case _ => false
     }
   }
+
+  def NonNull(): Boolean = tt != 0 && tt != null
+
 }
 
 /**
@@ -76,7 +81,11 @@ class ObjectTainter extends TainterHandle {
     if (taint == null || taint == -1)
       anyRef
     else {
-      val r = anyRef match {
+      val ta = TainterHandle.taintMap.get().getOrElse(taint, new Taint(taint)).asInstanceOf[Taint[Any]]
+      TainterHandle.taintMap.get().put(taint, ta)
+      setObjTaint(anyRef, ta)
+      // change it for saving space
+      /*val r = anyRef match {
         case int: Int => MultiTainter.taintedInt(int, taint)
         case short: Short => MultiTainter.taintedShort(short, taint)
         case long: Long => MultiTainter.taintedLong(long, taint)
@@ -99,7 +108,7 @@ class ObjectTainter extends TainterHandle {
           obj
         case _ => throw new IllegalArgumentException("type mismatch")
       }
-      r.asInstanceOf[T]
+      r.asInstanceOf[T]*/
     }
   }
 
@@ -220,4 +229,10 @@ object TainterHandle {
     else
       TrackingTaint.IntTaint
 
+  val taintMap: ThreadLocal[HashMap[Any, Object]] = new ThreadLocal[HashMap[Any, Object]]() {
+    @Override
+    override protected def initialValue: HashMap[Any, Object] = {
+      new HashMap[Any, Object]()
+    }
+  }
 }
