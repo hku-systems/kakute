@@ -30,6 +30,7 @@ object WordCountLineageExample {
       wc.zipWithTaint().saveAsObjectFile("word_out")
     else
       wc.saveAsObjectFile("word_out")
+    readLine()
     sc.stop()
   }
 }
