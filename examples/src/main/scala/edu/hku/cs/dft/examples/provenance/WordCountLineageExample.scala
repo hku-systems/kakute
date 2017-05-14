@@ -12,9 +12,11 @@ object WordCountLineageExample {
 
     val trace = args(1).toBoolean
 
+    val partition = args(2).toInt
+
     val conf = new SparkConf
     val sc = new SparkContext(conf)
-    var text = sc.textFile(intput)
+    var text = sc.textFile(intput, partition)
 
     if (trace)
       text = text.zipWithUniqueId().taint(t => {
