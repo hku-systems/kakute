@@ -48,6 +48,12 @@ object TrackingTaint extends ConfEnumeration {
   val ObjImplicitTaint = ConfValue("obj-implicit")
 }
 
+object ShuffleOpt extends ConfEnumeration {
+  type ShuffleOpt = Value
+  val CombinedTag = ConfValue("ctag")
+  val WithoutOpt = ConfValue("no-opt")
+}
+
 class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
                      trackingOn: Boolean = false,
                      taint: TrackingTaint = TrackingTaint.IntTaint) {

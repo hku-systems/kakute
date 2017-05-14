@@ -6,8 +6,9 @@ import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.debug.DebugReplay
 import edu.hku.cs.dft.network._
 import edu.hku.cs.dft.optimization.RuleLocalControl
+import edu.hku.cs.dft.tracker.ShuffleOpt.ShuffleOpt
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
-import edu.hku.cs.dft.tracker.{PhosphorRunner, TrackingPolicy, TrackingTaint, TrackingType}
+import edu.hku.cs.dft.tracker._
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 
 /**
@@ -131,6 +132,11 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
   val generateScheme: Boolean = argumentHandle.parseArgs(DefaultArgument.CONF_SCHEME) match {
     case "true" => true
     case _ => false
+  }
+
+  var shuffleOpt: ShuffleOpt = argumentHandle.parseArgs(DefaultArgument.CONF_SHUFFLE) match {
+    case s: String => ShuffleOpt.withName(s)
+    case _ => ShuffleOpt.WithoutOpt
   }
 
 }

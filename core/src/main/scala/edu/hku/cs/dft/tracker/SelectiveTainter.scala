@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.tracker
 
+import edu.hku.cs.dft.DFTEnv
+
 /**
   * Created by jianyu on 3/7/17.
   */
@@ -22,6 +24,10 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) exten
   private var _positionFilter: Map[Int, Any => Any] = if (filter == null) Map() else filter
 
   private val tainter = if (TainterHandle.trackingTaint == TrackingTaint.ObjTaint) new ObjectTainter else new IntTainter
+
+  private var shuffle_val: Any = _
+
+  private val COMBINED_STUB = -2
 
   // if there are no rule for default, just make then untainted
   def defaultFilter: Any => Any = _positionFilter.getOrElse(0, _ => defaultTag)
@@ -51,35 +57,39 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) exten
   def taintOne[T](obj: T): T = {
     _index += 1
     val f = _positionFilter.getOrElse(_index, defaultFilter)
-    val tag = f(obj)
+    var tag = f(obj)
     if (tag == -1) {
       obj
     } else {
+      // TODO: We do not need to read conf file, right?
+      if (tag == COMBINED_STUB) {
+        tag = _positionFilter.getOrElse(1, defaultFilter)
+      }
       val r = tag match {
         case arrTaint: ArrayTaintWrapper =>
-        obj match {
-          case it: Iterable[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
-          case it: Iterator[_] => it.zip(arrTaint.array.iterator).map(t => tainter.setTaint(t._1, t._2))
-          case it: Array[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
-          case _ => throw new IllegalArgumentException("arr taint w ill-arr obj")
-        }
+          obj match {
+            case it: Iterable[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
+            case it: Iterator[_] => it.zip(arrTaint.array.iterator).map(t => tainter.setTaint(t._1, t._2))
+            case it: Array[_] => it.zip(arrTaint.array).map(t => tainter.setTaint(t._1, t._2))
+            case _ => throw new IllegalArgumentException("arr taint w ill-arr obj")
+          }
         case _ =>
-        obj match {
-          // Primitive
-          case v: Int => tainter.setTaint(v, tag)
-          case v: Long => tainter.setTaint(v, tag)
-          case v: Double => tainter.setTaint(v, tag)
-          case v: Float => tainter.setTaint(v, tag)
-          case v: Short => tainter.setTaint(v, tag)
-          case v: Boolean => tainter.setTaint(v, tag)
-          case v: Byte => tainter.setTaint(v, tag)
-          case v: Char => tainter.setTaint(v, tag)
-          case arr: Array[_] => tainter.setTaint(arr, tag)
-          case it: Iterator[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
-          case it: Iterable[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
-          case ob: Object => tainter.setTaint(ob, tag)
-          case _ => obj
-        }
+          obj match {
+            // Primitive
+            case v: Int => tainter.setTaint(v, tag)
+            case v: Long => tainter.setTaint(v, tag)
+            case v: Double => tainter.setTaint(v, tag)
+            case v: Float => tainter.setTaint(v, tag)
+            case v: Short => tainter.setTaint(v, tag)
+            case v: Boolean => tainter.setTaint(v, tag)
+            case v: Byte => tainter.setTaint(v, tag)
+            case v: Char => tainter.setTaint(v, tag)
+            case arr: Array[_] => tainter.setTaint(arr, tag)
+            case it: Iterator[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
+            case it: Iterable[Any] => it.map(t => TupleTainter.setTaint(t, tag)).asInstanceOf[T]
+            case ob: Object => tainter.setTaint(ob, tag)
+            case _ => obj
+          }
       }
       r.asInstanceOf[T]
     }
@@ -100,7 +110,18 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) exten
     tag match {
       case c: CombinedTaint[_] => if (c.NonNull()) _deps += _indexDeps -> c
       case null =>
-      case _ => _deps += _indexDeps -> tag
+      case _ =>
+        var ctag = tag
+        if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CombinedTag) {
+          if (_indexDeps == 1) {
+            shuffle_val = tag
+          }
+          else if (shuffle_val == tag) {
+            ctag = COMBINED_STUB
+          }
+        }
+        _deps += _indexDeps -> ctag
+
     }
     obj
   }

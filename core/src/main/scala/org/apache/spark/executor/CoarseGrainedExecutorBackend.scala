@@ -283,6 +283,10 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
           confHandle.setKeyValue(DefaultArgument.CONF_TAINT,
             value)
           argv = tail
+        case (DefaultArgument._CONF_SHUFFLE) :: value :: tail =>
+          confHandle.setKeyValue(DefaultArgument.CONF_SHUFFLE,
+            value)
+          argv = tail
         case ("--driver-url") :: value :: tail =>
           driverUrl = value
           argv = tail

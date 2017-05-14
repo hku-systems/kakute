@@ -4,6 +4,7 @@ import java.io.FileNotFoundException
 
 import edu.hku.cs.dft.SampleMode.SampleMode
 import edu.hku.cs.dft.TrackingMode.TrackingMode
+import edu.hku.cs.dft.tracker.ShuffleOpt.ShuffleOpt
 import edu.hku.cs.dft.tracker.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
@@ -108,7 +109,8 @@ class CustomArgumentHandle extends ArgumentHandle {
   override def setKeyValue(key: String, value: String) = {}
 }
 
-case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType, trackingTaint: TrackingTaint)
+case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType, trackingTaint: TrackingTaint,
+                           shuffle: ShuffleOpt)
 
 object DefaultArgument {
 
@@ -130,7 +132,7 @@ object DefaultArgument {
   val CONF_FILE: String = "dft-conf"
   val CONF_TAINT: String = "dft-taint"
   val CONF_SCHEME: String = "dft-scheme"
-
+  val CONF_SHUFFLE: String = "dft-shuffle"
 
   val _CONF_HOST: String = CONF_PREFIX + CONF_HOST
   val _CONF_PORT: String = CONF_PREFIX + CONF_PORT
@@ -141,6 +143,7 @@ object DefaultArgument {
   val _CONF_INPUT_TAINT: String = CONF_PREFIX + CONF_INPUT_TAINT
   val _CONF_FILE: String = CONF_PREFIX + CONF_FILE
   val _CONF_TAINT: String = CONF_PREFIX + CONF_TAINT
+  val _CONF_SHUFFLE: String = CONF_PREFIX + CONF_SHUFFLE
 
   val host: String = "127.0.0.1"
   val port: Int = 8787
