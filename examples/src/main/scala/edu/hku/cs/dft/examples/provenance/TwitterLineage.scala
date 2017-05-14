@@ -56,8 +56,13 @@ object TwitterLineage {
         case ((time, (word, count)), taint_tuple) =>
           val taint_arr = taint_tuple.asInstanceOf[(_, _)]._2
             .asInstanceOf[(_, _)]._2
-            .asInstanceOf[CombinedTaint[_]].iterator.toArray
-          (time, word, count, taint_arr.length)
+            .asInstanceOf[Array[Object]]
+//            .asInstanceOf[CombinedTaint[_]].iterator.toArray
+          val l = if (taint_arr == null)
+            0
+          else
+            taint_arr.length
+          (time, word, count, l)
       }.collect().foreach(println)
     else
       time_group.collect().foreach(println)

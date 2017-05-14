@@ -26,6 +26,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import javax.annotation.concurrent.GuardedBy
 
 import edu.hku.cs.dft.debug.DebugTracer
+import edu.hku.cs.dft.tracker.TainterHandle
 import edu.hku.cs.dft.{DFTEnv, TrackingMode}
 
 import scala.collection.JavaConverters._
@@ -313,6 +314,10 @@ private[spark] class Executor(
           threadMXBean.getCurrentThreadCpuTime
         } else 0L
         var threwException = true
+
+        // MODIFIED
+        TainterHandle.initMap()
+
         val value = try {
           val res = task.run(
             taskAttemptId = taskId,

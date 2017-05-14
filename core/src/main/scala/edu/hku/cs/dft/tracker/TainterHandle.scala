@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.tracker
 
+import java.util
+
 import edu.columbia.cs.psl.phosphor.runtime.{MultiTainter, Taint, Tainter}
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 
@@ -69,7 +71,9 @@ trait TainterHandle {
 
   def setTaint[T](anyRef: T, taint: Any): T
 
-  def getTaint(any: Any): CombinedTaint[_]
+  def getWrapTaint(any: Any): CombinedTaint[_]
+
+  def getTaint(any: Any): Any
 
 }
 
@@ -81,8 +85,12 @@ class ObjectTainter extends TainterHandle {
     if (taint == null || taint == -1)
       anyRef
     else {
-      val ta = TainterHandle.taintMap.get().getOrElse(taint, new Taint(taint)).asInstanceOf[Taint[Any]]
-      TainterHandle.taintMap.get().put(taint, ta)
+      val hashcode = taint match {
+        case arr: Array[Object] => util.Arrays.hashCode(arr);
+        case _ => taint.hashCode()
+      }
+      val ta = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
+      TainterHandle.taintMap.get().put(hashcode, ta)
       setObjTaint(anyRef, ta)
       // change it for saving space
       /*val r = anyRef match {
@@ -141,13 +149,14 @@ class ObjectTainter extends TainterHandle {
     taint match {
       case ct: CombinedTaint[_] =>
         setObjTaint(anyRef, ct.getTaint.asInstanceOf[Taint[_]])
+      case raw: Taint[_] => setObjTaint(anyRef, raw.lbl)
       case obj: Object => setObjTaint(anyRef, obj)
       case _ => anyRef
     }
 
   }
 
-  override def getTaint(any: Any): CombinedTaint[Taint[_]] = {
+  override def getWrapTaint(any: Any): CombinedTaint[Taint[_]] = {
     if (any == null)
       new CombinedTaint(null)
     else {
@@ -167,6 +176,32 @@ class ObjectTainter extends TainterHandle {
       if (t != null)
         t.preSerialization()
       new CombinedTaint(t)
+    }
+  }
+
+  override def getTaint(any: Any): Any = {
+    if (any == null)
+      null
+    else {
+      val t = any match {
+        case s: String =>
+          val tt = MultiTainter.getTaint(s)
+          if (tt == null) {
+            if (s.length > 0)
+              MultiTainter.getTaint(s.charAt(0))
+            else
+              null
+          } else {
+            tt
+          }
+        case _ => MultiTainter.getTaint(any)
+      }
+      if (t != null) {
+        t.preSerialization()
+        // do not use any warped data structure here, to save space
+        t.lbl
+      } else
+        null
     }
   }
 }
@@ -212,13 +247,21 @@ class IntTainter extends TainterHandle {
     }
   }
 
-  override def getTaint(any: Any): CombinedTaint[_] = {
+  override def getWrapTaint(any: Any): CombinedTaint[_] = {
     if (any == null) {
       new CombinedTaint[Int](0)
     } else {
       new CombinedTaint[Int](Tainter.getTaint(any))
     }
   }
+
+  override def getTaint(any: Any): Any = {
+    if (any == null)
+      0
+    else
+      Tainter.getTaint(any)
+  }
+
 }
 
 object TainterHandle {
@@ -229,10 +272,18 @@ object TainterHandle {
     else
       TrackingTaint.IntTaint
 
-  val taintMap: ThreadLocal[HashMap[Any, Object]] = new ThreadLocal[HashMap[Any, Object]]() {
-    @Override
-    override protected def initialValue: HashMap[Any, Object] = {
-      new HashMap[Any, Object]()
+  // init this map every time a new shuffle task is executed
+  var taintMap: ThreadLocal[HashMap[Any, Object]] = null
+
+  def initMap(): Unit = {
+    if (trackingTaint == TrackingTaint.ObjTaint) {
+      taintMap = new ThreadLocal[HashMap[Any, Object]]() {
+        @Override
+        override protected def initialValue: HashMap[Any, Object] = {
+          new HashMap[Any, Object]()
+        }
+      }
     }
   }
+
 }

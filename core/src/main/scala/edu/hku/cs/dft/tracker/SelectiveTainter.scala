@@ -100,7 +100,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) exten
     tag match {
       case c: CombinedTaint[_] => if (c.NonNull()) _deps += _indexDeps -> c
       case null =>
-      case _ => _indexDeps -> tag
+      case _ => _deps += _indexDeps -> tag
     }
     obj
   }
