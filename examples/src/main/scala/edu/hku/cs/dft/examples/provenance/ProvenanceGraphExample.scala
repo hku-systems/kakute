@@ -1,5 +1,6 @@
 package edu.hku.cs.dft.examples.provenance
 
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
@@ -10,10 +11,9 @@ import scala.collection.mutable
 object ProvenanceGraphExample {
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession
-      .builder()
-      .appName("Provenance Example")
-      .getOrCreate()
+    val conf = new SparkConf()
+
+    val spark = new SparkContext(conf)
 
     val file = if (args.length > 1) args(0) else throw new IllegalArgumentException("no input file")
 
@@ -23,7 +23,7 @@ object ProvenanceGraphExample {
 
     val trace = args(3).toBoolean
 
-    val text = spark.read.textFile(file).rdd
+    val text = spark.textFile(file)
     var edges = text.map(t => {
       val s_arr = t.split("\\s+")
       (s_arr(0), s_arr(1))
