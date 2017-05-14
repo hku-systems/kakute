@@ -63,9 +63,9 @@ object TwitterLineage {
           else
             taint_arr.length
           (time, word, count, l)
-      }.collect().foreach(println)
+      }.saveAsObjectFile("twitter_out")
     else
-      time_group.collect().foreach(println)
+      time_group.saveAsObjectFile("twitter_out")
 
     readLine()
 
