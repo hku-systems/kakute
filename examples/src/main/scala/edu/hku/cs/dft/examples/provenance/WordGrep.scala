@@ -29,10 +29,7 @@ object WordGrep {
       })
         .map(_._1)
 
-    val wc = text.flatMap(t => t.split("\\s+"))
-        .filter(word => {
-          word.startsWith("m")
-        })
+    val wc = text.filter(t => t.contains("science"))
 
     if (trace)
       wc.zipWithTaint().saveAsObjectFile("grep_out")
