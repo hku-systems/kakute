@@ -3,6 +3,7 @@ package edu.hku.cs.dft.tracker
 import java.util
 
 import edu.columbia.cs.psl.phosphor.runtime.{MultiTainter, Taint, Tainter}
+import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 
 import scala.collection.mutable.HashMap
@@ -89,8 +90,13 @@ class ObjectTainter extends TainterHandle {
         case arr: Array[Object] => util.Arrays.hashCode(arr);
         case _ => taint.hashCode()
       }
-      val ta = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
-      TainterHandle.taintMap.get().put(hashcode, ta)
+      if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CombinedTag) {
+        val ta = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
+        TainterHandle.taintMap.get().put(hashcode, ta)
+        ta
+      } else {
+        new Taint(taint)
+      }
       setObjTaint(anyRef, ta)
       // change it for saving space
       /*val r = anyRef match {
@@ -273,7 +279,7 @@ object TainterHandle {
       TrackingTaint.IntTaint
 
   // init this map every time a new shuffle task is executed
-  var taintMap: ThreadLocal[HashMap[Any, Object]] = null
+  var taintMap: ThreadLocal[HashMap[Any, Object]] = _
 
   def initMap(): Unit = {
     if (trackingTaint == TrackingTaint.ObjTaint) {
@@ -284,6 +290,10 @@ object TainterHandle {
         }
       }
     }
+  }
+
+  def cleanMap(): Unit = {
+    taintMap = null
   }
 
 }
