@@ -92,7 +92,7 @@ class ObjectTainter extends TainterHandle {
       }
       val ta = if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CombinedTag) {
         val mapTa = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
-        TainterHandle.taintMap.get().put(hashcode, ta)
+        TainterHandle.taintMap.get().put(hashcode, mapTa)
         mapTa
       } else {
         new Taint(taint)
