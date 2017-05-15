@@ -50,7 +50,14 @@ object ProvenanceGraphExample {
           val taint_tuple = t._2.asInstanceOf[(_, _)]
           val node_taint = taint_tuple._2.asInstanceOf[(_, _)]._1.asInstanceOf[Array[Object]]
           val edge_taint = taint_tuple._1.asInstanceOf[Array[Object]]
-          ((-1, ((node_taint ++ edge_taint).distinct, -1)), -1)
+          val com = if (node_taint == null) {
+            edge_taint
+          } else if (edge_taint == null) {
+            node_taint
+          } else {
+            (node_taint ++ edge_taint).distinct
+          }
+          ((-1, (com, -1)), -1)
         })
         .map(_._1)
       val m_label = new_label.union(label_node)
