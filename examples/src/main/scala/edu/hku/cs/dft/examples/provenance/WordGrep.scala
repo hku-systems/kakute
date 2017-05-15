@@ -14,13 +14,18 @@ object WordGrep {
 
     val partition = args(2).toInt
 
+    val isInt = args(3).toBoolean
+
     val conf = new SparkConf
     val sc = new SparkContext(conf)
     var text = sc.textFile(input, partition)
 
     if (trace)
       text = text.zipWithUniqueId().taint(t => {
-        (t._2, -1)
+        if (isInt)
+          (1, -1)
+        else
+          (t._2, -1)
       })
         .map(_._1)
 
