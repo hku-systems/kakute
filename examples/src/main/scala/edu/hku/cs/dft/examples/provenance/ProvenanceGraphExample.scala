@@ -77,7 +77,7 @@ object ProvenanceGraphExample {
     }
 
     if (trace)
-      label_node.map(t => (t._1, t._2._1)).zipWithTaint().collect().foreach(println)
+      label_node.map(t => (t._1, t._2._1)).zipWithTaint().saveAsObjectFile("graph_out")
     else
       label_node.saveAsObjectFile("graph_out")
 
