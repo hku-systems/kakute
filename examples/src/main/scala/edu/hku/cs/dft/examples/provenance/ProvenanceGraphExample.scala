@@ -23,7 +23,7 @@ object ProvenanceGraphExample {
 
     val trace = args(3).toBoolean
 
-    val text = spark.textFile(file)
+    val text = spark.textFile(file, partitions)
     var edges = text.map(t => {
       val s_arr = t.split("\\s+")
       (s_arr(0), s_arr(1))
@@ -73,7 +73,7 @@ object ProvenanceGraphExample {
           else
             y
         }
-      }, numPartitions = partitions)
+      }, numPartitions = partitions * 2)
     }
 
     if (trace)
