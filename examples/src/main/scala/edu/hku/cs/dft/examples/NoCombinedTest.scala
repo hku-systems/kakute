@@ -24,12 +24,10 @@ object NoCombinedTest {
 
     val same = args(2).toBoolean
 
-    val text = sc.textFile(file)
+    val text = sc.parallelize(1 to 1000000, 4)
 
     var n = text.map(t => {
-      val m: Int = 1
-      val n: Int = 2
-      (m, n)
+      (t, t + 1)
     })
 
     if (trace && !same)
@@ -45,6 +43,8 @@ object NoCombinedTest {
           (taint, -1)
       }.map(_._1)
     }
+
+    n = n.reduceByKey(_ + _)
 
     n = n.map(t => (t._2 + t._1, t._2))
       .map(t => (t._1 + t._2, t._1))

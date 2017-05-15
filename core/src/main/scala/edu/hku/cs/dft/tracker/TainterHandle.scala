@@ -90,7 +90,7 @@ class ObjectTainter extends TainterHandle {
         case arr: Array[Object] => util.Arrays.hashCode(arr);
         case _ => taint.hashCode()
       }
-      val ta = if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CombinedTag) {
+      val ta = if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CacheTag) {
         val mapTa = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
         TainterHandle.taintMap.get().put(hashcode, mapTa)
         mapTa

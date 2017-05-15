@@ -51,6 +51,8 @@ object TrackingTaint extends ConfEnumeration {
 object ShuffleOpt extends ConfEnumeration {
   type ShuffleOpt = Value
   val CombinedTag = ConfValue("ctag")
+  val CacheTag = ConfValue("cache")
+  val CCTag = ConfValue("cctag")
   val WithoutOpt = ConfValue("no-opt")
 }
 
