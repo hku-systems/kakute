@@ -86,14 +86,9 @@ class ObjectTainter extends TainterHandle {
     if (taint == null || taint == -1)
       anyRef
     else {
-      val hashcode = taint match {
-        case arr: Array[Object] => util.Arrays.hashCode(arr);
-        case _ => taint.hashCode()
-      }
       val ta = if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CacheTag) {
-        val mapTa = TainterHandle.taintMap.get().getOrElse(hashcode, new Taint(taint)).asInstanceOf[Taint[Any]]
-        TainterHandle.taintMap.get().put(hashcode, mapTa)
-        mapTa
+        val hashcode = taint.hashCode()
+        TainterHandle.taintMap.get().get(hashcode, taint).asInstanceOf[Taint[Object]]
       } else {
         new Taint(taint)
       }
@@ -270,6 +265,32 @@ class IntTainter extends TainterHandle {
 
 }
 
+class TaintCache {
+  val CACHE_SIZE = 10000
+
+  var cache: Array[Object] = new Array[Object](CACHE_SIZE)
+
+  var cache_index: Array[Int] = new Array[Int](CACHE_SIZE)
+
+  def get(index: Int, any: Any): Object = {
+    val key = math.abs(index % CACHE_SIZE)
+    if (cache_index(key) == index)
+      cache(key)
+    else {
+      cache_index(key) = index
+      cache(key) = new Taint(any)
+      cache(key)
+    }
+
+  }
+
+  def put(index: Int, taint: Object): Unit = {
+    cache(index % CACHE_SIZE) = taint
+    cache_index(index % CACHE_SIZE) = index
+  }
+
+}
+
 object TainterHandle {
 
   def trackingTaint: TrackingTaint =
@@ -279,17 +300,17 @@ object TainterHandle {
       TrackingTaint.IntTaint
 
   // init this map every time a new shuffle task is executed
-  var taintMap: ThreadLocal[HashMap[Any, Object]] = _
+  var taintMap: ThreadLocal[TaintCache] = new ThreadLocal[TaintCache]() {
+    @Override
+    override protected def initialValue: TaintCache = {
+      new TaintCache()
+    }
+  }
 
   def initMap(): Unit = {
-    if (trackingTaint == TrackingTaint.ObjTaint) {
-      taintMap = new ThreadLocal[HashMap[Any, Object]]() {
-        @Override
-        override protected def initialValue: HashMap[Any, Object] = {
-          new HashMap[Any, Object]()
-        }
-      }
-    }
+//    if (trackingTaint == TrackingTaint.ObjTaint) {
+//      taintMap =
+//    }
   }
 
   def cleanMap(): Unit = {
