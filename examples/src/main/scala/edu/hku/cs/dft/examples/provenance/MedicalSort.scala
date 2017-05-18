@@ -57,9 +57,9 @@ object MedicalSort {
     sortedRecord.mapValues(t => 1).reduceByKey(_ + _).collect().foreach(m => println(m._1 + " " + m._2))
 
     if (trace)
-      result.collectWithTaint().foreach(println)
+      result.zipWithTaint().saveAsObjectFile("medical_sort")
     else
-      result.collect().foreach(println)
+      result.saveAsObjectFile("medical_sort")
 
     readLine()
 

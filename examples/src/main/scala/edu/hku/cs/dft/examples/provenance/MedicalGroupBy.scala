@@ -68,9 +68,9 @@ object MedicalGroupBy {
     sortedRecord.mapValues(t => 1).reduceByKey(_ + _).collect().foreach(m => println(m._1 + " " + m._2))
 
     if (trace)
-      result.collectWithTaint().foreach(println)
+      result.zipWithTaint().saveAsObjectFile("medical_group")
     else
-      result.collect().foreach(println)
+      result.saveAsObjectFile("medical_group")
 
     readLine()
 
