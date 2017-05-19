@@ -91,7 +91,6 @@ object ProvenanceGraphExample {
     if (trace)
       label_node.map(t => (t._1, t._2._1)).zipWithTaint().saveAsObjectFile("graph_out")
     else if (backtrace) {
-      label_node.collect().foreach(println)
       val k = label_node.zipWithTaint().filter{case ((node, (id, age)), taint) =>
         val t = taint.asInstanceOf[(_, (_, _))]._2._1
         t != null
