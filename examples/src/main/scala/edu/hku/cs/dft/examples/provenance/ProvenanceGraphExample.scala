@@ -23,6 +23,10 @@ object ProvenanceGraphExample {
 
     val trace = args(3).toBoolean
 
+    val backtrace = (args.length > 4) && args(4).equals("true")
+
+    val traceEdge = if(backtrace) args(5).toInt else 0
+
     val text = spark.textFile(file, partitions)
     var edges = text.map(t => {
       val s_arr = t.split("\\s+")
@@ -34,6 +38,14 @@ object ProvenanceGraphExample {
         ((t._2 + 1, t._2 + 1), -1)
       }).map(_._1)
 
+    if (backtrace)
+      edges = edges.zipWithUniqueId().taint{case ((from, to), id) =>
+        if (id == traceEdge)
+          (1, 1)
+        else
+          -1
+      }.map(_._1)
+
     val nodes = edges.flatMap(edge => Array(edge._1, edge._2)).distinct()
 
     // Init the node with its own id
@@ -44,7 +56,7 @@ object ProvenanceGraphExample {
     for (i <- 1 to iteration) {
       // group nodes with the same id
       var new_label = label_node.join(edges).map(t => (t._2._2, (t._2._1._1, i)))
-      if (trace)
+      if (trace || backtrace)
          new_label = new_label.zipWithTaint()
         .taint(t => {
           val taint_tuple = t._2.asInstanceOf[(_, _)]
@@ -78,6 +90,15 @@ object ProvenanceGraphExample {
 
     if (trace)
       label_node.map(t => (t._1, t._2._1)).zipWithTaint().saveAsObjectFile("graph_out")
+    else if (backtrace) {
+      label_node.collect().foreach(println)
+      val k = label_node.zipWithTaint().filter{case ((node, (id, age)), taint) =>
+        val t = taint.asInstanceOf[(_, (_, _))]._2._1
+        t != null
+      }.collect()
+      k.foreach(println)
+      println("count: " + k.length)
+    }
     else
       label_node.saveAsObjectFile("graph_out")
 

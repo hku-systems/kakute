@@ -17,6 +17,18 @@ object TwitterLineage {
 
     val trace = args.length > 1 && args(1).equals("true")
 
+    val backtrace = args.length > 2 && args(2).equals("true")
+
+    if (backtrace) {
+      file = file.taint(t => {
+        if (t.contains("#FAKENEWS")) {
+          1
+        } else {
+          -1
+        }
+      })
+    }
+
     if (trace)
       file = file.zipWithUniqueId().taint(t => {
       (t._2, -1)
@@ -64,6 +76,15 @@ object TwitterLineage {
             taint_arr.length
           (time, word, count, l)
       }.saveAsObjectFile("twitter_out")
+    else if (backtrace) {
+      val k =
+      time_group.zipWithTaint().filter {
+        case (((time, (word, count)), taint)) =>
+          val t =taint.asInstanceOf[(_, (_, _))]._2._2
+          t != null
+      }.count()
+      println(k + ":")
+    }
     else
       time_group.saveAsObjectFile("twitter_out")
 
