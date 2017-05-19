@@ -40,10 +40,10 @@ object ProvenanceGraphExample {
 
     if (backtrace)
       edges = edges.zipWithUniqueId().taint{case ((from, to), id) =>
-        if (id == traceEdge)
-          (1, 1)
-        else
-          -1
+          if (from.startsWith("http://oceania.digitalmedianet.com"))
+            (1, 1)
+          else
+            -1
       }.map(_._1)
 
     val nodes = edges.flatMap(edge => Array(edge._1, edge._2)).distinct()
