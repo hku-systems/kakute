@@ -56,7 +56,7 @@ object SparkTC {
     else
       tc.collect()
     readLine()
-    println("TC has " + tc.count() + " edges.")
+//    println("TC has " + tc.count() + " edges.")
     spark.stop()
   }
 }
