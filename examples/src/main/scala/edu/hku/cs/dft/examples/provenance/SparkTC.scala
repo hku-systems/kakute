@@ -44,15 +44,12 @@ object SparkTC {
     var total_run = 0
 
     // This join is iterated until a fixed point is reached.
-    var oldCount = 0L
-    var nextCount = tc.count()
     do {
-      oldCount = nextCount
       // Perform the join, obtaining an RDD of (y, (z, x)) pairs,
       // then project the result to obtain the new (x, z) paths.
       tc = tc.union(tc.join(edges).map(x => (x._2._2, x._2._1))).distinct(partition)
       total_run += 1
-    } while (nextCount != oldCount && total_run < 1)
+    } while (total_run < 1)
 
     if (trace)
       tc.zipWithTaint().saveAsObjectFile("sparktc")
