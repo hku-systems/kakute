@@ -20,7 +20,7 @@ object SparkTC {
 
     val trace = args.length > 1 && args(1).equals("true")
 
-    var tc = spark.textFile(file)
+    var tc = spark.textFile(file, partition)
       .map(t => {
         val splits = t.split("\\s+")
         (splits(0), splits(1))
