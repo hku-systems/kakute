@@ -54,7 +54,7 @@ object SparkTC {
     if (trace)
       tc.zipWithTaint().saveAsObjectFile("sparktc")
     else
-      tc.collect()
+      tc.saveAsObjectFile("sparktc")
     readLine()
 //    println("TC has " + tc.count() + " edges.")
     spark.stop()
