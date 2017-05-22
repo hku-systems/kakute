@@ -34,7 +34,7 @@ private[spark] trait SizeTracker {
    * Controls the base of the exponential which governs the rate of sampling.
    * E.g., a value of 2 would mean we sample at 1, 2, 4, 8, ... elements.
    */
-  private val SAMPLE_GROWTH_RATE = 1.1
+  private val SAMPLE_GROWTH_RATE = 1.8
 
   /** Samples taken since last resetSamples(). Only the last two are kept for extrapolation. */
   private val samples = new mutable.Queue[Sample]
