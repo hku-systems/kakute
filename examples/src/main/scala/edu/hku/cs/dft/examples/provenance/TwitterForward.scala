@@ -34,8 +34,9 @@ object TwitterForward {
     val top_words = file1.map(t => {
       val lines = t._2
       val c = lines.count(_.contains("#FAKENEWS"))
-      if (c > 0)
-        lines.size
+      if (c > 0) {
+        lines.flatMap(_.split("\\s+")).groupBy(t => t).keys.size
+      }
       else
         0
     })
