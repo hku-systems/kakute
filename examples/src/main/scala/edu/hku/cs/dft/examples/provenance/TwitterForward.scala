@@ -41,7 +41,7 @@ object TwitterForward {
         0
     })
 
-    val su = top_words.collect().foreach(println)
+    val su = top_words.collect().sum
 
     println("c " + su)
 
