@@ -14,13 +14,13 @@ object WordGrepCount {
 
     val partition = args(2).toInt
 
-    val isInt = args(3).toBoolean
+    val word = args(3)
 
     val conf = new SparkConf
     val sc = new SparkContext(conf)
     var text = sc.textFile(input, partition)
 
-    val wc = text.filter(t => t.contains("science")).count()
+    val wc = text.filter(t => t.contains(word)).count()
 
     println("science: " + wc)
     readLine()
