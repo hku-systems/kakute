@@ -20,7 +20,7 @@ object ProvenanceGraphSimulate {
     val text = sc.textFile(file)
     println(text)
     var edges = text.map(t => {
-      val s_arr = t.split(",")//\\s+")
+      val s_arr = t.split("\\s+")
       (s_arr(0), s_arr(1))
     })
     val nodes = edges.flatMap(edge => Array(edge._1, edge._2)).distinct()
