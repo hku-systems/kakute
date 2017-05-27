@@ -1,8 +1,9 @@
+package edu.hku.cs.dft.examples.provenance
 import org.apache.spark.{SparkConf, SparkContext}
 /**
   * Created by jianyu on 5/11/17.
   */
-object Connected {
+object ProvenanceGraphSimulate {
   def main(args: Array[String]) {
     val conf = new SparkConf()
 
