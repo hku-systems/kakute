@@ -26,9 +26,7 @@ object Connected {
 
     var label_node = nodes.zipWithIndex().map{
       case(node, id) =>
-        var m = Map()
-        m += node
-        (node, (id, m))
+        (node, (id, Set(node)))
     }
 
     for (i <- 1 to iteration) {
@@ -37,7 +35,7 @@ object Connected {
       }
       val m_label = new_label.union(label_node)
       label_node = m_label.reduceByKey((x, y) => {
-        (math.min(x._1, y._1), x._2 ++ y._2)
+        (math.min(x._1, y._1), x._2 | y._2)
       }, numPartitions = partitions)
     }
 
