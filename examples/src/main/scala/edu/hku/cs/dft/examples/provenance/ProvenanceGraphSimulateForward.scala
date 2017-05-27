@@ -1,9 +1,11 @@
 package edu.hku.cs.dft.examples.provenance
+
 import org.apache.spark.{SparkConf, SparkContext}
+
 /**
   * Created by jianyu on 5/11/17.
   */
-object ProvenanceGraphSimulate {
+object ProvenanceGraphSimulateForward {
   def main(args: Array[String]) {
     val conf = new SparkConf()
 
@@ -18,7 +20,6 @@ object ProvenanceGraphSimulate {
     val sc = new SparkContext(conf)
 
     val text = sc.textFile(file, partitions)
-    println(text)
     var edges = text.map(t => {
       val s_arr = t.split("\\s+")
       (s_arr(0), s_arr(1))
@@ -27,7 +28,10 @@ object ProvenanceGraphSimulate {
 
     var label_node = nodes.zipWithIndex().map{
       case(node, id) =>
-        (node, (id, Set(node)))
+        if (node.equals(trace_record))
+          (node, (id, Set(node)))
+        else
+          (node, (id, Set[String]()))
     }
 
     for (i <- 1 to iteration) {
@@ -40,7 +44,9 @@ object ProvenanceGraphSimulate {
       }, numPartitions = partitions)
     }
 
-    label_node.filter(t => t._1.equals(trace_record)).collect().foreach(x => println(x._1 + " " + x._2._2.size))
+    val fn = label_node.filter(t => t._2._2.nonEmpty).collect().size
+
+    println("forward " + fn)
     readLine()
     sc.stop()
   }
