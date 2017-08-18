@@ -246,7 +246,7 @@ object KafkaUtils {
       sc: SparkContext,
       kafkaParams: Map[String, String],
       offsetRanges: Array[OffsetRange]
-    ): RDD[(K, V)] = sc.withScope {
+    ): RDD[(K, V)] = sc.withScope() {
     val messageHandler = (mmd: MessageAndMetadata[K, V]) => (mmd.key, mmd.message)
     val kc = new KafkaCluster(kafkaParams)
     val leaders = leadersForRanges(kc, offsetRanges)
@@ -287,7 +287,7 @@ object KafkaUtils {
       offsetRanges: Array[OffsetRange],
       leaders: Map[TopicAndPartition, Broker],
       messageHandler: MessageAndMetadata[K, V] => R
-    ): RDD[R] = sc.withScope {
+    ): RDD[R] = sc.withScope() {
     val kc = new KafkaCluster(kafkaParams)
     val leaderMap = if (leaders.isEmpty) {
       leadersForRanges(kc, offsetRanges)
@@ -330,7 +330,7 @@ object KafkaUtils {
       valueDecoderClass: Class[VD],
       kafkaParams: JMap[String, String],
       offsetRanges: Array[OffsetRange]
-    ): JavaPairRDD[K, V] = jsc.sc.withScope {
+    ): JavaPairRDD[K, V] = jsc.sc.withScope() {
     implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
     implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
     implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
@@ -372,7 +372,7 @@ object KafkaUtils {
       offsetRanges: Array[OffsetRange],
       leaders: JMap[TopicAndPartition, Broker],
       messageHandler: JFunction[MessageAndMetadata[K, V], R]
-    ): JavaRDD[R] = jsc.sc.withScope {
+    ): JavaRDD[R] = jsc.sc.withScope() {
     implicit val keyCmt: ClassTag[K] = ClassTag(keyClass)
     implicit val valueCmt: ClassTag[V] = ClassTag(valueClass)
     implicit val keyDecoderCmt: ClassTag[KD] = ClassTag(keyDecoderClass)
