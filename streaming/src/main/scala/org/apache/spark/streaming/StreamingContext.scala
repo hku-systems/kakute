@@ -262,7 +262,7 @@ class StreamingContext private[streaming] (
    *
    * Note: Return statements are NOT allowed in the given body.
    */
-  private[streaming] def withScope[U](body: => U): U = sparkContext.withScope(body)
+  private[streaming] def withScope[U](body: => U): U = sparkContext.withScope()(body)
 
   /**
    * Execute a block of code in a scope such that all new DStreams created in this body will
