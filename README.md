@@ -1,3 +1,67 @@
+# Kakute
+
+Kakute is the first Information Flow Tracking (IFT) system for big-data. It is built
+on Spark, a popular big-data processing engine in both industry and academia.
+
+Kakute provides a unified API for adding / removing tags for data and controlling IFT across hosts. We have built several applications based on Kakute for **debugging**, **data provenance**, **preventing information leakage** and **performance optimization**.
+
+Kakute is based on a previous Information Flow Tracking framework **Phosphor** ([Code](https://github.com/Programming-Systems-Lab/Phosphor), [Paper](http://www.jonbell.net/oopsla2014-phosphor-preprint.pdf)). We have fixed some bugs, improved the performance and usability. Our optimized **Phosphor** can be [here](https://github.com/hku-systems/kakute).
+
+This work has been accepted by 33th Annual Computer Security Applications Conference (ACSAC'17), and you can see our design details in [this paper](null).
+
+For those who would like to reproduce result in the paper, you can find the dataset in **data/kakute**.
+
+## Building Kakute
+### Building Phosphor
+Install dependencies
+```
+apt-get install openjdk-sdk-8 openjdk-sdk-8-source maven
+```
+Download phosphor, built it and instrument Java JDK
+```
+git clone https://github.com/hku-systems/phosphor.git
+cd phosphor
+mvn clean verify
+```
+
+Download Kakute
+```
+git clone https://github.com/hku-systems/kakute.git
+
+```
+
+Setup the correct phosphor directory in core/pom.xml
+```
+<dependency>
+  <groupId>edu.columbia.cs</groupId>
+  <artifactId>phosphor</artifactId>
+  <version>0.0.3</version>
+  <scope>system</scope>
+  <systemPath>$DIRECTORY_TO_PHOSPHOR/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar</systemPath>
+</dependency>
+```
+
+Build Kakute, it is the same as building Spark
+```
+cd kakute
+build/mvn -DskipTests clean package
+```
+
+Modify **dft.conf** according your configuration of phosphor.
+```
+dft-host = 127.0.0.1 // driver host ip
+dft-port = 8787 // driver host port
+dft-phosphor-java = $DIRECTORY_TO_PHOSPHOR/Phosphor/target/
+dft-phosphor-jar = $DIRECTORY_TO_PHOSPHOR/Phosphor/target/Phosphor-0.0.3-SNAPSHOT.jar
+dft-phosphor-cache = $DIRECTORY_FOR_CACHE
+graph_dump_path = graph.dump
+dft-tracking = rule
+dft-input-taint = false
+dft-scheme = true
+```
+
+Congrats. You have finished building Kakute, you can try with a simple example below.
+
 # Apache Spark
 
 Spark is a fast and general cluster computing system for Big Data. It provides
