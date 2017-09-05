@@ -56,7 +56,22 @@ object ShuffleOpt extends ConfEnumeration {
   val WithoutOpt = ConfValue("no-opt")
 }
 
-class TrackingPolicy(trackType: TrackingType, trackingMode: TrackingMode,
+class TrackingPolicy(val typeInfering: Boolean,
+                     val clear_tags_per_ops: Boolean,
+                     val add_tags_per_ops: Boolean,
+                     val add_tags_emitted: Boolean,
+                     val add_tags_input_files: Boolean,
+                     val propagation_across_machines: Boolean,
+                     val localSubmodule: Boolean,
+                     val collectPerOp: Boolean) extends Serializable{
+  def this(trackingPolicyOld: TrackingPolicyOld) =
+    this (trackingPolicyOld.typeInfering, trackingPolicyOld.clear_tags_per_ops,
+      trackingPolicyOld.add_tags_per_ops, trackingPolicyOld.add_tags_emitted,
+      trackingPolicyOld.add_tags_input_files, trackingPolicyOld.propagation_across_machines,
+      trackingPolicyOld.localSubmodule, trackingPolicyOld.collectPerOp)
+}
+
+class TrackingPolicyOld(trackType: TrackingType, trackingMode: TrackingMode,
                      trackingOn: Boolean = false,
                      taint: TrackingTaint = TrackingTaint.IntTaint) {
 

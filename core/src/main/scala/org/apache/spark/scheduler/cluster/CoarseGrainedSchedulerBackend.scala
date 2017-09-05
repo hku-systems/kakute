@@ -21,10 +21,11 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.annotation.concurrent.GuardedBy
 
+import edu.hku.cs.dft.IftConf
+
 import scala.collection.mutable.{ArrayBuffer, HashMap, HashSet}
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-
 import org.apache.spark.{ExecutorAllocationClient, SparkEnv, SparkException, TaskState}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc._
@@ -92,7 +93,7 @@ class CoarseGrainedSchedulerBackend(scheduler: TaskSchedulerImpl, val rpcEnv: Rp
   // The num of current max ExecutorId used to re-register appMaster
   @volatile protected var currentExecutorIdCounter = 0
 
-  class DriverEndpoint(override val rpcEnv: RpcEnv, sparkProperties: Seq[(String, String)])
+  class DriverEndpoint(override val rpcEnv: RpcEnv, sparkProperties: Seq[(String, String)], var iftConf: IftConf = null)
     extends ThreadSafeRpcEndpoint with Logging {
 
     // Executors that have been lost, but for which we don't yet know the real exit reason.
@@ -187,7 +188,7 @@ class CoarseGrainedSchedulerBackend(scheduler: TaskSchedulerImpl, val rpcEnv: Rp
               logDebug(s"Decremented number of pending executors ($numPendingExecutors left)")
             }
           }
-          executorRef.send(RegisteredExecutor)
+          executorRef.send(RegisteredExecutor(iftConf))
           // Note: some tests expect the reply to come after we put the executor in the map
           context.reply(true)
           listenerBus.post(

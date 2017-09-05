@@ -19,6 +19,7 @@ package org.apache.spark.scheduler.cluster
 
 import java.nio.ByteBuffer
 
+import edu.hku.cs.dft.IftConf
 import org.apache.spark.TaskState.TaskState
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.ExecutorLossReason
@@ -48,7 +49,7 @@ private[spark] object CoarseGrainedClusterMessages {
 
   sealed trait RegisterExecutorResponse
 
-  case object RegisteredExecutor extends CoarseGrainedClusterMessage with RegisterExecutorResponse
+  case class RegisteredExecutor(iftConf:IftConf = null) extends CoarseGrainedClusterMessage with RegisterExecutorResponse
 
   case class RegisterExecutorFailed(message: String) extends CoarseGrainedClusterMessage
     with RegisterExecutorResponse

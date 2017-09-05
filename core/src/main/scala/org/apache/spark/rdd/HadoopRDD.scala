@@ -316,7 +316,7 @@ class HadoopRDD[K, V](
     /**
       * [[Modified]] taint the input
     */
-    var sampler: Sampler = null
+/*    var sampler: Sampler = null
     if (DFTEnv.trackingPolicy.add_tags_input_files) {
       val confPath = inputPath + TextAutoTainter.DefaultConfSuffix
       val autoTainter = if (new File(confPath).exists()) {
@@ -345,7 +345,7 @@ class HadoopRDD[K, V](
         ))
     } else {
       interuptIter
-    }
+    }*/
   }
 
   /** Maps over a partition, providing the InputSplit that was used as the base of the partition. */

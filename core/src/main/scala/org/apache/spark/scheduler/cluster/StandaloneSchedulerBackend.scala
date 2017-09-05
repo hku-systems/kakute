@@ -58,6 +58,11 @@ private[spark] class StandaloneSchedulerBackend(
 
   override def start() {
     super.start()
+
+    /*
+    * [[Modified]] set iftconf
+    * */
+    super.driverEndpoint.asInstanceOf[DriverEndpoint].iftConf = sc.iftConf
     launcherBackend.connect()
 
     // The endpoint for executors to talk to us
@@ -105,7 +110,7 @@ private[spark] class StandaloneSchedulerBackend(
         None
       }
     // [[Modified]] add tracking info
-    val trackingAppInfo = if (sc.tracking) Some(TrackingAppInfo(sc.trackingMode, sc.trackingType, sc.trackingTaint, sc.shuffleOpt)) else None
+    val trackingAppInfo = if (sc.tracking) Some(TrackingAppInfo(sc.trackingTaint)) else None
     val appDesc = ApplicationDescription(sc.appName, maxCores, sc.executorMemory, command,
       webUrl, sc.eventLogDir, sc.eventLogCodec, coresPerExecutor, initialExecutorLimit, trackingAppInfo = trackingAppInfo)
     client = new StandaloneAppClient(sc.env.rpcEnv, masters, appDesc, this, conf)

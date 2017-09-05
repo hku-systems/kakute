@@ -34,19 +34,19 @@ import scala.util.control.NonFatal
 import com.google.common.collect.MapMaker
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.debug.DebugTracer
-import edu.hku.cs.dft.{DFTEnv, TrackingMode}
+import edu.hku.cs.dft.{DFTEnv, IftConf, TrackingMode}
 import edu.hku.cs.dft.optimization.SymbolManager
 import edu.hku.cs.dft.tracker.ShuffleOpt.ShuffleOpt
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
-import edu.hku.cs.dft.tracker.{ShuffleOpt, TrackingTaint, TrackingType}
+import edu.hku.cs.dft.tracker._
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import edu.hku.cs.dft.traffic.{PartitionSchemes, TrafficEnv}
 import edu.hku.cs.tools.CallLocation
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.io.{ArrayWritable, BooleanWritable, BytesWritable, DoubleWritable, FloatWritable, IntWritable, LongWritable, NullWritable, Text, Writable}
-import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf, SequenceFileInputFormat, TextInputFormat}
+import org.apache.hadoop.io._
+import org.apache.hadoop.mapred.{Utils => _, _}
 import org.apache.hadoop.mapreduce.{InputFormat => NewInputFormat, Job => NewHadoopJob}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat => NewFileInputFormat}
 import org.apache.spark.annotation.DeveloperApi
@@ -99,8 +99,13 @@ class SparkContext(config: SparkConf) extends Logging {
 
   val tracking: Boolean = trackingMode != TrackingMode.Off
 
+  val iftConf: IftConf = if (!tracking)
+    IftConf(trackingType, trackingTaint, shuffleOpt,
+    new TrackingPolicy(new TrackingPolicyOld(trackingType, trackingMode, tracking, trackingTaint)))
+  else null
+
   // [[Modified]]init the server if tracking is true
-  DFTEnv.server_init(trackingMode)
+  DFTEnv.server(iftConf)
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()
@@ -1937,8 +1942,7 @@ class SparkContext(config: SparkConf) extends Logging {
   def stop(): Unit = {
 
     // [[Modified]] stop
-    if (tracking && (trackingMode == TrackingMode.RuleTracking || trackingMode == TrackingMode.Debug))
-      DFTEnv.stop_all(trackingMode)
+    DFTEnv.stop_all()
 
     if (LiveListenerBus.withinListenerThread.value) {
       throw new SparkException(
@@ -2336,7 +2340,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
   private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
     ClosureCleaner.clean(f, checkSerializable)
-    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+    if (DFTEnv.on() && DFTEnv.ift().trackingPolicy.trackingMode == TrackingMode.Debug) {
       if (f.isInstanceOf[_ => _]) {
         println("-------------------with debug")
         withDebugF(f.asInstanceOf[ _ => _ ]).asInstanceOf[F]

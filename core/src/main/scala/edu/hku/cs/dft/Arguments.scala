@@ -109,8 +109,7 @@ class CustomArgumentHandle extends ArgumentHandle {
   override def setKeyValue(key: String, value: String) = {}
 }
 
-case class TrackingAppInfo(trackingMode: TrackingMode, trackingType: TrackingType, trackingTaint: TrackingTaint,
-                           shuffle: ShuffleOpt)
+case class TrackingAppInfo(trackingTaint: TrackingTaint)
 
 object DefaultArgument {
 

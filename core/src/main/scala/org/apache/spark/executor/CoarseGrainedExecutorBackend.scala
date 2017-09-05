@@ -57,9 +57,6 @@ private[spark] class CoarseGrainedExecutorBackend(
 
   override def onStart() {
 
-    // [[Modified]]
-    DFTEnv.client_init()
-
     logInfo("Connecting to driver: " + driverUrl)
     rpcEnv.asyncSetupEndpointRefByURI(driverUrl).flatMap { ref =>
       // This is a very fast action so we can use "ThreadUtils.sameThread"
@@ -81,7 +78,8 @@ private[spark] class CoarseGrainedExecutorBackend(
   }
 
   override def receive: PartialFunction[Any, Unit] = {
-    case RegisteredExecutor =>
+    case RegisteredExecutor(iftConf) =>
+      DFTEnv.executor(iftConf)
       logInfo("Successfully registered with driver")
       try {
         executor = new Executor(executorId, hostname, env, userClassPath, isLocal = false)
@@ -248,45 +246,8 @@ private[spark] object CoarseGrainedExecutorBackend extends Logging {
 
     var argv = args.toList
 
-    /**
-      * [[Modified]] we modify this to get the info of dft
-    */
-
-    val confHandle = DFTEnv.commandlineConf
     while (!argv.isEmpty) {
       argv match {
-        case (DefaultArgument._CONF_TRACKING) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_TRACKING,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_SAMPLE) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_SAMPLE,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_HOST) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_HOST,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_PORT) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_PORT,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_TYPE) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_TYPE,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_INPUT_TAINT) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_INPUT_TAINT,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_TAINT) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_TAINT,
-            value)
-          argv = tail
-        case (DefaultArgument._CONF_SHUFFLE) :: value :: tail =>
-          confHandle.setKeyValue(DefaultArgument.CONF_SHUFFLE,
-            value)
-          argv = tail
         case ("--driver-url") :: value :: tail =>
           driverUrl = value
           argv = tail

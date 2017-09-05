@@ -38,7 +38,27 @@ object SampleMode extends ConfEnumeration {
   val Off = ConfValue("off")
 }
 
-class DFTEnv(val argumentHandle: ArgumentHandle) {
+case class GlobalCheckerConf(host: String, port: Int)
+
+// sampleMode, sampleNum
+// partition scheme
+
+// Driver -> IftConf (policies) -> Executor (DFTEnv)
+
+case class IftConf(trackingType: TrackingType,
+                   trackingTaint: TrackingTaint, shuffleOpt: ShuffleOpt,
+                   trackingPolicy: TrackingPolicy,
+                   globalCheckerConf: GlobalCheckerConf = null)
+
+class DFTEnv {
+  var isServer: Boolean = false
+  var phosphorRunner: PhosphorRunner = _
+  var localChecker: Boolean = _
+  var GlobalChecker: Boolean = _
+  var trackingPolicy: TrackingPolicy = _
+}
+
+class DFTEnvOld(val argumentHandle: ArgumentHandle) {
   argumentHandle.init()
 
   val serverPort: Int = argumentHandle.parseArgs(DefaultArgument.CONF_PORT) match {
@@ -123,7 +143,6 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
     case _ => DefaultArgument.dumpGraph
   }
 
-
   val trackingTaint: TrackingTaint = argumentHandle.parseArgs(DefaultArgument.CONF_TAINT) match {
     case s: String => TrackingTaint.withName(s)
     case _ => DefaultArgument.trackingTaint
@@ -143,8 +162,50 @@ class DFTEnv(val argumentHandle: ArgumentHandle) {
 
 case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
 
+object DFTEnv {
+  var currentIft: DFTEnv = _
 
-// TODO: currently only one DFTEnv is supported, which means that if there are multiple context
+  def on(): Boolean = currentIft != null
+
+  def ift(): DFTEnv = if (currentIft != null) currentIft else throw new Exception("DFT Environment not set")
+
+  def executor(iftConf: IftConf): Unit = {
+    if (iftConf != null) {
+      currentIft = new DFTEnv()
+      currentIft.trackingPolicy = iftConf.trackingPolicy
+    }
+  }
+
+  def server(iftConf: IftConf): Unit = {
+    currentIft = new DFTEnv
+    currentIft.isServer = true
+  }
+
+  def worker(): Unit = {
+    val argumentHandle = new ConfFileHandle(DefaultArgument.confFile)
+    currentIft = new DFTEnv
+    var java = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_JAVA)
+    if (java == null) {
+      java = "phosphor/bin/"
+    }
+    var jar = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_JAR)
+    if (jar == null) {
+      jar = "phosphor/phosphor.jar"
+    }
+    var cache = argumentHandle.parseArgs(DefaultArgument.CONF_PHOSPHOR_CACHE)
+    if (cache == null) {
+      cache = "phosphor/cache"
+    }
+    PhosphorEnv(java, jar, cache)
+    currentIft.phosphorRunner = new PhosphorRunner(cache, jar, java, TrackingTaint.IntTaint)
+  }
+
+  def stop_all(): Boolean = {
+    true
+  }
+}
+
+/*// TODO: currently only one DFTEnv is supported, which means that if there are multiple context
 // TODO: then the system will be broken, but this is a wire case
 // TODO: we also need to rebind another port when failure happens
 object DFTEnv {
@@ -228,23 +289,21 @@ object DFTEnv {
     networkEnv.register(graphManager)
   }
 
-  def client_init(any: Any): Unit = {
+  def client_init(iftConf: IftConf): Unit = {
 
     _dftEnv = new DFTEnv(commandlineConf)
 
-    trackingPolicy = new TrackingPolicy(DFTEnv.dftEnv().trackingType,
-      DFTEnv.dftEnv().trackingMode,
-      DFTEnv.dftEnv().trackingOn,
-      DFTEnv.dftEnv().trackingTaint)
-
-    if (trackingPolicy.localSubmodule) {
-      networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
-      new Thread(new Runnable {
-        override def run(): Unit = networkEnv.run()
-      }).start()
-      Thread.sleep(1000)
-      localControl = new RuleLocalControl
-      networkEnv.register(localControl)
+    if (iftConf != null) {
+      trackingPolicy = iftConf.trackingPolicy
+      if (trackingPolicy.localSubmodule) {
+        networkEnv = new NettyClient(new EndpointDispatcher, _dftEnv)
+        new Thread(new Runnable {
+          override def run(): Unit = networkEnv.run()
+        }).start()
+        Thread.sleep(1000)
+        localControl = new RuleLocalControl
+        networkEnv.register(localControl)
+      }
     }
     // sleep 1s to make sure the network is on
     _dftEnv.isServer = false
@@ -262,4 +321,4 @@ object DFTEnv {
       graphDumper.close()
     }
   }
-}
+}*/
