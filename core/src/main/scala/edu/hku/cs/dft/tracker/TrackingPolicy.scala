@@ -1,6 +1,6 @@
 package edu.hku.cs.dft.tracker
 
-import edu.hku.cs.dft.{ConfEnumeration, TrackingMode}
+import edu.hku.cs.dft.{CheckerConf, ConfEnumeration, TrackingMode}
 import edu.hku.cs.dft.TrackingMode.TrackingMode
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
@@ -56,20 +56,20 @@ object ShuffleOpt extends ConfEnumeration {
   val WithoutOpt = ConfValue("no-opt")
 }
 
-class TrackingPolicy(val typeInfering: Boolean,
-                     val clear_tags_per_ops: Boolean,
-                     val add_tags_per_ops: Boolean,
-                     val add_tags_emitted: Boolean,
-                     val add_tags_input_files: Boolean,
+
+class TrackingPolicy(val tap_input_before: (Any => Any),
+                     val tap_op_before: (Any => Any), /* run this func before each rdd func */
+                     val tap_op_after: (Any => Any),
+                     val tap_shuffle_before: (Any => Any),
+                     val tap_shuffle_after: (Any => Any),
+                     val tap_collect_after: (Any => Any),
+                     val tap_exception: PartialFunction[Exception, Unit => Unit],
                      val propagation_across_machines: Boolean,
-                     val localSubmodule: Boolean,
-                     val collectPerOp: Boolean,
-                     val tracking_type: TrackingType) extends Serializable{
+                     val checkerConf: CheckerConf,
+                     val tracking_type: TrackingType) extends Serializable {
   def this(trackingPolicyOld: TrackingPolicyOld) =
-    this (trackingPolicyOld.typeInfering, trackingPolicyOld.clear_tags_per_ops,
-      trackingPolicyOld.add_tags_per_ops, trackingPolicyOld.add_tags_emitted,
-      trackingPolicyOld.add_tags_input_files, trackingPolicyOld.propagation_across_machines,
-      trackingPolicyOld.localSubmodule, trackingPolicyOld.collectPerOp, trackingPolicyOld.tracking_type)
+    this (null, null, null, null, null, null, null,
+      trackingPolicyOld.propagation_across_machines, null, trackingPolicyOld.tracking_type)
 }
 
 class TrackingPolicyOld(trackType: TrackingType, trackingMode: TrackingMode,

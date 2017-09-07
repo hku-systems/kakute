@@ -38,7 +38,7 @@ object SampleMode extends ConfEnumeration {
   val Off = ConfValue("off")
 }
 
-case class GlobalCheckerConf(host: String, port: Int)
+case class CheckerConf(host: String, port: Int, localChecker: LocalChecker, globalChecker: GlobalChecker)
 
 // sampleMode, sampleNum
 // partition scheme
@@ -48,13 +48,11 @@ case class GlobalCheckerConf(host: String, port: Int)
 case class IftConf(trackingType: TrackingType,
                    trackingTaint: TrackingTaint, shuffleOpt: ShuffleOpt,
                    trackingPolicy: TrackingPolicy,
-                   globalCheckerConf: GlobalCheckerConf = null)
+                   checkerConf: CheckerConf = null)
 
 class DFTEnv {
   var isServer: Boolean = false
   var phosphorRunner: PhosphorRunner = _
-  var localChecker: Boolean = _
-  var GlobalChecker: Boolean = _
   var trackingPolicy: TrackingPolicy = _
 }
 
@@ -167,6 +165,12 @@ object DFTEnv {
 
   var iftConf: IftConf = _
 
+  var localChecker: LocalChecker = _
+
+  var globalChecker: GlobalChecker = _
+
+  var networkChannel: EndpointRegister = _
+
   def on(): Boolean = currentIft != null
 
   def ift(): DFTEnv = if (currentIft != null) currentIft else throw new Exception("DFT Environment not set")
@@ -177,14 +181,41 @@ object DFTEnv {
     if (iftConf != null) {
       currentIft = new DFTEnv()
       currentIft.trackingPolicy = iftConf.trackingPolicy
+      this.iftConf = iftConf
+      if (iftConf.checkerConf != null) {
+        localChecker = iftConf.checkerConf.localChecker
+        networkChannel = new NettyClient(new EndpointDispatcher, iftConf.checkerConf)
+        new Thread(networkChannel).start()
+        val localEndPoint = new NettyEndpoint {
+
+          override def receiveAndReply(message: Message): Message = localChecker.receive(message)
+
+          override def onRegister(): Unit = {}
+
+          override val id: String = localChecker.id
+
+        }
+        networkChannel.register(localEndPoint)
+      }
     }
-    this.iftConf = iftConf
   }
 
   def server(iftConf: IftConf): Unit = {
     currentIft = new DFTEnv
     currentIft.isServer = true
     this.iftConf = iftConf
+    if (iftConf != null && iftConf.checkerConf != null) {
+      networkChannel = new NettyServer(new EndpointDispatcher, iftConf.checkerConf)
+      new Thread(networkChannel).start()
+      networkChannel.register(new NettyEndpoint {
+
+        override def receiveAndReply(message: Message): Message = globalChecker.receive(message)
+
+        override def onRegister(): Unit = {}
+
+        override val id: String = globalChecker.id
+      })
+    }
   }
 
   def worker(): Unit = {

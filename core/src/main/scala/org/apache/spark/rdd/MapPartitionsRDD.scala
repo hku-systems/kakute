@@ -39,7 +39,15 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
   override def getPartitions: Array[Partition] = firstParent[T].partitions
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
-    f(context, split.index, firstParent[T].iterator(split, context))
+    val prev = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_before != null)
+      firstParent[T].iterator(split, context).map(t => DFTEnv.conf().trackingPolicy.tap_op_before(t).asInstanceOf[T])
+    else
+      firstParent[T].iterator(split, context)
+    val proc = f(context, split.index, prev)
+    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_after != null)
+      proc.map(t => DFTEnv.conf().trackingPolicy.tap_op_after(t).asInstanceOf[U])
+    else
+      proc
   }
 
   override def clearDependencies() {

@@ -130,7 +130,11 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
     var result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
       .read()
       .asInstanceOf[Iterator[(K, C)]]
-    result
+
+    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_shuffle_before != null)
+      result.map(t => DFTEnv.conf().trackingPolicy.tap_shuffle_before(t).asInstanceOf[(K, C)])
+     else
+      result
   }
 
   override def clearDependencies() {

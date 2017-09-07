@@ -19,11 +19,12 @@ package org.apache.spark.rdd
 
 import java.io.{IOException, ObjectOutputStream}
 
+import edu.hku.cs.dft.DFTEnv
+
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.concurrent.forkjoin.ForkJoinPool
 import scala.reflect.ClassTag
-
 import org.apache.spark.{Dependency, Partition, RangeDependency, SparkContext, TaskContext}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.util.Utils
@@ -102,8 +103,15 @@ class UnionRDD[T: ClassTag](
 
   override def compute(s: Partition, context: TaskContext): Iterator[T] = {
     val part = s.asInstanceOf[UnionPartition[T]]
-    parent[T](part.parentRddIndex).iterator(part.parentPartition, context)
+    val prev = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_before != null)
+      parent[T](part.parentRddIndex).iterator(part.parentPartition, context).map(t => DFTEnv.conf().trackingPolicy.tap_op_before(t).asInstanceOf[T])
+    else
+      parent[T](part.parentRddIndex).iterator(part.parentPartition, context)
 
+    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_after != null)
+      prev.map(t => {DFTEnv.conf().trackingPolicy.tap_op_after(t).asInstanceOf[T]})
+    else
+      prev
   }
 
   override def getPreferredLocations(s: Partition): Seq[String] =

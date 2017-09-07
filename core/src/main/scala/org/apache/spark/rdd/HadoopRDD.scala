@@ -311,13 +311,9 @@ class HadoopRDD[K, V](
         }
       }
     }
-    new InterruptibleIterator[(K, V)](context, iter)
 
-    /**
-      * [[Modified]] taint the input
-    */
-/*    var sampler: Sampler = null
-    if (DFTEnv.trackingPolicy.add_tags_input_files) {
+    val interuptIter = new InterruptibleIterator[(K, V)](context, iter)
+    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_input_before != null) {
       val confPath = inputPath + TextAutoTainter.DefaultConfSuffix
       val autoTainter = if (new File(confPath).exists()) {
         this.logInfo("use tag conf in " + confPath)
@@ -327,25 +323,15 @@ class HadoopRDD[K, V](
         logInfo("could not find conf in " + confPath + " use full tagging instead")
         new FullAutoTainter
       }
-      if (DFTEnv.dftEnv().sampleMode == SampleMode.Sample) {
-        sampler = new Sampler(DFTEnv.dftEnv().sampleNum)
-        new InterruptibleIterator[(K, V)](context, interuptIter.filter(sampler.filterFunc).map(o => {
-          val text = new Text
-          text.set(autoTainter.setTaint(o._2.toString))
-          (o._1, text.asInstanceOf[V])
-        }
-        ))
-      }
-      else
         new InterruptibleIterator[(K, V)](context, interuptIter.map(o => {
           val text = new Text
           text.set(autoTainter.setTaint(o._2.toString))
           (o._1, text.asInstanceOf[V])
         }
         ))
-    } else {
+    }
+    else
       interuptIter
-    }*/
   }
 
   /** Maps over a partition, providing the InputSplit that was used as the base of the partition. */

@@ -13,7 +13,7 @@ trait EndPoint {
   def onRegister()
 }
 
-trait EndpointRegister {
+trait EndpointRegister extends Runnable {
   def register(endPoint: EndPoint): Unit = {
     endPoint.onRegister()
   }

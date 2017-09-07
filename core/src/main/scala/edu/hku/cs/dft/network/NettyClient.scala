@@ -3,7 +3,7 @@ package edu.hku.cs.dft.network
 import java.io.ObjectOutputStream
 import java.net.{InetAddress, Socket}
 
-import edu.hku.cs.dft.{DFTEnv, GlobalCheckerConf, TrackingMode}
+import edu.hku.cs.dft.{CheckerConf, DFTEnv}
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
@@ -14,7 +14,7 @@ import io.netty.handler.codec.serialization.{ClassResolvers, ObjectDecoder, Obje
 /**
   * Created by jianyu on 3/8/17.
   */
-class NettyClient(endpointDispatcher: EndpointDispatcher, globalCheckerConf: GlobalCheckerConf) extends EndpointRegister {
+class NettyClient(endpointDispatcher: EndpointDispatcher, globalCheckerConf: CheckerConf) extends EndpointRegister {
 
   private var nettyHandle: NettyHandle = _
 
