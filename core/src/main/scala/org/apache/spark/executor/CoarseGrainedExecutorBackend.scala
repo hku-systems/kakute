@@ -79,6 +79,7 @@ private[spark] class CoarseGrainedExecutorBackend(
 
   override def receive: PartialFunction[Any, Unit] = {
     case RegisteredExecutor(iftConf) =>
+      println(iftConf)
       DFTEnv.executor(iftConf)
       logInfo("Successfully registered with driver")
       try {

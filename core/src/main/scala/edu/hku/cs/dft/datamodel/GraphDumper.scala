@@ -47,12 +47,12 @@ class GraphDumper(fn: String) {
 //    analyser.firstRoundEntry()
     analyser.exitPoint()
     DependentTagger.serializeTagger("analyzer.obj", analyser.asInstanceOf[DependentTagger])
-    if (DFTEnv.dftEnv().generateScheme) {
+    if (true) {
       analyser.firstRoundEntry()
       analyser.tagScheme()
       analyser.chooseScheme()
       analyser.printScheme()
-      analyser.serializeToFiles(DFTEnv.dftEnv().partitionSchemeOutput)
+      analyser.serializeToFiles("a.out")
     }
   }
 

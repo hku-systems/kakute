@@ -361,12 +361,14 @@ class CoarseGrainedSchedulerBackend(scheduler: TaskSchedulerImpl, val rpcEnv: Rp
   }
 
   protected def createDriverEndpointRef(
-      properties: ArrayBuffer[(String, String)]): RpcEndpointRef = {
-    rpcEnv.setupEndpoint(ENDPOINT_NAME, createDriverEndpoint(properties))
+      properties: ArrayBuffer[(String, String)], iftConf: IftConf = null): RpcEndpointRef = {
+    rpcEnv.setupEndpoint(ENDPOINT_NAME, createDriverEndpoint(properties, iftConf))
   }
 
-  protected def createDriverEndpoint(properties: Seq[(String, String)]): DriverEndpoint = {
-    new DriverEndpoint(rpcEnv, properties)
+  protected def createDriverEndpoint(properties: Seq[(String, String)], iftConf: IftConf): DriverEndpoint = {
+    val driverEndpoint = new DriverEndpoint(rpcEnv, properties)
+    driverEndpoint.iftConf = iftConf
+    driverEndpoint
   }
 
   def stopExecutors() {

@@ -183,8 +183,8 @@ private[spark] object ReliableCheckpointRDD extends Logging {
     val serializer = env.serializer.newInstance()
     val serializeStream = serializer.serializeStream(fileOutputStream)
     Utils.tryWithSafeFinally {
-      if (DFTEnv.trackingPolicy.propagation_across_machines) {
-        val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
+      if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines) {
+        val selectiveTainter = new SelectiveTainter(Map(), 0)
         serializeStream.writeAll(iterator.map(t => {
           val taintList = selectiveTainter.getTaintList(t)
           (selectiveTainter.setTaint(t), taintList)
@@ -292,7 +292,7 @@ private[spark] object ReliableCheckpointRDD extends Logging {
 
     // Register an on-task-completion callback to close the input stream.
     context.addTaskCompletionListener(context => deserializeStream.close())
-    if (DFTEnv.trackingPolicy.propagation_across_machines) {
+    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines) {
       val selectiveTainter = new SelectiveTainter(Map(), 1)
       deserializeStream.asIterator.asInstanceOf[Iterator[(T, Map[Int, Int])]].map(t => {
         selectiveTainter.setTaintWithTaint(t._1, t._2)

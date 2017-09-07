@@ -59,7 +59,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
     val serializerInstance = dep.serializer.newInstance()
 
     // Create a key/value iterator for each stream
-    val selectiveTainter = if (DFTEnv.trackingPolicy.propagation_across_machines)
+    val selectiveTainter = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines)
       new SelectiveTainter(Map())
     else
       null
@@ -69,7 +69,7 @@ private[spark] class BlockStoreShuffleReader[K, C](
       // underlying InputStream when all records have been read.
       serializerInstance.deserializeStream(wrappedStream).asKeyValueIterator
     }.map(k => {
-      if (DFTEnv.trackingPolicy.propagation_across_machines) {
+      if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines) {
         val value_with_tag = k._2.asInstanceOf[(Map[Int, Int], Any)]
 //        println(value_with_tag._1)
         selectiveTainter.setTaintWithTaint((k._1, value_with_tag._2), value_with_tag._1)
@@ -92,12 +92,6 @@ private[spark] class BlockStoreShuffleReader[K, C](
     */
     // An interruptible iterator must be used here in order to support task cancellation
     val interruptibleIter =
-      if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
-        val collector = DFTEnv.localControl.splitInstance(context.stageId(), startPartition).collectorInstance(ShuffleDFT.ShuffleIdRDD.getOrElse(handle.shuffleId, 0))
-        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-        new InterruptibleIterator[(Any, Any)](context, metricIter).map(t => tainter.setTaint(t))
-      }
-      else
         new InterruptibleIterator[(Any, Any)](context, metricIter)
 
     val aggregatedIter: Iterator[Product2[K, C]] = if (dep.aggregator.isDefined) {

@@ -63,12 +63,13 @@ class TrackingPolicy(val typeInfering: Boolean,
                      val add_tags_input_files: Boolean,
                      val propagation_across_machines: Boolean,
                      val localSubmodule: Boolean,
-                     val collectPerOp: Boolean) extends Serializable{
+                     val collectPerOp: Boolean,
+                     val tracking_type: TrackingType) extends Serializable{
   def this(trackingPolicyOld: TrackingPolicyOld) =
     this (trackingPolicyOld.typeInfering, trackingPolicyOld.clear_tags_per_ops,
       trackingPolicyOld.add_tags_per_ops, trackingPolicyOld.add_tags_emitted,
       trackingPolicyOld.add_tags_input_files, trackingPolicyOld.propagation_across_machines,
-      trackingPolicyOld.localSubmodule, trackingPolicyOld.collectPerOp)
+      trackingPolicyOld.localSubmodule, trackingPolicyOld.collectPerOp, trackingPolicyOld.tracking_type)
 }
 
 class TrackingPolicyOld(trackType: TrackingType, trackingMode: TrackingMode,

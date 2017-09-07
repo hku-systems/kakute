@@ -3,7 +3,7 @@ package edu.hku.cs.dft.network
 import java.io.ObjectOutputStream
 import java.net.{InetAddress, Socket}
 
-import edu.hku.cs.dft.{DFTEnv, TrackingMode}
+import edu.hku.cs.dft.{DFTEnv, GlobalCheckerConf, TrackingMode}
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.nio.NioEventLoopGroup
@@ -14,7 +14,7 @@ import io.netty.handler.codec.serialization.{ClassResolvers, ObjectDecoder, Obje
 /**
   * Created by jianyu on 3/8/17.
   */
-class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extends EndpointRegister {
+class NettyClient(endpointDispatcher: EndpointDispatcher, globalCheckerConf: GlobalCheckerConf) extends EndpointRegister {
 
   private var nettyHandle: NettyHandle = _
 
@@ -43,7 +43,7 @@ class NettyClient(endpointDispatcher: EndpointDispatcher, dFTEnv: DFTEnv) extend
           }
         })
 
-      val f = boostrap.connect(dFTEnv.serverHost, dFTEnv.serverPort).sync()
+      val f = boostrap.connect(globalCheckerConf.host, globalCheckerConf.port).sync()
       f.channel().closeFuture().sync()
     } finally {
       eventLoopGroup.shutdownGracefully()
@@ -82,8 +82,8 @@ class TestClass extends Serializable {
 
 object NettyClient{
   def main(args: Array[String]): Unit = {
-    DFTEnv.client_init(TrackingMode.Debug)
-    val nettyClient = new NettyClient(new EndpointDispatcher, DFTEnv.dftEnv())
+    DFTEnv.executor(null)
+    val nettyClient = new NettyClient(new EndpointDispatcher, null)
     new Thread(new Runnable {
       override def run() {
         nettyClient.run()

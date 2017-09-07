@@ -54,12 +54,12 @@ class CommandlineHandle extends ArgumentHandle {
 
 }
 
-class ConfFileHandle(filename: String) extends ArgumentHandle with DFTEnv.DFTLogging {
+class ConfFileHandle(filename: String) extends ArgumentHandle {
 
   var keyMap: Map[String, String] = Map()
 
   try {
-    logInfo("Read configuration file from " + filename)
+    println("Read configuration file from " + filename)
     for (line <- Source.fromFile(filename).getLines()) {
       if (!line.trim.startsWith("#")) {
         val arr = line.split("=")
@@ -67,11 +67,11 @@ class ConfFileHandle(filename: String) extends ArgumentHandle with DFTEnv.DFTLog
         val key = arr(0).trim
         val value = arr(1).trim
         keyMap += key -> value
-        logInfo("conf: " + key + " -> " + value)
+        println("conf: " + key + " -> " + value)
       }
     }
   } catch {
-    case e: FileNotFoundException => logInfo("conf file " + filename + " not found")
+    case e: FileNotFoundException => println("conf file " + filename + " not found")
     // use the default setting
   }
 
@@ -152,7 +152,7 @@ object DefaultArgument {
   // By default, 10% of the data is used when in the data sampling mode
   val sampleInt: Int = 10
   val partitionPath: String = "default.scheme"
-  val confFile = "dft.conf"
+  var confFile = "dft.conf"
   val dumpGraph = "graph.dump"
   val trackingTaint: TrackingTaint = TrackingTaint.IntTaint
 }

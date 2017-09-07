@@ -1012,8 +1012,8 @@ class DAGScheduler(
       val serializedTaskMetrics = closureSerializer.serialize(stage.latestInfo.taskMetrics).array()
 
       // [[Modified]] to add rdd to our framework
-      if (sc.trackingMode == TrackingMode.RuleTracking || sc.trackingMode == TrackingMode.Debug)
-        DFTEnv.graphManager.spark_entry(stage.rdd)
+//      if (sc.trackingMode == TrackingMode.RuleTracking || sc.trackingMode == TrackingMode.Debug)
+//        DFTEnv.graphManager.spark_entry(stage.rdd)
 
       stage match {
         case stage: ShuffleMapStage =>

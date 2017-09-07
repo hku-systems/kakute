@@ -99,7 +99,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
   val tracking: Boolean = trackingMode != TrackingMode.Off
 
-  val iftConf: IftConf = if (!tracking)
+  val iftConf: IftConf = if (tracking)
     IftConf(trackingType, trackingTaint, shuffleOpt,
     new TrackingPolicy(new TrackingPolicyOld(trackingType, trackingMode, tracking, trackingTaint)))
   else null
@@ -2340,7 +2340,8 @@ class SparkContext(config: SparkConf) extends Logging {
 
   private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
     ClosureCleaner.clean(f, checkSerializable)
-    if (DFTEnv.on() && DFTEnv.ift().trackingPolicy.trackingMode == TrackingMode.Debug) {
+    // TODO Gen
+    if (DFTEnv.on() && DFTEnv.ift().trackingPolicy == null && false) {
       if (f.isInstanceOf[_ => _]) {
         println("-------------------with debug")
         withDebugF(f.asInstanceOf[ _ => _ ]).asInstanceOf[F]

@@ -311,7 +311,7 @@ class HadoopRDD[K, V](
         }
       }
     }
-    val interuptIter = new InterruptibleIterator[(K, V)](context, iter)
+    new InterruptibleIterator[(K, V)](context, iter)
 
     /**
       * [[Modified]] taint the input

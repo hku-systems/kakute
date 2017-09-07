@@ -785,12 +785,12 @@ private[spark] class ExternalSorter[K, V, C](
           private[this] var cur = if (upstream.hasNext) upstream.next() else null
 
           // Modified add taint here
-          val tainter: SelectiveTainter = if (DFTEnv.trackingPolicy.propagation_across_machines)
+          val tainter: SelectiveTainter = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines)
             new SelectiveTainter(Map())
           else
             null
           def writeNext(writer: DiskBlockObjectWriter): Unit = {
-            if (DFTEnv.trackingPolicy.propagation_across_machines)
+            if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.propagation_across_machines)
               writer.write(cur._1._2, (tainter.getTaintList((cur._1._2, cur._2)), cur._2))
             else
               writer.write(cur._1._2, cur._2)

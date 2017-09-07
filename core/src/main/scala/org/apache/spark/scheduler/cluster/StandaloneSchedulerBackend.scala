@@ -31,6 +31,8 @@ import org.apache.spark.rpc.RpcEndpointAddress
 import org.apache.spark.scheduler._
 import org.apache.spark.util.Utils
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * A [[SchedulerBackend]] implementation for Spark's standalone cluster manager.
  */
@@ -57,12 +59,21 @@ private[spark] class StandaloneSchedulerBackend(
   private val totalExpectedCores = maxCores.getOrElse(0)
 
   override def start() {
-    super.start()
+//    super.start()
+
+    val properties = new ArrayBuffer[(String, String)]
+    for ((key, value) <- scheduler.sc.conf.getAll) {
+      if (key.startsWith("spark.")) {
+        properties += ((key, value))
+      }
+    }
 
     /*
     * [[Modified]] set iftconf
     * */
-    super.driverEndpoint.asInstanceOf[DriverEndpoint].iftConf = sc.iftConf
+    // TODO (prashant) send conf instead of properties
+    driverEndpoint = createDriverEndpointRef(properties, sc.iftConf)
+
     launcherBackend.connect()
 
     // The endpoint for executors to talk to us

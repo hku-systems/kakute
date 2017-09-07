@@ -158,7 +158,7 @@ class CoGroupedRDD[K: ClassTag](
       * [[modified]] as we may not be able to taint the object,
       * we taint the content of the obj
     */
-    if (DFTEnv.trackingPolicy.add_tags_per_ops) {
+    if (false) {
 //      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
       for ((it, depNum) <- rddIterators) {
         map.insertAll(it.map(pair => {
@@ -175,11 +175,8 @@ class CoGroupedRDD[K: ClassTag](
     context.taskMetrics().incMemoryBytesSpilled(map.memoryBytesSpilled)
     context.taskMetrics().incDiskBytesSpilled(map.diskBytesSpilled)
     context.taskMetrics().incPeakExecutionMemory(map.peakMemoryUsedBytes)
-    val it = if (DFTEnv.trackingPolicy.add_tags_per_ops && false) {
-      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).origin(this.id).collectorInstance(this.id)
-      val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-//      val selectiveTainter = new SelectiveTainter(Map(), 0)
-      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => tainter.getTaintAndReturn(t))
+    val it = if (false) {
+      map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]].map(t => t)
     } else {
       map.iterator.asInstanceOf[Iterator[(K, Array[Iterable[_]])]]
     }

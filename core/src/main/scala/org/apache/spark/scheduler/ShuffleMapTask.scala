@@ -92,9 +92,9 @@ private[spark] class ShuffleMapTask(
       threadMXBean.getCurrentThreadCpuTime - deserializeStartCpuTime
     } else 0L
 
-    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
-      DebugTracer.newStorage(this.stageId, this.partition.index)
-    }
+//    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+//      DebugTracer.newStorage(this.stageId, this.partition.index)
+//    }
 
     var writer: ShuffleWriter[Any, Any] = null
     try {
@@ -104,19 +104,13 @@ private[spark] class ShuffleMapTask(
         * [[modified]] as there may be map-side combine in the Shuffle writer, we
         * write the taint in the implementation of the writer
       */
-      val rddIt = if (DFTEnv.trackingPolicy.add_tags_per_ops) {
-        val collector = DFTEnv.localControl.splitInstance(context.stageId(), partition.index).collectorInstance(rdd.id)
-        val tainter = new RuleTainter(DFTEnv.trackingPolicy, collector)
-        rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]].map(t => tainter.getTaintAndReturn(t))
-      } else {
-        rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]]
-      }
-      writer.write(rddIt)
+
+      writer.write(rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]])
       val status = writer.stop(success = true).get
 
       // [[Modified]] collect and send the rule here
-      if (DFTEnv.trackingPolicy.localSubmodule)
-        DFTEnv.localControl.collect(context.stageId(), partition.index)
+//      if (DFTEnv.trackingPolicy.localSubmodule)
+//        DFTEnv.localControl.collect(context.stageId(), partition.index)
 
       status
     } catch {

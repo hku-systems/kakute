@@ -112,7 +112,7 @@ class SelectiveTainter(filter: Map[Int, Any => Any], defaultTag: Any = -1) exten
       case null =>
       case _ =>
         var ctag = tag
-        if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CombinedTag) {
+        if (DFTEnv.conf().shuffleOpt == ShuffleOpt.CombinedTag) {
           if (_indexDeps == 1) {
             shuffle_val = tag
           }

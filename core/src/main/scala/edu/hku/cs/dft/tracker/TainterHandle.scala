@@ -86,7 +86,7 @@ class ObjectTainter extends TainterHandle {
     if (taint == null || taint == -1)
       anyRef
     else {
-      val ta = if (DFTEnv.dftEnv().shuffleOpt == ShuffleOpt.CacheTag) {
+      val ta = if (DFTEnv.conf().shuffleOpt == ShuffleOpt.CacheTag) {
         val hashcode = taint.hashCode()
         TainterHandle.taintMap.get().get(hashcode, taint).asInstanceOf[Taint[Object]]
       } else {

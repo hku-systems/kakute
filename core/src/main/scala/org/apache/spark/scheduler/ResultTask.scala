@@ -87,22 +87,23 @@ private[spark] class ResultTask[T, U](
       threadMXBean.getCurrentThreadCpuTime - deserializeStartCpuTime
     } else 0L
 
-    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
-      DebugTracer.newStorage(this.stageId, this.partition.index)
-    }
+//    if (DFTEnv.dftEnv().trackingMode == TrackingMode.Debug) {
+//      DebugTracer.newStorage(this.stageId, this.partition.index)
+//    }
 
     val result = func(context, rdd.iterator(partition, context))
 //    if (DFTEnv.trackingPolicy.typeInfering) {
 //      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
 //    }
-    if (DFTEnv.trackingPolicy.localSubmodule)
-      DFTEnv.localControl.collect(context.stageId() ,partition.index)
-    if (DFTEnv.dftEnv().trackingMode == TrackingMode.SecurityTracking) {
-      val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
-      selectiveTainter.setTaint(result)
-    } else {
-      result
-    }
+    result
+//    if (DFTEnv.trackingPolicy.localSubmodule)
+//      DFTEnv.localControl.collect(context.stageId() ,partition.index)
+//    if (DFTEnv.dftEnv().trackingMode == TrackingMode.SecurityTracking) {
+//      val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
+//      selectiveTainter.setTaint(result)
+//    } else {
+//      result
+//    }
   }
 
   // This is only callable on the driver side.

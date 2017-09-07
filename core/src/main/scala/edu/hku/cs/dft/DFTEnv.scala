@@ -165,20 +165,26 @@ case class PhosphorEnv(phosphorJava: String, phosphorJar: String, cache: String)
 object DFTEnv {
   var currentIft: DFTEnv = _
 
+  var iftConf: IftConf = _
+
   def on(): Boolean = currentIft != null
 
   def ift(): DFTEnv = if (currentIft != null) currentIft else throw new Exception("DFT Environment not set")
+
+  def conf(): IftConf  = if (iftConf != null) iftConf else throw new Exception("DFT Environment not set")
 
   def executor(iftConf: IftConf): Unit = {
     if (iftConf != null) {
       currentIft = new DFTEnv()
       currentIft.trackingPolicy = iftConf.trackingPolicy
     }
+    this.iftConf = iftConf
   }
 
   def server(iftConf: IftConf): Unit = {
     currentIft = new DFTEnv
     currentIft.isServer = true
+    this.iftConf = iftConf
   }
 
   def worker(): Unit = {

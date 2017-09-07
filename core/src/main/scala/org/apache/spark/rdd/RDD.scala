@@ -155,8 +155,6 @@ abstract class RDD[T: ClassTag](
 
   val variableId: String = SymbolManager.newInstance()
 
-  private var taintInfo: DataModelTaintInfo[T] = _
-
   /** Assign a name to this RDD */
   def setName(_name: String): this.type = {
     name = _name
@@ -287,43 +285,11 @@ abstract class RDD[T: ClassTag](
    * subclasses of RDD.
    */
   final def iterator(split: Partition, context: TaskContext): Iterator[T] = {
-    val r = if (storageLevel != StorageLevel.NONE) {
+    if (storageLevel != StorageLevel.NONE) {
       getOrCompute(split, context)
     } else {
       computeOrReadCheckpoint(split, context)
     }
-    val typeInfered = if (DFTEnv.trackingPolicy.typeInfering) {
-      val collector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).typeCollectorInstance(this.id)
-      r.map(t => {
-        collector.addType(t)
-        //        DFTEnv.localControl.addType(this.id, DFTUtils.getTypeTag(t))
-        //        val rcollector = DFTEnv.localControl.splitInstance(context.stageId() ,split.index).collectorInstance(this.id)
-        //        val tainter = new RuleTainter(DFTEnv.trackingPolicy, rcollector)
-        //        tainter.getTaintAndReturn(t)
-        t
-      })
-    } else {
-      r
-    }
-
-    val collectPer = if (DFTEnv.trackingPolicy.collectPerOp) {
-      val ruleCollector = DFTEnv.localControl.splitInstance(context.stageId(), split.index).collectorInstance(this.id)
-      val ruleTainter = new RuleTainter(DFTEnv.trackingPolicy, ruleCollector)
-      typeInfered.map(ruleTainter.getTaintAndReturn)
-    } else {
-      typeInfered
-    }
-
-    // @Depressed this part have been remove, replaced by a rdd implementation,to be deleted
-    // this part is independent, we will not add taint and collect taint at the same time
-    if (this.taintInfo != null && this.taintInfo.tainted) {
-      val selectiveTainter = new SelectiveTainter(scala.Predef.Map[Int, Any => Int](), 1)
-      r.map(t => {
-        TupleTainter.setTaint(t, taintInfo.taintFunc(t))
-      })
-    }
-    else
-      collectPer
   }
 
   /**
