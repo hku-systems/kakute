@@ -103,13 +103,13 @@ class UnionRDD[T: ClassTag](
 
   override def compute(s: Partition, context: TaskContext): Iterator[T] = {
     val part = s.asInstanceOf[UnionPartition[T]]
-    val prev = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_before != null)
-      parent[T](part.parentRddIndex).iterator(part.parentPartition, context).map(t => DFTEnv.conf().trackingPolicy.tap_op_before(t).asInstanceOf[T])
+    val prev = if (DFTEnv.tap && DFTEnv.taps.tap_op_before != null)
+      parent[T](part.parentRddIndex).iterator(part.parentPartition, context).map(t => DFTEnv.taps.tap_op_before(t).asInstanceOf[T])
     else
       parent[T](part.parentRddIndex).iterator(part.parentPartition, context)
 
-    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_op_after != null)
-      prev.map(t => {DFTEnv.conf().trackingPolicy.tap_op_after(t).asInstanceOf[T]})
+    if (DFTEnv.on() && DFTEnv.taps.tap_op_after != null)
+      prev.map(t => {DFTEnv.taps.tap_op_after(t).asInstanceOf[T]})
     else
       prev
   }

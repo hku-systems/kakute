@@ -131,8 +131,8 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
       .read()
       .asInstanceOf[Iterator[(K, C)]]
 
-    if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_shuffle_before != null)
-      result.map(t => DFTEnv.conf().trackingPolicy.tap_shuffle_before(t).asInstanceOf[(K, C)])
+    if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_before != null)
+      result.map(t => DFTEnv.taps.tap_shuffle_before(t).asInstanceOf[(K, C)])
      else
       result
   }

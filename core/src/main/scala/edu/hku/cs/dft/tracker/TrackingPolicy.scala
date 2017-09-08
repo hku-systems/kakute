@@ -56,96 +56,20 @@ object ShuffleOpt extends ConfEnumeration {
   val WithoutOpt = ConfValue("no-opt")
 }
 
-
-class TrackingPolicy(val tap_input_before: (Any => Any),
-                     val tap_op_before: (Any => Any), /* run this func before each rdd func */
-                     val tap_op_after: (Any => Any),
-                     val tap_shuffle_before: (Any => Any),
-                     val tap_shuffle_after: (Any => Any),
-                     val tap_collect_after: (Any => Any),
-                     val tap_exception: PartialFunction[Exception, Unit => Unit],
-                     val propagation_across_machines: Boolean,
-                     val checkerConf: CheckerConf,
-                     val tracking_type: TrackingType) extends Serializable {
-  def this(trackingPolicyOld: TrackingPolicyOld) =
-    this (null, null, null, null, null, null, null,
-      trackingPolicyOld.propagation_across_machines, null, trackingPolicyOld.tracking_type)
+trait TapConf {
+  val tap_input_before: (Any => Any)
+  val tap_op_before: (Any => Any) /* run this func before each rdd func */
+  val tap_op_after: (Any => Any)
+  val tap_shuffle_before: (Any => Any)
+  val tap_shuffle_after: (Any => Any)
+  val tap_collect_after: (Any => Any)
+  val tap_exception: PartialFunction[Exception, Unit => Unit]
 }
 
-class TrackingPolicyOld(trackType: TrackingType, trackingMode: TrackingMode,
-                     trackingOn: Boolean = false,
-                     taint: TrackingTaint = TrackingTaint.IntTaint) {
-
-  /*
-  * Default Setting
-  * */
-  val typeInfering: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.FullTracking => false
-      case TrackingMode.RuleTracking | TrackingMode.Debug => true
-      case _ => false
-    }
-    o && trackingOn
-  }
-
-  val clear_tags_per_ops: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.RuleTracking => true
-      case TrackingMode.FullTracking => false
-      case _ => false
-    }
-    o && trackingOn
-  }
-  val add_tags_per_ops: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.RuleTracking => true
-      case TrackingMode.FullTracking => false
-      case _ => false
-    }
-    o && trackingOn
-  }
-  val add_tags_emitted: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.RuleTracking => false //TODO
-      case TrackingMode.FullTracking => true //TODO
-      case _ => true
-    }
-    o && trackingOn
-  }
-  val add_tags_input_files: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.SecurityTracking | TrackingMode.RuleTracking => true
-      case _ => false
-    }
-    o && trackingOn
-  }
-  val propagation_across_machines: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.RuleTracking => false
-      case TrackingMode.FullTracking | TrackingMode.SecurityTracking | TrackingMode.Debug => true
-      case _ => false
-    }
-    o && trackingOn
-  }
-
-  val localSubmodule: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.RuleTracking | TrackingMode.Debug => true
-      case _ => false
-    }
-    o && trackingOn
-  }
-
-  val collectPerOp: Boolean = {
-    val o = trackingMode match {
-      case TrackingMode.Debug => true
-      case _ => false
-    }
-    o && trackingOn
-  }
-
-  var tracking_type: TrackingType = trackType
-
-  val trackingTaint: TrackingTaint = taint
-
+class TrackingPolicy(val propagation_across_machines: Boolean,
+                     val checkerConf: CheckerConf,
+                     val tapConf: TapConf,
+                     val tracking_type: TrackingType) extends Serializable {
+  def this() =
+    this (true, null, null, TrackingType.KeyValues)
 }

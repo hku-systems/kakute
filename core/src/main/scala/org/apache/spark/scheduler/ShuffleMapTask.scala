@@ -104,9 +104,9 @@ private[spark] class ShuffleMapTask(
         * [[modified]] as there may be map-side combine in the Shuffle writer, we
         * write the taint in the implementation of the writer
       */
-      val prev = if (DFTEnv.on() && DFTEnv.conf().trackingPolicy.tap_shuffle_after != null)
+      val prev = if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_after != null)
         rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]].map(t =>
-         DFTEnv.conf().trackingPolicy.tap_shuffle_after(t).asInstanceOf[Product2[Any, Any]])
+         DFTEnv.taps.tap_shuffle_after(t).asInstanceOf[Product2[Any, Any]])
       else
         rdd.iterator(partition, context).asInstanceOf[Iterator[_ <: Product2[Any, Any]]]
       writer.write(prev)

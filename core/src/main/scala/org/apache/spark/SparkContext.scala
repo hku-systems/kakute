@@ -101,7 +101,7 @@ class SparkContext(config: SparkConf) extends Logging {
 
   val iftConf: IftConf = if (tracking)
     IftConf(trackingType, trackingTaint, shuffleOpt,
-    new TrackingPolicy(new TrackingPolicyOld(trackingType, trackingMode, tracking, trackingTaint)))
+    new TrackingPolicy())
   else null
 
   // [[Modified]]init the server if tracking is true
