@@ -39,13 +39,13 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
   override def getPartitions: Array[Partition] = firstParent[T].partitions
 
   override def compute(split: Partition, context: TaskContext): Iterator[U] = {
-    val prev = if (DFTEnv.tap && DFTEnv.taps.tap_op_before != null)
-      firstParent[T].iterator(split, context).map(t => DFTEnv.taps.tap_op_before(t).asInstanceOf[T])
+    val prev = if (DFTEnv.tap && DFTEnv.taps.tap_op_before.isDefined)
+      DFTEnv.taps.tap_op_before.get(split, context, firstParent[T].iterator(split, context), this).asInstanceOf[Iterator[T]]
     else
       firstParent[T].iterator(split, context)
     val proc = f(context, split.index, prev)
-    if (DFTEnv.tap && DFTEnv.taps.tap_op_after != null)
-      proc.map(t => DFTEnv.taps.tap_op_after(t).asInstanceOf[U])
+    if (DFTEnv.tap && DFTEnv.taps.tap_op_after.isDefined)
+      DFTEnv.taps.tap_op_after.get(split, context, proc, this).asInstanceOf[Iterator[U]]
     else
       proc
   }

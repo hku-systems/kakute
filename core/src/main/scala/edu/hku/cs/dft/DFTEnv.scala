@@ -191,7 +191,7 @@ object DFTEnv {
         new Thread(networkChannel).start()
         val localEndPoint = new NettyEndpoint {
 
-          override def receiveAndReply(message: Message): Message = localChecker.receive(message)
+          override def receiveAndReply(message: Message): Message = localChecker.receiveAndReply(message)
 
           override def onRegister(): Unit = {}
 
@@ -215,7 +215,7 @@ object DFTEnv {
       new Thread(networkChannel).start()
       networkChannel.register(new NettyEndpoint {
 
-        override def receiveAndReply(message: Message): Message = globalChecker.receive(message)
+        override def receiveAndReply(message: Message): Message = globalChecker.receiveAndReply(message)
 
         override def onRegister(): Unit = {}
 
@@ -246,6 +246,7 @@ object DFTEnv {
   def stop_all(): Boolean = {
     if (iftConf != null && networkChannel != null) {
       networkChannel.stop()
+      if (currentIft.isServer) globalChecker.stop()
     }
     true
   }

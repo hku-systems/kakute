@@ -1,5 +1,6 @@
 package edu.hku.cs.dft.optimization
 
+import edu.hku.cs.dft.checker.TrafficGlobal
 import edu.hku.cs.dft.datamodel.DataOperation.DataOperation
 import edu.hku.cs.dft.datamodel._
 import edu.hku.cs.dft.optimization.RuleCollector.RuleSet
@@ -117,7 +118,7 @@ class Analyzer extends Serializable{
 
   private var visitedSet: Set[Int] = Set()
 
-  def entry(graphManager: GraphManager): Unit = {
+  def entry(graphManager: TrafficGlobal): Unit = {
     val dumpList = graphManager.rootData
     dumpList.foreach(dump => {
       if (!DFTUtils.nameValid(dump.name())) {

@@ -313,7 +313,7 @@ class HadoopRDD[K, V](
     }
 
     val interuptIter = new InterruptibleIterator[(K, V)](context, iter)
-    if (DFTEnv.tap && DFTEnv.taps.tap_input_before != null) {
+    if (DFTEnv.tap && DFTEnv.taps.tap_input_before.isDefined) {
       val confPath = inputPath + TextAutoTainter.DefaultConfSuffix
       val autoTainter = if (new File(confPath).exists()) {
         this.logInfo("use tag conf in " + confPath)

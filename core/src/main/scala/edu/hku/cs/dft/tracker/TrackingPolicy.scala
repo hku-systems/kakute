@@ -1,9 +1,9 @@
 package edu.hku.cs.dft.tracker
 
 import edu.hku.cs.dft.{CheckerConf, ConfEnumeration, TrackingMode}
-import edu.hku.cs.dft.TrackingMode.TrackingMode
-import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, TaskContext}
 
 
 /**
@@ -57,13 +57,14 @@ object ShuffleOpt extends ConfEnumeration {
 }
 
 trait TapConf {
-  val tap_input_before: (Any => Any)
-  val tap_op_before: (Any => Any) /* run this func before each rdd func */
-  val tap_op_after: (Any => Any)
-  val tap_shuffle_before: (Any => Any)
-  val tap_shuffle_after: (Any => Any)
-  val tap_collect_after: (Any => Any)
-  val tap_exception: PartialFunction[Exception, Unit => Unit]
+  val tap_input_before: Option[(Any => Any)] = None
+  val tap_op_before: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None /* run this func before each rdd func */
+  val tap_op_after: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
+  val tap_shuffle_before: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
+  val tap_shuffle_after: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
+  val tap_collect_after: Option[(Any => Any)] = None
+  val tap_task_after: Option[((Int, Int) => Unit)] = None
+  val tap_exception: Option[PartialFunction[Exception, Unit => Unit]] = None
 }
 
 class TrackingPolicy(val propagation_across_machines: Boolean,

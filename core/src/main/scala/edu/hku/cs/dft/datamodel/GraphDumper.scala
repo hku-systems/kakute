@@ -3,6 +3,7 @@ package edu.hku.cs.dft.datamodel
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
 import edu.hku.cs.dft.DFTEnv
+import edu.hku.cs.dft.checker.TrafficGlobal
 import edu.hku.cs.dft.traffic.{DependentTagger, PartitionScheme, PartitionSchemeTagger, PartitionSchemes}
 
 
@@ -27,7 +28,7 @@ class GraphDumper(fn: String) {
     fileWriter.close()
   }
 
-  def dumpGraph(graphManager: GraphManager):Unit = {
+  def dumpGraph(graphManager: TrafficGlobal):Unit = {
     var dumpList = graphManager.rootData
     var dumpedSet: Set[Int] = Set()
     while(dumpList.nonEmpty) {

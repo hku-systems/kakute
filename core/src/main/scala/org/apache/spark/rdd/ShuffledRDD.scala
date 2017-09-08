@@ -127,12 +127,12 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
       * Set taint only when it is shuffled
     */
 
-    var result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
+    val result = SparkEnv.get.shuffleManager.getReader(dep.shuffleHandle, split.index, split.index + 1, context)
       .read()
       .asInstanceOf[Iterator[(K, C)]]
 
-    if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_before != null)
-      result.map(t => DFTEnv.taps.tap_shuffle_before(t).asInstanceOf[(K, C)])
+    if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_before.isDefined)
+      DFTEnv.taps.tap_shuffle_before.get(split, context, result, this).asInstanceOf[Iterator[(K, C)]]
      else
       result
   }

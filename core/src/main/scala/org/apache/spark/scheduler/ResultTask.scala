@@ -95,15 +95,10 @@ private[spark] class ResultTask[T, U](
 //    if (DFTEnv.trackingPolicy.typeInfering) {
 //      DFTEnv.localControl.addType(rdd.id, DFTUtils.getTypeTag(result))
 //    }
+    if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_after.isDefined) {
+      DFTEnv.taps.tap_task_after.get(stageId, partition.index)
+    }
     result
-//    if (DFTEnv.trackingPolicy.localSubmodule)
-//      DFTEnv.localControl.collect(context.stageId() ,partition.index)
-//    if (DFTEnv.dftEnv().trackingMode == TrackingMode.SecurityTracking) {
-//      val selectiveTainter = new SelectiveTainter(Map(), DFTEnv.shuffleTag)
-//      selectiveTainter.setTaint(result)
-//    } else {
-//      result
-//    }
   }
 
   // This is only callable on the driver side.
