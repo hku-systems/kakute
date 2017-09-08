@@ -30,13 +30,4 @@ object IFTChecker {
     val policy = new TrackingPolicy(true, null, null, TrackingType.KeyValues)
     IftConf(TrackingType.KeyValues, trackingTaint, ShuffleOpt.WithoutOpt, policy)
   }
-
-}
-
-class Info extends IFTChecker {
-  override val taint: TrackingTaint = _
-  override val tapConf: TapConf = _
-  override val localChecker: LocalChecker = _
-  override val globalChecker: GlobalChecker = _
-  override val across_machine: Boolean = _
 }

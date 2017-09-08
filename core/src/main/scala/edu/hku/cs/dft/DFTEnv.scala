@@ -185,9 +185,9 @@ object DFTEnv {
       currentIft = new DFTEnv()
       currentIft.trackingPolicy = iftConf.trackingPolicy
       this.iftConf = iftConf
-      if (iftConf.checkerConf != null) {
-        localChecker = iftConf.checkerConf.localChecker
-        networkChannel = new NettyClient(new EndpointDispatcher, iftConf.checkerConf)
+      if (iftConf.trackingPolicy.checkerConf != null) {
+        localChecker = iftConf.trackingPolicy.checkerConf.localChecker
+        networkChannel = new NettyClient(new EndpointDispatcher, iftConf.trackingPolicy.checkerConf)
         new Thread(networkChannel).start()
         val localEndPoint = new NettyEndpoint {
 
@@ -210,8 +210,8 @@ object DFTEnv {
     currentIft = new DFTEnv
     currentIft.isServer = true
     this.iftConf = iftConf
-    if (iftConf != null && iftConf.checkerConf != null) {
-      networkChannel = new NettyServer(new EndpointDispatcher, iftConf.checkerConf)
+    if (iftConf != null && iftConf.trackingPolicy.checkerConf != null) {
+      networkChannel = new NettyServer(new EndpointDispatcher, iftConf.trackingPolicy.checkerConf)
       new Thread(networkChannel).start()
       networkChannel.register(new NettyEndpoint {
 

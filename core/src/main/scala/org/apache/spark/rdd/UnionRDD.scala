@@ -108,7 +108,7 @@ class UnionRDD[T: ClassTag](
     else
       parent[T](part.parentRddIndex).iterator(part.parentPartition, context)
 
-    if (DFTEnv.on() && DFTEnv.taps.tap_op_after != null)
+    if (DFTEnv.tap && DFTEnv.taps.tap_op_after != null)
       prev.map(t => {DFTEnv.taps.tap_op_after(t).asInstanceOf[T]})
     else
       prev

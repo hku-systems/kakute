@@ -17,13 +17,13 @@ object SpeedTest {
     val in = sc.parallelize(1 to number, 4)
     val process = in.map(t => {
       (t, t * (t - 1))
-    })
+    }).taint(t => (1, 2))
 
     val mod = process.map(t => {
       (t._1 % 100, t._2)
     })
 
-    mod.reduceByKey((x, y) => x + y).collect()
+    mod.reduceByKey((x, y) => x + y).zipWithTaint().collect().foreach(println)
 
     readLine()
 

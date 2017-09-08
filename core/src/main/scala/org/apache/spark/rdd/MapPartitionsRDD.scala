@@ -44,7 +44,7 @@ private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
     else
       firstParent[T].iterator(split, context)
     val proc = f(context, split.index, prev)
-    if (DFTEnv.on() && DFTEnv.taps.tap_op_after != null)
+    if (DFTEnv.tap && DFTEnv.taps.tap_op_after != null)
       proc.map(t => DFTEnv.taps.tap_op_after(t).asInstanceOf[U])
     else
       proc
