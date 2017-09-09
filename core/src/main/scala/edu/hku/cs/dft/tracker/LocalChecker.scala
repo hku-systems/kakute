@@ -9,4 +9,9 @@ trait LocalChecker extends NettyEndpoint with Serializable{
 
   /* instrument some functions (I/O funcs) */
   def instrument(): Unit
+
+  def addMethod(className: String, name: String, desc: String): Unit = {
+
+  }
+
 }
