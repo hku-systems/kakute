@@ -31,7 +31,7 @@ object DebugTracer {
   def backTrace(): Any = {
     val traceObj = getInstance().pop()
     val traceTaint = TupleTainter.getTaint(traceObj)
-//    DFTEnv.localControl.send(DebugInformation(traceObj._1, traceTaint, traceObj._2))
+    DFTEnv.localChecker.send(DebugInformation(traceObj._1, traceTaint, traceObj._2))
     // wait for the message to be sent
     Thread.sleep(1000)
     val dump = dumpObj(traceObj)
