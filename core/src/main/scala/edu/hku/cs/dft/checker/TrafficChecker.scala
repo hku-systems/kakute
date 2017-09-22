@@ -209,8 +209,6 @@ class TrafficChecker extends IFTChecker {
   }
   override val localChecker: LocalChecker = new LocalChecker {
 
-    override def instrument(): Unit = {}
-
     override val id: String = "traffic"
 
     override def receiveAndReply(message: Message): Message = {

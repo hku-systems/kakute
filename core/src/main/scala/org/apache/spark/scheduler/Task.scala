@@ -123,6 +123,11 @@ private[spark] abstract class Task[T](
             e.addSuppressed(t)
         }
 
+        e match {
+          case ee:Exception => if (DFTEnv.tap && DFTEnv.taps.tap_exception.isDefined)
+            DFTEnv.taps.tap_exception.get.isDefinedAt(e.asInstanceOf[Exception])
+        }
+
         throw e
 
     } finally {

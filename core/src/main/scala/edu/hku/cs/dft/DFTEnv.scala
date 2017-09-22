@@ -187,6 +187,7 @@ object DFTEnv {
       this.iftConf = iftConf
       if (iftConf.trackingPolicy.checkerConf != null) {
         localChecker = iftConf.trackingPolicy.checkerConf.localChecker
+        localChecker.setCheckerFunc()
         networkChannel = new NettyClient(new EndpointDispatcher, iftConf.trackingPolicy.checkerConf)
         new Thread(networkChannel).start()
         val localEndPoint = new NettyEndpoint {

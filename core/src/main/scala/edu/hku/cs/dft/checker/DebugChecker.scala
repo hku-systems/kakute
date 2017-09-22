@@ -12,13 +12,12 @@ import edu.hku.cs.dft.tracker._
 class DebugChecker extends IFTChecker {
   override val taint: TrackingTaint = TrackingTaint.ObjTaint
   override val tapConf: TapConf = new TapConf {
-    override val tap_exception: Option[PartialFunction[Exception, (Unit) => Unit]] = {
-      case e:Exception =>
-        DebugTracer.backTrace()
-    }
+    override val tap_exception: Option[PartialFunction[Exception, (Unit) => Unit]] = Some({
+      case e: Exception =>
+        (u: Unit) => DebugTracer.backTrace()
+    })
   }
   override val localChecker: LocalChecker = new LocalChecker {
-    override def instrument(): Unit = {}
 
     override def onRegister(): Unit = {}
 
