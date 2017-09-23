@@ -3,7 +3,7 @@ package edu.hku.cs.dft.tracker
 import edu.hku.cs.dft.{CheckerConf, ConfEnumeration, TrackingMode}
 import edu.hku.cs.dft.tracker.TrackingType.TrackingType
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{InterruptibleIterator, Partition, TaskContext}
 
 
 /**
@@ -57,7 +57,7 @@ object ShuffleOpt extends ConfEnumeration {
 }
 
 trait TapConf {
-  val tap_input_before: Option[(Any => Any)] = None
+  val tap_input_before: Option[((InterruptibleIterator[(Any, Any)], String) => Iterator[(Any, Any)])] = None
   val tap_op_before: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None /* run this func before each rdd func */
   val tap_op_after: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
   val tap_shuffle_before: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
@@ -70,7 +70,8 @@ trait TapConf {
 class TrackingPolicy(val propagation_across_machines: Boolean,
                      val checkerConf: CheckerConf,
                      val tapConf: TapConf,
-                     val tracking_type: TrackingType) extends Serializable {
+                     val tracking_type: TrackingType,
+                     val objectTainter: Option[PartialFunction[Object, List[String]]] = None) extends Serializable {
   def this() =
     this (true, null, null, TrackingType.KeyValues)
 }

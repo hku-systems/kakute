@@ -314,21 +314,9 @@ class HadoopRDD[K, V](
 
     val interuptIter = new InterruptibleIterator[(K, V)](context, iter)
     if (DFTEnv.tap && DFTEnv.taps.tap_input_before.isDefined) {
-      val confPath = inputPath + TextAutoTainter.DefaultConfSuffix
-      val autoTainter = if (new File(confPath).exists()) {
-        this.logInfo("use tag conf in " + confPath)
-        new TextAutoTainter(confPath)
-      }
-      else {
-        logInfo("could not find conf in " + confPath + " use full tagging instead")
-        new FullAutoTainter
-      }
-        new InterruptibleIterator[(K, V)](context, interuptIter.map(o => {
-          val text = new Text
-          text.set(autoTainter.setTaint(o._2.toString))
-          (o._1, text.asInstanceOf[V])
-        }
-        ))
+      new InterruptibleIterator[(K, V)](context,
+        DFTEnv.taps.tap_input_before.get(interuptIter, inputPath)
+          .asInstanceOf[Iterator[(K, V)]])
     }
     else
       interuptIter

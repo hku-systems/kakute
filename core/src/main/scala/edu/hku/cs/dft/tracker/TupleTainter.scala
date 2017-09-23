@@ -1,5 +1,7 @@
 package edu.hku.cs.dft.tracker
 
+import edu.hku.cs.dft.DFTEnv
+
 /**
   * [[TupleTainter]] is a more flexible api to add taint, the tuple shuld be as the same
   * structure as the data: if obj is tuple2, then taint should be tuple2
@@ -54,7 +56,16 @@ object TupleTainter {
         case arr: Array[_] => tainter.setTaint(arr, tag)
         case it: Iterator[Any] => it.map(t => setOne(t, tag)).asInstanceOf[T]
         case it: Iterable[Any] => it.map(t => setOne(t, tag)).asInstanceOf[T]
-        case ob: Object => tainter.setTaint(ob, tag)
+        case ob: Object =>
+          if (DFTEnv.objectTainter.isDefined) {
+            ob match {
+              case i: Integer =>
+              case _ => tainter.setTaint(ob, tag)
+            }
+
+          } else {
+            tainter.setTaint(ob, tag)
+          }
       }
       r.asInstanceOf[T]
     }

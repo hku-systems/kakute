@@ -170,6 +170,8 @@ object DFTEnv {
 
   var networkChannel: EndpointRegister = _
 
+  var objectTainter: Option[PartialFunction[Object, List[String]]] = None
+
   var tap: Boolean = false
 
   var taps: TapConf = _
@@ -185,6 +187,7 @@ object DFTEnv {
       currentIft = new DFTEnv()
       currentIft.trackingPolicy = iftConf.trackingPolicy
       this.iftConf = iftConf
+      objectTainter = iftConf.trackingPolicy.objectTainter
       if (iftConf.trackingPolicy.checkerConf != null) {
         localChecker = iftConf.trackingPolicy.checkerConf.localChecker
         networkChannel = new NettyClient(new EndpointDispatcher, iftConf.trackingPolicy.checkerConf)

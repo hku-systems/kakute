@@ -98,7 +98,11 @@ private[spark] class ResultTask[T, U](
     if (DFTEnv.tap && DFTEnv.taps.tap_shuffle_after.isDefined) {
       DFTEnv.taps.tap_task_after.get(stageId, partition.index)
     }
-    result
+
+    if (DFTEnv.tap && DFTEnv.taps.tap_collect_after.isDefined) {
+      DFTEnv.taps.tap_collect_after.get(result).asInstanceOf[U]
+    } else
+      result
   }
 
   // This is only callable on the driver side.

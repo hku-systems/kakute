@@ -1,7 +1,9 @@
 package edu.hku.cs.dft.tracker
 
+import java.lang.reflect.Field
 import java.util
 
+import edu.columbia.cs.psl.phosphor.{Configuration, TaintUtils}
 import edu.columbia.cs.psl.phosphor.runtime.{MultiTainter, Taint, Tainter}
 import edu.hku.cs.dft.DFTEnv
 import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
@@ -69,6 +71,12 @@ class CombinedTaint[T](taint: T) extends Iterable[Any] with Serializable{
 trait TainterHandle {
 
   val MAX_TAINT = 0
+
+  def setFieldTaint(obj: Object, taint: Any, field: String): Object = {
+      val f: Field = obj.getClass.getField(field + TaintUtils.TAINT_FIELD)
+      f.set(obj, taint)
+      obj
+  }
 
   def setTaint[T](anyRef: T, taint: Any): T
 

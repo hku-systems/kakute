@@ -8,6 +8,7 @@ import edu.hku.cs.dft.tracker.TrackingTaint.TrackingTaint
   */
 trait IFTChecker {
   val taint: TrackingTaint
+  val objectTainter: Option[PartialFunction[Object, List[String]]] = None
   val tapConf: TapConf
   val localChecker: LocalChecker
   val globalChecker: GlobalChecker
@@ -22,12 +23,12 @@ object IFTChecker {
     } else {
       null
     }
-    val policy = new TrackingPolicy(iftChecker.across_machine, checkerConf, taps, TrackingType.KeyValues)
+    val policy = new TrackingPolicy(iftChecker.across_machine, checkerConf, taps, TrackingType.KeyValues, iftChecker.objectTainter)
     IftConf(TrackingType.KeyValues, iftChecker.taint, ShuffleOpt.WithoutOpt, policy)
   }
 
   def defaultChecker(trackingTaint: TrackingTaint): IftConf = {
-    val policy = new TrackingPolicy(true, null, null, TrackingType.KeyValues)
+    val policy = new TrackingPolicy(true, null, null, TrackingType.KeyValues, None)
     IftConf(TrackingType.KeyValues, trackingTaint, ShuffleOpt.WithoutOpt, policy)
   }
 }
