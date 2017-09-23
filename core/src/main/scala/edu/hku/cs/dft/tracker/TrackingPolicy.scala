@@ -64,7 +64,7 @@ trait TapConf {
   val tap_shuffle_after: Option[((Partition, TaskContext, Iterator[Any], RDD[_]) => Iterator[Any])] = None
   val tap_collect_after: Option[(Any => Any)] = None
   val tap_task_after: Option[((Int, Int) => Unit)] = None
-  val tap_exception: Option[PartialFunction[Exception, Unit => Unit]] = None
+  val tap_exception: Option[PartialFunction[Exception, Unit]] = None
 }
 
 class TrackingPolicy(val propagation_across_machines: Boolean,

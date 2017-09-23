@@ -1,10 +1,7 @@
 package edu.hku.cs.dft.tracker
 
-import java.io.ObjectOutputStream
-import java.lang.reflect.Method
-
-import edu.columbia.cs.psl.phosphor.{Configuration, SelectiveInstrumentationManager}
-import edu.hku.cs.dft.datamodel.DataModel
+import edu.columbia.cs.psl.phosphor.runtime.TaintChecker
+import edu.columbia.cs.psl.phosphor.runtime.TaintChecker.{CheckFuncInt, CheckFuncObj}
 import edu.hku.cs.dft.network.NettyEndpoint
 
 /**
@@ -12,11 +9,20 @@ import edu.hku.cs.dft.network.NettyEndpoint
   */
 trait LocalChecker extends NettyEndpoint with Serializable{
 
-  /* instrument some functions (I/O funcs) */
-  def instrument(): Unit
+  val checkFuncInt: Option[Int => Unit] = None
 
-  def addMethod(className: String, name: String, desc: String): Unit = {
-    SelectiveInstrumentationManager.addMethod(className, name, desc)
+  val checkFuncObj: Option[Object => Unit] = None
+
+  def setCheckFunc(): Unit = {
+    if (checkFuncInt.isDefined) {
+      TaintChecker.setCheckerFunc(new CheckFuncInt {
+        override def checkTag(i: Int): Unit = checkFuncInt.get(i)
+      })
+    }
+    if (checkFuncObj.isDefined) {
+      TaintChecker.setCheckerFunc(new CheckFuncObj {
+        override def checkTag(o: Object): Unit = checkFuncObj.get(o)
+      })
+    }
   }
-
 }

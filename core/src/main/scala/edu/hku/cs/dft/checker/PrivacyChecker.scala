@@ -12,9 +12,14 @@ class PrivacyChecker extends IFTChecker {
   override val tapConf: TapConf = null
   override val localChecker: LocalChecker = new LocalChecker {
 
-    override def instrument(): Unit = {
-//      addMethod()
-    }
+    case class IllegalAccess(tag: Int) extends Message
+
+    override val checkFuncInt: Option[(Int) => Unit] = Some((tag: Int) => {
+      if (tag != 0) {
+        this.send(IllegalAccess(tag))
+        throw new IllegalAccessError("contains tags")
+      }
+    })
 
     override def receiveAndReply(message: Message): Message = {
       null

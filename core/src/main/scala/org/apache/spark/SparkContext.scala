@@ -99,13 +99,16 @@ class SparkContext(config: SparkConf) extends Logging {
 
   val tracking: Boolean = trackingMode != TrackingMode.Off
 
-  val iftConf: IftConf = if (tracking)
-    IftConf(trackingType, trackingTaint, shuffleOpt,
-    new TrackingPolicy())
+  var iftConf: IftConf = if (tracking)
+    IFTChecker.defaultChecker(trackingTaint)
   else null
 
   // [[Modified]]init the server if tracking is true
-  DFTEnv.server(iftConf)
+  def init_ift(): Unit = DFTEnv.server(iftConf)
+
+  def setChecker(iFTChecker: IFTChecker): Unit = {
+    iftConf = IFTChecker.setChecker(iFTChecker)
+  }
 
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()

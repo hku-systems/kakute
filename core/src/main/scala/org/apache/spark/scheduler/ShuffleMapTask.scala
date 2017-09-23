@@ -128,8 +128,8 @@ private[spark] class ShuffleMapTask(
           case e: Exception =>
             log.debug("Could not stop writer", e)
             // run this functi when a exception happen
-            if (DFTEnv.tap && DFTEnv.taps.tap_exception.isDefined)
-              DFTEnv.taps.tap_exception.get.isDefinedAt(e)
+//            if (DFTEnv.tap && DFTEnv.taps.tap_exception.isDefined)
+//              DFTEnv.taps.tap_exception.get.isDefinedAt(e)
         }
         throw e
     }

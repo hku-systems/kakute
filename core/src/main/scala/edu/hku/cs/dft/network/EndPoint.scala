@@ -39,7 +39,7 @@ abstract class NettyEndpoint extends EndPoint {
   }
 }
 
-sealed trait Message
+trait Message
 
 case class BoxMessage(endpointId: String, message: Message)
 
