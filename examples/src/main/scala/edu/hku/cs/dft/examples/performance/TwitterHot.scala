@@ -1,12 +1,11 @@
-package edu.hku.cs.dft.examples.provenance
+package edu.hku.cs.dft.examples.performance
 
-import edu.hku.cs.dft.tracker.CombinedTaint
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by jianyu on 5/3/17.
   */
-object TwitterLineage {
+object TwitterHot {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()
     val twitterfile = args(0)

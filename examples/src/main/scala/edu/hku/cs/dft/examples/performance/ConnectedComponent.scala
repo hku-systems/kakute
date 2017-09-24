@@ -1,14 +1,11 @@
-package edu.hku.cs.dft.examples.provenance
+package edu.hku.cs.dft.examples.performance
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
-
-import scala.collection.mutable
 
 /**
   * Created by jianyu on 4/21/17.
   */
-object ProvenanceGraphExample {
+object ConnectedComponent {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf()

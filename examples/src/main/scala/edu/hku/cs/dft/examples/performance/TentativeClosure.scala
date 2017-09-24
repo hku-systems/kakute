@@ -1,15 +1,11 @@
-package edu.hku.cs.dft.examples.provenance
+package edu.hku.cs.dft.examples.performance
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
-
-import scala.collection.mutable
-import scala.util.Random
 
 /**
   * Created by jianyu on 5/10/17.
   */
-object SparkTC {
+object TentativeClosure {
 
   def main(args: Array[String]) {
     val spark = new SparkContext(new SparkConf())

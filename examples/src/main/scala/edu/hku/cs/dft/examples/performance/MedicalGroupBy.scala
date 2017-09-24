@@ -1,7 +1,6 @@
-package edu.hku.cs.dft.examples.provenance
+package edu.hku.cs.dft.examples.performance
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.SparkSession
 
 /**
   * Created by jianyu on 5/10/17.
