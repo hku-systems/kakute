@@ -89,6 +89,20 @@ As the a instrumented process needs to be created, current Kakute's
 implementation only supports running tasks with spark standalone mode
 (Yarn and Mesos may be supported but not tested).
 
+To submit the program, start a standalone master and worker, and
+submit the program.
+
+```
+# start a master at local
+./sbin/start-master.sh -h 127.0.0.1
+
+# start a worker connected to master
+./sbin/start-slave.sh spark://127.0.0.1:7077
+
+# submit the program
+./bin/spark-submit --master spark://127.0.0.1:7077 --class edu.hku.cs.dft.examples.APIExample examples/target/scala-2.11/jars/spark-examples_2.11-2.2.0-SNAPSHOT.jar
+```
+
 # Apache Spark
 
 Spark is a fast and general cluster computing system for Big Data. It provides
