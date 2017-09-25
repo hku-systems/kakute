@@ -30,7 +30,7 @@ git clone https://github.com/hku-systems/kakute.git
 
 ```
 
-Setup the correct phosphor directory in core/pom.xml
+Setup the correct phosphor directory in core/pom.xml and pom.xml
 ```
 <dependency>
   <groupId>edu.columbia.cs</groupId>
@@ -60,7 +60,34 @@ dft-input-taint = false
 dft-scheme = true
 ```
 
-Congrats. You have finished building Kakute, you can try with a simple example below.
+Congrats. You have finished building Kakute, you can try with a simple example below (see file examples/src/main/scala/edu/hku/cs/dft/APIExample.scala).
+
+```
+// start a sparksession with ift on
+val spark = SparkSession
+  .builder()
+  .appName("API example")
+  .config("spark.dft.tracking.mode", "full")
+  .getOrCreate()
+
+val in = spark.sparkContext.parallelize(Seq(("Max", "X-Man", 3),
+                                        ("Max", "Kingsman", 5),
+                                        ("John", "Kingsman", 4)), 2)
+
+// set tags for data, username, moviename and rating are tagged with 1, 2, 3
+val movie_rating = in.taint(t => (1, 2, 3)).map(t => (t._2, t._3))
+
+// get the counting, this will result in shuffles
+val movie_count = movie_rating.reduceByKey(_ + _)
+
+// get tags along with its data, print the result
+movie_count.zipWithTaint().collect().foreach(println)
+
+```
+
+As the a instrumented process needs to be created, current Kakute's
+implementation only supports running tasks with spark standalone mode
+(Yarn and Mesos may be supported but not tested).
 
 # Apache Spark
 
